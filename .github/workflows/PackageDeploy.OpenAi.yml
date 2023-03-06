@@ -1,0 +1,20 @@
+name: OpenAi.Nuget
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj
+jobs:
+  publish:
+    name: build, pack & publish
+    runs-on: ubuntu-latest
+    environment: OpenAi.Nuget
+    
+    steps:
+      - name: Publish package
+        uses: KeyserDSoze/DefaultAction/pushing_nuget_with_symbols@v1.0.1
+        with:
+          dotnet-version: ${{ secrets.NET_VERSION }}
+          path: src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj
+          api-key: ${{ secrets.NUGET_API_KEY }}
