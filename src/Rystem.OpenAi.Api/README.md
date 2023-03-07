@@ -14,7 +14,7 @@ Watch out my Rystem framework to be able to do .Net webapp faster (easy integrat
 
 ## Setup
 
-Install package [`Rystem.OpenAi` from Nuget](https://github.com/KeyserDSoze/Rystem.OpenAi).  
+Install package Rystem.OpenAi [from Nuget](https://www.nuget.org/packages/Rystem.OpenAi/).  
 Here's how via command line:
 
 ```powershell
