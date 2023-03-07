@@ -4,11 +4,20 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s GPT
 
 > This repository is available to transfer to the OpenAI organization if they choose to accept it.
 
+
+## Help the project
+
+Reach out us on [Discord](https://discord.gg/wUh2fppr)
+
+### Contribute: https://www.buymeacoffee.com/keyserdsoze
+
+
+
 ## Requirements
 
-This library targets .NET standard 2.0 and above.
+This library targets .NET standard 2.1 and above.
 
-### Advertising
+### Adv
 Watch out my Rystem framework to be able to do .Net webapp faster (easy integration with repository pattern or CQRS for your Azure services).
 ### [What is Rystem?](https://github.com/KeyserDSoze/Rystem)
 
