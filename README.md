@@ -2,7 +2,7 @@
 
 A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s GPT-3 API.
 
-> This repository is available to transfer to the OpenAI organization if they so choose to accept it.
+> This repository is available to transfer to the OpenAI organization if they choose to accept it.
 
 ## Requirements
 
