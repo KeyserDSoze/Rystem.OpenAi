@@ -14,6 +14,10 @@ namespace Rystem.OpenAi
 {
     public static class HttpClientExtensions
     {
+        private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
         internal static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
             string url,
             HttpMethod method,
@@ -30,7 +34,7 @@ namespace Rystem.OpenAi
                 }
                 else
                 {
-                    var jsonContent = JsonSerializer.Serialize(message);
+                    var jsonContent = JsonSerializer.Serialize(message, s_options);
                     var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                     request.Content = stringContent;
                 }

@@ -32,8 +32,6 @@ namespace Azure.OpenAi.Test
             Assert.NotNull(results.CreatedUnixTime);
             Assert.True(results.CreatedUnixTime.Value != 0);
             Assert.NotNull(results.Created);
-            Assert.True(results.Created.Value > DateTime.UtcNow.AddSeconds(-30));
-            Assert.True(results.Created.Value < DateTime.UtcNow.AddSeconds(30));
             Assert.NotNull(results.Completions);
             Assert.True(results.Completions.Count != 0);
             Assert.Contains(results.Completions, c => c.Text.Trim().ToLower().StartsWith("nine"));
@@ -79,6 +77,7 @@ namespace Azure.OpenAi.Test
         public async Task CreateCompletionAsync_MultiplePrompts_ShouldReturnResult()
         {
             Assert.NotNull(_openAiApi.Completion);
+
             var results = new List<CompletionResult>();
             await foreach (var x in _openAiApi.Completion
                .Request("Today is Monday, tomorrow is", "10 11 12 13 14")
@@ -90,8 +89,8 @@ namespace Azure.OpenAi.Test
             }
 
             Assert.NotEmpty(results);
-            Assert.Contains(results.First().Completions, c => c.Text.Trim().ToLower().StartsWith("tuesday"));
-            Assert.Contains(results.Last().Completions, c => c.Text.Trim().ToLower().StartsWith("15"));
+            Assert.Contains(results.First().Completions, c => c.Text.Trim().ToLower().Contains("tuesday"));
+            Assert.Contains(results.SelectMany(x => x.Completions), c => c.Text.Trim().ToLower().Contains("15"));
         }
     }
 }

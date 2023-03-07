@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Rystem.OpenAi.Completion
             {
                 return new CompletionRequest()
                 {
-                    Prompt = prompts.Length > 1 ? (object)prompts : (prompts.Length == 1 ? prompts[1] : string.Empty),
+                    Prompt = prompts.Length > 1 ? (object)prompts : (prompts.Length == 1 ? prompts.First() : string.Empty),
                     ModelId = TextModelType.DavinciText3.ToModel().Id
                 };
             })
