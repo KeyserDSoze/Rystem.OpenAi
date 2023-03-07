@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class ModerationModelTypeExtensions
     {
@@ -15,5 +15,7 @@
                     return s_textModerationLatest;
             }
         }
+        public static string ToModelId(this ModerationModelType type)
+            => type.ToModel().Id!;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Rystem.OpenAi;
-using Rystem.OpenAi.Models;
+using Rystem.OpenAi;
 using Xunit;
 
 namespace Azure.OpenAi.Test
@@ -28,7 +28,7 @@ namespace Azure.OpenAi.Test
         {
             Assert.NotNull(_openAiApi.Model);
 
-            var result = await _openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModel().Id);
+            var result = await _openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
             Assert.NotNull(result);
 
             Assert.NotNull(result.CreatedUnixTime);

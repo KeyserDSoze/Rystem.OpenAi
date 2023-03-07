@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     /// <summary>
     /// The Moderation models are designed to check whether content complies with <see href="https://platform.openai.com/docs/usage-policies/">OpenAI's usage policies</see>. The models provide classification capabilities that look for content in the following categories: hate, hate/threatening, self-harm, sexual, sexual/minors, violence, and violence/graphic. You can find out more in our <see href="https://platform.openai.com/docs/guides/moderation/overview">moderation guide</see>.

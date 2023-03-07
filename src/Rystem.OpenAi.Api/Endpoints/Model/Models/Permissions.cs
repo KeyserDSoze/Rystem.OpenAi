@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.Models
+namespace Rystem.OpenAi
 {
     /// <summary>
     /// Permissions for using the model

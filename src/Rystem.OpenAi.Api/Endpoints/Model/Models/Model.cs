@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.Models
+namespace Rystem.OpenAi
 {
     /// <summary>
     /// Represents a language model

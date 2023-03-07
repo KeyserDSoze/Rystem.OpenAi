@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Models;
+using Rystem.OpenAi;
 
 namespace Rystem.OpenAi.Chat
 {

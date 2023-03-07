@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class ChatModelTypeExtensions
     {
@@ -15,5 +15,7 @@
                     return s_gpt35Turbo0301;
             }
         }
+        public static string ToModelId(this ChatModelType type)
+            => type.ToModel().Id!;
     }
 }

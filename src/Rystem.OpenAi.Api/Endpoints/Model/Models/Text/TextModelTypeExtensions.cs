@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class TextModelTypeExtensions
     {
@@ -30,5 +30,7 @@
                     return s_adaText;
             }
         }
+        public static string ToModelId(this TextModelType type)
+            => type.ToModel().Id!;
     }
 }

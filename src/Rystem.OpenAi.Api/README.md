@@ -29,7 +29,6 @@ Install-Package Rystem.OpenAi
 - [Models](#models)
   - [List Models](#list-models)
   - [Retrieve Models](#retrieve-model)
-  - [Delete Fine Tuned Model](#delete-fine-tuned-model)
 - [Completions](#completions)
   - [Streaming](#streaming)
 - [Edits](#edits)
@@ -58,13 +57,66 @@ Install-Package Rystem.OpenAi
 
 ## Dependency Injection
 
-### Add to service collection the UI service in your DI
+### Add to service collection the OpenAi service in your DI
 
     var apiKey = configuration["Azure:ApiKey"];
-    var resourceName = configuration["Azure:ResourceName"];
-    var deploymentId = configuration["Azure:DeploymentId"];
     services.AddOpenAi(settings =>
     {
         settings.ApiKey = apiKey;
     });
 
+### Add to service collection the OpenAi service in your DI with Azure integration
+When you want to use the integration with Azure, you need to specify all the models you're going to use. In the example you may find the model name for DavinciText3.
+You still may add a custom model, with AddDeploymentCustomModel.
+
+    builder.Services.AddOpenAi(settings =>
+    {
+        settings.ApiKey = apiKey;
+        settings.Azure.ResourceName = "AzureResourceName (Name of your deployed service on Azure)";
+        settings.Azure
+            .AddDeploymentTextModel("Test (The name from column 'Model deployment name' in Model deployments blade in your Azure service)", TextModelType.DavinciText3);
+    });
+
+## Models
+List and describe the various models available in the API. You can refer to the [Models documentation](https://platform.openai.com/docs/models/overview) to understand what models are available and the differences between them.
+You may find more details [here](https://platform.openai.com/docs/api-reference/models).
+[Samples from unit test](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/ModelEndpointTests.cs)
+
+### List Models
+Lists the currently available models, and provides basic information about each one such as the owner and availability.
+
+    IOpenAiApi _openAiApi;
+    var results = await _openAiApi.Model.ListAsync();
+
+### Retrieve Models
+Retrieves a model instance, providing basic information about the model such as the owner and permissioning.
+
+    IOpenAiApi _openAiApi;
+    var result = await _openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
+
+
+## Completions
+Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+You may find more details [here](https://platform.openai.com/docs/api-reference/completions).
+[Samples from unit test](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/CompletionEndpointTests.cs)
+
+    IOpenAiApi _openAiApi;
+    var results = await _openAiApi.Completion
+        .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
+        .WithModel(TextModelType.CurieText)
+        .WithTemperature(0.1)
+        .SetMaxTokens(5)
+        .ExecuteAsync();
+
+### Streaming
+
+    IOpenAiApi _openAiApi;
+    var results = new List<CompletionResult>();
+            await foreach (var x in _openAiApi.Completion
+               .Request("Today is Monday, tomorrow is", "10 11 12 13 14")
+               .WithTemperature(0)
+               .SetMaxTokens(3)
+               .ExecuteAsStreamAsync())
+            {
+                results.Add(x);
+            }

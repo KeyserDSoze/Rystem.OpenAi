@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Rystem.OpenAi.Models;
+using Rystem.OpenAi;
 
 namespace Rystem.OpenAi
 {
@@ -8,39 +8,45 @@ namespace Rystem.OpenAi
         internal bool HasConfiguration => ResourceName != null;
         public string? ResourceName { get; set; }
         internal Dictionary<string, string> Deployments { get; } = new Dictionary<string, string>();
-        public OpenAiAzureSettings AddDeploymentModel(string name, TextModelType model)
+        public OpenAiAzureSettings AddDeploymentTextModel(string name, TextModelType model)
         {
             Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModel(string name, EmbeddingModelType model)
+        public OpenAiAzureSettings AddDeploymentEmbeddingModel(string name, EmbeddingModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModel(string name, AudioModelType model)
+        public OpenAiAzureSettings AddDeploymentAudioModel(string name, AudioModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModel(string name, ChatModelType model)
+        public OpenAiAzureSettings AddDeploymentChatModel(string name, ChatModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModel(string name, EditModelType model)
+        public OpenAiAzureSettings AddDeploymentEditModel(string name, EditModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModel(string name, ModerationModelType model)
+        public OpenAiAzureSettings AddDeploymentModerationModel(string name, ModerationModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
+            return this;
+        }
+        public OpenAiAzureSettings AddDeploymentCustomModel(string name, string customeModelId)
+        {
+            if (!Deployments.ContainsKey(name))
+                Deployments.Add(name, customeModelId);
             return this;
         }
     }

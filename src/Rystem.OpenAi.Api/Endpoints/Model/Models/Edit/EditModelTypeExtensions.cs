@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class EditModelTypeExtensions
     {
@@ -15,5 +15,7 @@
                     return s_codeDavinciEdit;
             }
         }
+        public static string ToModelId(this EditModelType type)
+            => type.ToModel().Id!;
     }
 }

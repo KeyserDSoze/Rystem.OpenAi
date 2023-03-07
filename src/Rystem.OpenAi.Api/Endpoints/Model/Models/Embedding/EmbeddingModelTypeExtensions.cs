@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class EmbeddingModelTypeExtensions
     {
@@ -12,5 +12,7 @@
                     return s_adaTextEmbedding;
             }
         }
+        public static string ToModelId(this EmbeddingModelType type)
+            => type.ToModel().Id!;
     }
 }

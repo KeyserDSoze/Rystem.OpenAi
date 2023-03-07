@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rystem.OpenAi;
-using Rystem.OpenAi.Models;
+using Rystem.OpenAi;
 
 namespace Azure.OpenAi.Test
 {

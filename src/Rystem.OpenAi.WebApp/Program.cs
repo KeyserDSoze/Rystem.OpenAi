@@ -1,4 +1,5 @@
-﻿using Rystem.OpenAi.WebApp.Data;
+﻿using Rystem.OpenAi;
+using Rystem.OpenAi.WebApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +8,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 var apiKey = builder.Configuration["OpenAi:ApiKey"];
+
 builder.Services.AddOpenAi(settings =>
 {
     settings.ApiKey = apiKey;
+    settings.Azure.ResourceName = "AzureResourceNameFrom";
+    settings.Azure.AddDeploymentTextModel("Test", TextModelType.DavinciText3);
 });
 
 

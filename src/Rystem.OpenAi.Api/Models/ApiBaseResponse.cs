@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
-using Rystem.OpenAi.Models;
+using Rystem.OpenAi;
 
 namespace Rystem.OpenAi
 {

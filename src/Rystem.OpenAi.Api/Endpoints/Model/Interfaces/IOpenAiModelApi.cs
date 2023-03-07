@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rystem.OpenAi.Models
+namespace Rystem.OpenAi
 {
     /// <summary>
     /// List and describe the various models available in the API. 

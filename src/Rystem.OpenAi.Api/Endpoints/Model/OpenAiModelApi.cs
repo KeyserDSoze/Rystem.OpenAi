@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rystem.OpenAi.Models
+namespace Rystem.OpenAi
 {
     internal sealed class OpenAiModelApi : IOpenAiModelApi
     {

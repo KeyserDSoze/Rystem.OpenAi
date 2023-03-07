@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi.Models
+﻿namespace Rystem.OpenAi
 {
     public static class AudioModelTypeExtensions
     {
@@ -12,5 +12,7 @@
                     return s_whisper;
             }
         }
+        public static string ToModelId(this AudioModelType type)
+            => type.ToModel().Id!;
     }
 }
