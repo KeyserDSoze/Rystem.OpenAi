@@ -79,8 +79,8 @@ You still may add a custom model, with AddDeploymentCustomModel.
 
 ## Models
 List and describe the various models available in the API. You can refer to the [Models documentation](https://platform.openai.com/docs/models/overview) to understand what models are available and the differences between them.
-You may find more details [here](https://platform.openai.com/docs/api-reference/models).
-[Samples from unit test](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/ModelEndpointTests.cs)
+You may find more details [here](https://platform.openai.com/docs/api-reference/models),
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/ModelEndpointTests.cs) samples from unit test.
 
 ### List Models
 Lists the currently available models, and provides basic information about each one such as the owner and availability.
@@ -97,8 +97,8 @@ Retrieves a model instance, providing basic information about the model such as 
 
 ## Completions
 Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
-You may find more details [here](https://platform.openai.com/docs/api-reference/completions).
-[Samples from unit test](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/CompletionEndpointTests.cs)
+You may find more details [here](https://platform.openai.com/docs/api-reference/completions),
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/CompletionEndpointTests.cs) samples from unit test
 
     IOpenAiApi _openAiApi;
     var results = await _openAiApi.Completion
