@@ -7,7 +7,7 @@ using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Completion;
 using Rystem.OpenAi.Edit;
 using Rystem.OpenAi.Embedding;
-using Rystem.OpenAi.File;
+using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
 using Rystem.OpenAi;
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", openAiSettings.ApiKey);
                 if (!string.IsNullOrEmpty(openAiSettings.OrganizationName))
                     client.DefaultRequestHeaders.Add("OpenAI-Organization", openAiSettings.OrganizationName);
-
+                client.Timeout = TimeSpan.FromMinutes(10);
             });
             if (openAiSettings.RetryPolicy)
             {

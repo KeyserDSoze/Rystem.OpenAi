@@ -34,8 +34,17 @@
         <None Update="appsettings.test.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="data-test-file.jsonl">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <None Update="Files\data-test-file.jsonl">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Files\otter.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Files\otter2.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Files\test.mp3">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 

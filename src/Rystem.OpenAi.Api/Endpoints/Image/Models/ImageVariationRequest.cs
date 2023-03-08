@@ -6,7 +6,7 @@ namespace Rystem.OpenAi.Image
 {
     public sealed class ImageVariationRequest : IOpenAiRequest, IDisposable
     {
-        public Stream? Image { get; set; }
+        public MemoryStream? Image { get; set; }
         public string? ImageName { get; set; }
         public int? NumberOfResults { get; set; }
         public string? Size { get; set; }

@@ -32,7 +32,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A list of generated texture urls to download.</returns>
         /// <exception cref="HttpRequestException"></exception>
-        public ValueTask<ImageResult> GetUrlAsync(CancellationToken cancellationToken = default)
+        public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.ResponseFormat = ResponseFormatUrl;
             var uri = $"{_configuration.GetUri(OpenAi.Image, _request.ModelId!)}/generations";
@@ -46,7 +46,7 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var responses = await GetUrlAsync(cancellationToken);
+            var responses = await ExecuteAsync(cancellationToken);
             if (responses.Data != null)
             {
                 using var client = new HttpClient();
@@ -101,12 +101,21 @@ namespace Rystem.OpenAi.Image
             return this;
         }
         /// <summary>
-        /// The image to use as the basis for the variation(s). Must be a valid PNG file, less than 4MB, and square.
+        /// The image to use as the basis for the edit(s). Must be a valid PNG file, less than 4MB, and square.
         /// </summary>
         /// <param name="image"></param>
         /// <param name="imageName"></param>
         /// <returns>Edit Builder</returns>
         public ImageEditRequestBuilder Edit(Stream image, string imageName = "image.png")
-            => new ImageEditRequestBuilder(_client, _configuration, _request.Prompt, image, imageName);
+            => new ImageEditRequestBuilder(_client, _configuration, _request.Prompt, image, imageName, false);
+        /// <summary>
+        /// The image to use as the basis for the edit(s). Must be a valid PNG file, less than 4MB, and square.
+        /// Take the streamed image and transform it before sending in a correct png.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="imageName"></param>
+        /// <returns>Edit Builder</returns>
+        public ImageEditRequestBuilder EditAndTrasformInPng(Stream image, string imageName = "image.png")
+            => new ImageEditRequestBuilder(_client, _configuration, _request.Prompt, image, imageName, true);
     }
 }

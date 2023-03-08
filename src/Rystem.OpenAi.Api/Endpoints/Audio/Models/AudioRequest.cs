@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Image
 {
     public sealed class AudioRequest : IOpenAiRequest, IDisposable
     {
-        public Stream? Audio { get; set; }
+        public MemoryStream? Audio { get; set; }
         public string? AudioName { get; set; }
         public string? ModelId { get; set; }
         public string? Prompt { get; set; }

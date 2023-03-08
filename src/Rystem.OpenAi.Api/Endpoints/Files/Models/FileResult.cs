@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.File
+namespace Rystem.OpenAi.Files
 {
     /// <summary>
     /// Represents a single file used with the OpenAI Files endpoint.  Files are used to upload and manage documents that can be used with features like Fine-tuning.

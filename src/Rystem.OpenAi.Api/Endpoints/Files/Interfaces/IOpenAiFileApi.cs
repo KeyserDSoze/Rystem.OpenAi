@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Rystem.OpenAi.File
+namespace Rystem.OpenAi.Files
 {
     /// <summary>
     /// Files are used to upload documents that can be used with features like <see href="https://platform.openai.com/docs/api-reference/fine-tunes">Fine-tuning</see>.

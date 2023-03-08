@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
 using Rystem.OpenAi.Completion;
-using Rystem.OpenAi;
 using Xunit;
 
-namespace Azure.OpenAi.Test
+namespace Rystem.OpenAi.Test
 {
     public class CompletionEndpointTests
     {

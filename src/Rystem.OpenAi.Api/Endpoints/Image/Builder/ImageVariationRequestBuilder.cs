@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -12,18 +14,34 @@ namespace Rystem.OpenAi.Image
     public sealed class ImageVariationRequestBuilder : RequestBuilder<ImageVariationRequest>
     {
         internal ImageVariationRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            Stream image, string imageName)
+            Stream image, string imageName, bool transform)
             : base(client, configuration, () =>
             {
-                var request = new ImageVariationRequest()
+                var request = new ImageVariationRequest
                 {
                     NumberOfResults = 1,
                     Size = ImageSize.Large.AsString(),
+                    ImageName = imageName
                 };
-                var memoryStream = new MemoryStream();
-                image.CopyTo(memoryStream);
-                request.Image = memoryStream;
-                request.ImageName = imageName;
+                if (!transform)
+                {
+                    var memoryStream = new MemoryStream();
+                    image.CopyTo(memoryStream);
+                    request.Image = memoryStream;
+                }
+                else
+                {
+                    var original = (Bitmap)Bitmap.FromStream(image);
+                    var clone = new Bitmap(original.Width, original.Height, PixelFormat.Format32bppPArgb);
+                    using (var gr = Graphics.FromImage(clone))
+                    {
+                        gr.DrawImage(original, new Rectangle(0, 0, clone.Width, clone.Height));
+                    }
+                    var memoryStream = new MemoryStream();
+                    clone.Save(memoryStream, ImageFormat.Png);
+                    request.Image = memoryStream;
+                }
+                request.Image.Position = 0;
                 return request;
             })
         {
@@ -39,12 +57,7 @@ namespace Rystem.OpenAi.Image
             _request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
             using var content = new MultipartFormDataContent();
             if (_request.Image != null)
-            {
-                using var imageData = new MemoryStream();
-                await _request.Image.CopyToAsync(imageData, cancellationToken);
-                imageData.Position = 0;
-                content.Add(new ByteArrayContent(imageData.ToArray()), "image", _request.ImageName);
-            }
+                content.Add(new ByteArrayContent(_request.Image.ToArray()), "image", _request.ImageName);
             if (_request.NumberOfResults != null)
                 content.Add(new StringContent(_request.NumberOfResults.ToString()), "n");
             if (_request.Size != null)

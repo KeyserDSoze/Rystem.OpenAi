@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -12,19 +14,35 @@ namespace Rystem.OpenAi.Image
     public sealed class ImageEditRequestBuilder : RequestBuilder<ImageEditRequest>
     {
         internal ImageEditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string? prompt,
-            Stream image, string imageName) :
+            Stream image, string imageName, bool transform) :
             base(client, configuration, () =>
             {
-                var request = new ImageEditRequest()
+                var request = new ImageEditRequest
                 {
                     Prompt = prompt,
                     NumberOfResults = 1,
-                    Size = ImageSize.Large.AsString()
+                    Size = ImageSize.Large.AsString(),
+                    ImageName = imageName
                 };
-                var memoryStream = new MemoryStream();
-                image.CopyTo(memoryStream);
-                request.Image = memoryStream;
-                request.ImageName = imageName;
+                if (!transform)
+                {
+                    var memoryStream = new MemoryStream();
+                    image.CopyTo(memoryStream);
+                    request.Image = memoryStream;
+                }
+                else
+                {
+                    var original = (Bitmap)Bitmap.FromStream(image);
+                    var clone = new Bitmap(original.Width, original.Height, PixelFormat.Format32bppPArgb);
+                    using (var gr = Graphics.FromImage(clone))
+                    {
+                        gr.DrawImage(original, new Rectangle(0, 0, clone.Width, clone.Height));
+                    }
+                    var memoryStream = new MemoryStream();
+                    clone.Save(memoryStream, ImageFormat.Png);
+                    request.Image = memoryStream;
+                }
+                request.Image.Position = 0;
                 return request;
             })
         {
@@ -35,24 +53,14 @@ namespace Rystem.OpenAi.Image
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A list of generated texture urls to download.</returns>
         /// <exception cref="HttpRequestException"></exception>
-        public async ValueTask<ImageResult> GetUrlAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
             using var content = new MultipartFormDataContent();
             if (_request.Image != null)
-            {
-                using var imageData = new MemoryStream();
-                await _request.Image.CopyToAsync(imageData, cancellationToken);
-                imageData.Position = 0;
-                content.Add(new ByteArrayContent(imageData.ToArray()), "image", _request.ImageName);
-            }
+                content.Add(new ByteArrayContent(_request.Image.ToArray()), "image", _request.ImageName);
             if (_request.Mask != null)
-            {
-                using var maskData = new MemoryStream();
-                await _request.Mask.CopyToAsync(maskData, cancellationToken);
-                maskData.Position = 0;
-                content.Add(new ByteArrayContent(maskData.ToArray()), "mask", _request.MaskName);
-            }
+                content.Add(new ByteArrayContent(_request.Mask.ToArray()), "mask", _request.MaskName);
             if (_request.Prompt != null)
                 content.Add(new StringContent(_request.Prompt), "prompt");
             if (_request.NumberOfResults != null)
@@ -132,6 +140,7 @@ namespace Rystem.OpenAi.Image
             mask.CopyTo(memoryStream);
             _request.Mask = memoryStream;
             _request.MaskName = maskName;
+            _request.Mask.Position = 0;
             return this;
         }
         /// <summary>

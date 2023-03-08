@@ -14,10 +14,10 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         /// <summary>
-        /// The completions returned by the API.  Depending on your request, there may be 1 or many choices.
+        /// The chat returned by the API. Depending on your request, there may be 1 or many choices.
         /// </summary>
         [JsonPropertyName("choices")]
-        public List<ChatChoice>? Completions { get; set; }
+        public List<ChatChoice>? Choices { get; set; }
         /// <summary>
         /// API token usage as reported by the OpenAI API for this request
         /// </summary>

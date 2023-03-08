@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Dynamic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi.Image;
-using Rystem.OpenAi;
 
 namespace Rystem.OpenAi.Audio
 {
@@ -16,7 +16,7 @@ namespace Rystem.OpenAi.Audio
             {
                 var request = new AudioRequest()
                 {
-                    ModelId = AudioModelType.Whisper.ToModel().Id
+                    ModelId = AudioModelType.Whisper.ToModelId()
                 };
                 var memoryStream = new MemoryStream();
                 audio.CopyTo(memoryStream);
@@ -34,15 +34,15 @@ namespace Rystem.OpenAi.Audio
         /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranscriptAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
+            _request.ResponseFormat = ResponseFormatJson;
             using var content = new MultipartFormDataContent();
             if (_request.Audio != null)
             {
-                using var imageData = new MemoryStream();
-                await _request.Audio.CopyToAsync(imageData, cancellationToken);
-                imageData.Position = 0;
-                content.Add(new ByteArrayContent(imageData.ToArray()), "file", _request.AudioName);
+                var byteContent = new ByteArrayContent(_request.Audio.ToArray());
+                content.Add(byteContent, "file", _request.AudioName);
             }
+            if (_request.ModelId != null)
+                content.Add(new StringContent(_request.ModelId.ToString()), "model");
             if (_request.Prompt != null)
                 content.Add(new StringContent(_request.Prompt), "prompt");
             if (_request.ResponseFormat != null)
@@ -64,15 +64,12 @@ namespace Rystem.OpenAi.Audio
         /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
+            _request.ResponseFormat = ResponseFormatJson;
             using var content = new MultipartFormDataContent();
             if (_request.Audio != null)
-            {
-                using var imageData = new MemoryStream();
-                await _request.Audio.CopyToAsync(imageData, cancellationToken);
-                imageData.Position = 0;
-                content.Add(new ByteArrayContent(imageData.ToArray()), "file", _request.AudioName);
-            }
+                content.Add(new ByteArrayContent(_request.Audio.ToArray()), "file", _request.AudioName);
+            if (_request.ModelId != null)
+                content.Add(new StringContent(_request.ModelId.ToString()), "model");
             if (_request.Prompt != null)
                 content.Add(new StringContent(_request.Prompt), "prompt");
             if (_request.ResponseFormat != null)

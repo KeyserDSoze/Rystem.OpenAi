@@ -4,12 +4,12 @@ using System.Text.Json.Serialization;
 namespace Rystem.OpenAi.Edit
 {
     /// <summary>
-    /// Represents an embedding result returned by the Embedding API.  
+    /// Represents an edit result returned by the Edit API.  
     /// </summary>
     public class EditResult : ApiBaseResponse
     {
         /// <summary>
-        /// List of results of the embedding
+        /// List of results of the edit
         /// </summary>
         [JsonPropertyName("choices")]
         public List<EditChoice>? Choices { get; set; }

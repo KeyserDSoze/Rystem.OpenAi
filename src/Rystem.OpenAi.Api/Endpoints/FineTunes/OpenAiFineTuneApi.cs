@@ -15,8 +15,8 @@ namespace Rystem.OpenAi.FineTune
         }
         public FineTuneRequestBuilder Create(string trainingFileId)
             => new FineTuneRequestBuilder(_client, _configuration, trainingFileId);
-        public ValueTask<FineTuneResults> ListAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => _client.GetAsync<FineTuneResults>(_configuration.GetUri(OpenAi.FineTune, fineTuneId), cancellationToken);
+        public ValueTask<FineTuneResults> ListAsync(CancellationToken cancellationToken = default)
+            => _client.GetAsync<FineTuneResults>(_configuration.GetUri(OpenAi.FineTune, string.Empty), cancellationToken);
         public ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => _client.GetAsync<FineTuneResult>($"{_configuration.GetUri(OpenAi.FineTune, fineTuneId)}/{fineTuneId}", cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)

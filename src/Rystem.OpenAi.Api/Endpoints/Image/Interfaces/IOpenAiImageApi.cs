@@ -6,5 +6,6 @@ namespace Rystem.OpenAi.Image
     {
         ImageCreateRequestBuilder Generate(string prompt);
         ImageVariationRequestBuilder Variate(Stream image, string imageName = "image.png");
+        ImageVariationRequestBuilder VariateAndTransformInPng(Stream image, string imageName = "image.png");
     }
 }

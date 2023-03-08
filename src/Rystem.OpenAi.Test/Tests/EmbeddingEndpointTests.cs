@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Rystem.OpenAi;
 using Xunit;
 
-namespace Azure.OpenAi.Test
+namespace Rystem.OpenAi.Test
 {
     public class EmbeddingEndpointTests
     {
@@ -18,7 +18,10 @@ namespace Azure.OpenAi.Test
         {
             Assert.NotNull(_openAiApi.Embedding);
 
-            var results = await _openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
+            var results = await _openAiApi.Embedding
+                .Request("A test text for embedding")
+                .ExecuteAsync();
+
             Assert.NotNull(results);
             if (results.CreatedUnixTime.HasValue)
             {

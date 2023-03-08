@@ -4,9 +4,8 @@ using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
-namespace Rystem.OpenAi.File
+namespace Rystem.OpenAi.Files
 {
     internal sealed class OpenAiFileApi : IOpenAiFileApi
     {

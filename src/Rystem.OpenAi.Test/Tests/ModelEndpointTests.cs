@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
-using Rystem.OpenAi;
 using Xunit;
 
-namespace Azure.OpenAi.Test
+namespace Rystem.OpenAi.Test
 {
     public class ModelEndpointTests
     {
