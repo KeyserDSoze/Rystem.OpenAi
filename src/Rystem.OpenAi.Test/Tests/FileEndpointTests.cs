@@ -28,19 +28,26 @@ namespace Rystem.OpenAi.Test
 
             var results = await _openAiApi.File
                 .AllAsync();
+            foreach (var result in results)
+                await _openAiApi.File.DeleteAsync(result.Id);
+            results = await _openAiApi.File
+               .AllAsync();
             Assert.Empty(results);
 
             var uploadResult = await _openAiApi.File
                 .UploadFileAsync(editableFile, name);
 
-            Assert.True(uploadResult.Created > DateTime.UtcNow);
+            Assert.True(uploadResult.Id.Length > 10);
+            Assert.Contains("file", uploadResult.Id);
 
             results = await _openAiApi.File
                 .AllAsync();
             Assert.NotEmpty(results);
 
+
             var retrieve = await _openAiApi.File.RetrieveAsync(uploadResult.Id);
             Assert.NotNull(retrieve);
+            Assert.Equal("data-test-file.jsonl", retrieve.Name);
 
             var contentRetrieve = await _openAiApi.File.RetrieveFileContentAsStringAsync(uploadResult.Id);
             Assert.Contains("type for", contentRetrieve);
