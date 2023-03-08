@@ -1,4 +1,4 @@
-# C#/.NET SDK for accessing the OpenAI GPT-3 API
+﻿# C#/.NET SDK for accessing the OpenAI GPT-3 API
 
 A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s GPT-3 API.
 
@@ -173,7 +173,7 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             .WithTemperature(0.5)
             .ExecuteAsync();
 
-## Images
+## Images [📖](#documentation)
 Given a prompt and/or an input image, the model will generate a new image.
 You may find more details [here](https://platform.openai.com/docs/api-reference/images),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ImageEndpointTests.cs) samples from unit test.

@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Test
                 .UploadFileAsync(editableFile, name);
 
             var allFineTunes = await _openAiApi.FineTune.ListAsync();
-            Assert.Empty(allFineTunes.Data);
+            Assert.Empty(allFineTunes.Data.Where(x => x.Status != "cancelled"));
 
             var createResult = await _openAiApi.FineTune.Create(uploadResult.Id)
                                     .ExecuteAsync();

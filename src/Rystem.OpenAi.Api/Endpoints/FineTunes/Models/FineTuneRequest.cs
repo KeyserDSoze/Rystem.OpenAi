@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("compute_classification_metrics")]
         public bool ComputeClassificationMetrics { get; set; }
         [JsonPropertyName("classification_n_classes")]
-        public int ClassificationNClasses { get; set; }
+        public int? ClassificationNClasses { get; set; }
         [JsonPropertyName("classification_positive_class")]
         public string? ClassificationPositiveClass { get; set; }
         [JsonPropertyName("classification_betas")]

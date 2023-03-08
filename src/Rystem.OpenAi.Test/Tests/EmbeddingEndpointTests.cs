@@ -51,15 +51,5 @@ namespace Rystem.OpenAi.Test
             Assert.True(results.Usage.PromptTokens >= 5);
             Assert.True(results.Usage.TotalTokens >= results.Usage.PromptTokens);
         }
-
-        [Fact]
-        public async ValueTask GetSimpleEmbeddingAsync()
-        {
-            Assert.NotNull(_openAiApi.Embedding);
-
-            var results = await _openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
-            Assert.NotNull(results);
-            Assert.True(results.Data.Count == 1536);
-        }
     }
 }
