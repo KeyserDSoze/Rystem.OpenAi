@@ -21,8 +21,8 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(_openAiApi.Image);
 
             var response = await _openAiApi.Image
-                .Generate("A cute baby sea otter")
-                .WithSize(ImageSize.Small)
+                .Generate("Create a captive logo with ice and fire for my brand Rystem")
+                .WithSize(ImageSize.Large)
                 .ExecuteAsync();
 
             var uri = response.Data.FirstOrDefault();

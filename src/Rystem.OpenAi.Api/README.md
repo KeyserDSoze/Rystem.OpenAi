@@ -9,7 +9,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 ## Help the project
 
 ### Contribute: https://www.buymeacoffee.com/keyserdsoze
-
+### Contribute: https://patreon.com/Rystem
 
 
 ## Requirements
