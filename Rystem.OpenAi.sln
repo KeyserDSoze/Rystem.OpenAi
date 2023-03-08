@@ -16,6 +16,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.Test", "src\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.WebApp", "src\Rystem.OpenAi.WebApp\Rystem.OpenAi.WebApp.csproj", "{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.Test.Azure", "src\Rystem.OpenAi.Test.Azure\Rystem.OpenAi.Test.Azure.csproj", "{8439B6B8-0862-4513-941E-42CB9DB80301}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{81D7540F-CC23-4DFC-BA00-6B4B63E66696}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,9 +38,18 @@ Global
 		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8439B6B8-0862-4513-941E-42CB9DB80301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8439B6B8-0862-4513-941E-42CB9DB80301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8439B6B8-0862-4513-941E-42CB9DB80301}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8439B6B8-0862-4513-941E-42CB9DB80301}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
+		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
+		{8439B6B8-0862-4513-941E-42CB9DB80301} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B777EEAE-3674-4FF8-B32A-5039FFFD6AF0}
