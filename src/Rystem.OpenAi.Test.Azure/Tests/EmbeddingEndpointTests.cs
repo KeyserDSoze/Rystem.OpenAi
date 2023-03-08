@@ -20,6 +20,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await _openAiApi.Embedding
                 .Request("A test text for embedding")
+                .WithModel("Embedding")
                 .ExecuteAsync();
 
             Assert.NotNull(results);
@@ -44,7 +45,9 @@ namespace Rystem.OpenAi.Test
         {
             Assert.NotNull(_openAiApi.Embedding);
 
-            var results = await _openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
+            var results = await _openAiApi.Embedding.Request("A test text for embedding")
+                .WithModel("Embedding")
+                .ExecuteAsync();
             Assert.NotNull(results);
 
             Assert.NotNull(results.Usage);

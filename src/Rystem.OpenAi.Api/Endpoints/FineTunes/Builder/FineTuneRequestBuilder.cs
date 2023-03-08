@@ -22,7 +22,7 @@ namespace Rystem.OpenAi.FineTune
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<FineTuneResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAi.FineTune, _request.TrainingFile!), _request, cancellationToken);
+            => _client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAi.FineTune, _request.TrainingFile!, _forced), _request, cancellationToken);
         /// <summary>
         /// The ID of an uploaded file that contains validation data.
         /// If you provide this file, the data is used to generate validation metrics periodically during fine-tuning. These metrics can be viewed in the <see href="https://platform.openai.com/docs/guides/fine-tuning/analyzing-your-fine-tuned-model">fine-tuning results file</see>. Your train and validation data should be mutually exclusive.
@@ -39,11 +39,12 @@ namespace Rystem.OpenAi.FineTune
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public FineTuneRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
         /// <summary>

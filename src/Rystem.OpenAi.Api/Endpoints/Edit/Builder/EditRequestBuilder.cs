@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Edit
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EditResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<EditResult>(_configuration.GetUri(OpenAi.Edit, _request.ModelId!), _request, cancellationToken);
+            => _client.PostAsync<EditResult>(_configuration.GetUri(OpenAi.Edit, _request.ModelId!, _forced), _request, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>
@@ -39,11 +39,12 @@ namespace Rystem.OpenAi.Edit
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public EditRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
         /// <summary>

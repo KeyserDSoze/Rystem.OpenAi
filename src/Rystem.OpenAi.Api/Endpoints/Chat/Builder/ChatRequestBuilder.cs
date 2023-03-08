@@ -28,7 +28,7 @@ namespace Rystem.OpenAi.Chat
         public ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = false;
-            return _client.PostAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!), _request, cancellationToken);
+            return _client.PostAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!, _forced), _request, cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -37,7 +37,7 @@ namespace Rystem.OpenAi.Chat
         public IAsyncEnumerable<ChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = true;
-            return _client.StreamAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!), _request, HttpMethod.Post, cancellationToken);
+            return _client.StreamAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!, _forced), _request, HttpMethod.Post, cancellationToken);
         }
         /// <summary>
         /// Add a message to the request
@@ -71,11 +71,12 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
         /// <summary>

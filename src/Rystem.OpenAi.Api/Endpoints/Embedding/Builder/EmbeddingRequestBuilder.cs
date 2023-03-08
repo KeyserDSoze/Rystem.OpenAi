@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Embedding
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<EmbeddingResult>(_configuration.GetUri(OpenAi.Embedding,_request.ModelId!), _request, cancellationToken);
+            => _client.PostAsync<EmbeddingResult>(_configuration.GetUri(OpenAi.Embedding,_request.ModelId!, _forced), _request, cancellationToken);
         /// <summary>
         /// Add further input to the request.
         /// </summary>
@@ -61,11 +61,12 @@ namespace Rystem.OpenAi.Embedding
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public EmbeddingRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
         /// <summary>

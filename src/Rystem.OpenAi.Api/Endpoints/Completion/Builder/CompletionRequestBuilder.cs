@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Completion
         public ValueTask<CompletionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = false;
-            return _client.PostAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!), _request, cancellationToken);
+            return _client.PostAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!, _forced), _request, cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Completion
         {
             _request.Stream = true;
             _request.BestOf = null;
-            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!), _request, HttpMethod.Post, cancellationToken);
+            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!, _forced), _request, HttpMethod.Post, cancellationToken);
         }
         /// <summary>
         /// Add further prompt to the request.
@@ -78,11 +78,12 @@ namespace Rystem.OpenAi.Completion
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
         /// <summary>

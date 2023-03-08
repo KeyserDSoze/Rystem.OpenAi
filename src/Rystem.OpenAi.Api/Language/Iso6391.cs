@@ -193,190 +193,192 @@ namespace Rystem.OpenAi
         private static readonly Dictionary<Language, string> s_languages = LoadLanguages();
         private static Dictionary<Language, string> LoadLanguages()
         {
-            var languages = new Dictionary<Language, string>();
-            languages.Add(Language.Abkhazian, "ab");
-            languages.Add(Language.Afar, "aa");
-            languages.Add(Language.Afrikaans, "af");
-            languages.Add(Language.Akan, "ak");
-            languages.Add(Language.Albanian, "sq");
-            languages.Add(Language.Amharic, "am");
-            languages.Add(Language.Arabic, "ar");
-            languages.Add(Language.Aragonese, "an");
-            languages.Add(Language.Armenian, "hy");
-            languages.Add(Language.Assamese, "as");
-            languages.Add(Language.Avaric, "av");
-            languages.Add(Language.Avestan, "ae");
-            languages.Add(Language.Aymara, "ay");
-            languages.Add(Language.Azerbaijani, "az");
-            languages.Add(Language.Bambara, "bm");
-            languages.Add(Language.Bashkir, "ba");
-            languages.Add(Language.Basque, "eu");
-            languages.Add(Language.Belarusian, "be");
-            languages.Add(Language.Bengali, "bn");
-            languages.Add(Language.Bislama, "bi");
-            languages.Add(Language.Bosnian, "bs");
-            languages.Add(Language.Breton, "br");
-            languages.Add(Language.Bulgarian, "bg");
-            languages.Add(Language.Burmese, "my");
-            languages.Add(Language.Catalan, "ca");
-            languages.Add(Language.Chamorro, "ch");
-            languages.Add(Language.Chechen, "ce");
-            languages.Add(Language.Chichewa, "ny");
-            languages.Add(Language.Chinese, "zh");
-            languages.Add(Language.ChurchSlavonic, "cu");
-            languages.Add(Language.Chuvash, "cv");
-            languages.Add(Language.Cornish, "kw");
-            languages.Add(Language.Corsican, "co");
-            languages.Add(Language.Cree, "cr");
-            languages.Add(Language.Croatian, "hr");
-            languages.Add(Language.Czech, "cs");
-            languages.Add(Language.Danish, "da");
-            languages.Add(Language.Divehi, "dv");
-            languages.Add(Language.Dutch, "nl");
-            languages.Add(Language.Dzongkha, "dz");
-            languages.Add(Language.English, "en");
-            languages.Add(Language.Esperanto, "eo");
-            languages.Add(Language.Estonian, "et");
-            languages.Add(Language.Ewe, "ee");
-            languages.Add(Language.Faroese, "fo");
-            languages.Add(Language.Fijian, "fj");
-            languages.Add(Language.Finnish, "fi");
-            languages.Add(Language.French, "fr");
-            languages.Add(Language.WesternFrisian, "fy");
-            languages.Add(Language.Fulah, "ff");
-            languages.Add(Language.Gaelic, "gd");
-            languages.Add(Language.Galician, "gl");
-            languages.Add(Language.Ganda, "lg");
-            languages.Add(Language.Georgian, "ka");
-            languages.Add(Language.German, "de");
-            languages.Add(Language.ModernGreek, "el");
-            languages.Add(Language.Kalaallisut, "kl");
-            languages.Add(Language.Guarani, "gn");
-            languages.Add(Language.Gujarati, "gu");
-            languages.Add(Language.Haitian, "ht");
-            languages.Add(Language.Hausa, "ha");
-            languages.Add(Language.Hebrew, "he");
-            languages.Add(Language.Herero, "hz");
-            languages.Add(Language.Hindi, "hi");
-            languages.Add(Language.HiriMotu, "ho");
-            languages.Add(Language.Hungarian, "hu");
-            languages.Add(Language.Icelandic, "is");
-            languages.Add(Language.Ido, "io");
-            languages.Add(Language.Igbo, "ig");
-            languages.Add(Language.Indonesian, "id");
-            languages.Add(Language.Interlingua, "ia");
-            languages.Add(Language.InterlinguaOccidental, "ie");
-            languages.Add(Language.Inuktitut, "iu");
-            languages.Add(Language.Inupiaq, "ik");
-            languages.Add(Language.Irish, "ga");
-            languages.Add(Language.Italian, "it");
-            languages.Add(Language.Japanese, "ja");
-            languages.Add(Language.Javanese, "jv");
-            languages.Add(Language.Kannada, "kn");
-            languages.Add(Language.Kanuri, "kr");
-            languages.Add(Language.Kashmiri, "ks");
-            languages.Add(Language.Kazakh, "kk");
-            languages.Add(Language.CentralKhmer, "km");
-            languages.Add(Language.Kikuyu, "ki");
-            languages.Add(Language.Kinyarwanda, "rw");
-            languages.Add(Language.Kirghiz, "ky");
-            languages.Add(Language.Komi, "kv");
-            languages.Add(Language.Kongo, "kg");
-            languages.Add(Language.Korean, "ko");
-            languages.Add(Language.Kuanyama, "kj");
-            languages.Add(Language.Kurdish, "ku");
-            languages.Add(Language.Lao, "lo");
-            languages.Add(Language.Latin, "la");
-            languages.Add(Language.Latvian, "lv");
-            languages.Add(Language.Limburgan, "li");
-            languages.Add(Language.Lingala, "ln");
-            languages.Add(Language.Lithuanian, "lt");
-            languages.Add(Language.LubaKatanga, "lu");
-            languages.Add(Language.Luxembourgish, "lb");
-            languages.Add(Language.Macedonian, "mk");
-            languages.Add(Language.Malagasy, "mg");
-            languages.Add(Language.Malay, "ms");
-            languages.Add(Language.Malayalam, "ml");
-            languages.Add(Language.Maltese, "mt");
-            languages.Add(Language.Manx, "gv");
-            languages.Add(Language.Maori, "mi");
-            languages.Add(Language.Marathi, "mr");
-            languages.Add(Language.Marshallese, "mh");
-            languages.Add(Language.Mongolian, "mn");
-            languages.Add(Language.Nauru, "na");
-            languages.Add(Language.NavajoNavaho, "nv");
-            languages.Add(Language.NorthNdebele, "nd");
-            languages.Add(Language.SouthNdebele, "nr");
-            languages.Add(Language.Ndonga, "ng");
-            languages.Add(Language.Nepali, "ne");
-            languages.Add(Language.Norwegian, "no");
-            languages.Add(Language.NorwegianBokmål, "nb");
-            languages.Add(Language.NorwegianNynorsk, "nn");
-            languages.Add(Language.SichuanYiNuosu, "ii");
-            languages.Add(Language.Occitan, "oc");
-            languages.Add(Language.Ojibwa, "oj");
-            languages.Add(Language.Oriya, "or");
-            languages.Add(Language.Oromo, "om");
-            languages.Add(Language.Ossetian, "os");
-            languages.Add(Language.Pali, "pi");
-            languages.Add(Language.Pashto, "ps");
-            languages.Add(Language.Persian, "fa");
-            languages.Add(Language.Polish, "pl");
-            languages.Add(Language.Portuguese, "pt");
-            languages.Add(Language.Punjabi, "pa");
-            languages.Add(Language.Quechua, "qu");
-            languages.Add(Language.Romanian, "ro");
-            languages.Add(Language.Romansh, "rm");
-            languages.Add(Language.Rundi, "rn");
-            languages.Add(Language.Russian, "ru");
-            languages.Add(Language.NorthernSami, "se");
-            languages.Add(Language.Samoan, "sm");
-            languages.Add(Language.Sango, "sg");
-            languages.Add(Language.Sanskrit, "sa");
-            languages.Add(Language.Sardinian, "sc");
-            languages.Add(Language.Serbian, "sr");
-            languages.Add(Language.Shona, "sn");
-            languages.Add(Language.Sindhi, "sd");
-            languages.Add(Language.Sinhala, "si");
-            languages.Add(Language.Slovak, "sk");
-            languages.Add(Language.Slovenian, "sl");
-            languages.Add(Language.Somali, "so");
-            languages.Add(Language.SouthernSotho, "st");
-            languages.Add(Language.Spanish, "es");
-            languages.Add(Language.Sundanese, "su");
-            languages.Add(Language.Swahili, "sw");
-            languages.Add(Language.Swati, "ss");
-            languages.Add(Language.Swedish, "sv");
-            languages.Add(Language.Tagalog, "tl");
-            languages.Add(Language.Tahitian, "ty");
-            languages.Add(Language.Tajik, "tg");
-            languages.Add(Language.Tamil, "ta");
-            languages.Add(Language.Tatar, "tt");
-            languages.Add(Language.Telugu, "te");
-            languages.Add(Language.Thai, "th");
-            languages.Add(Language.Tibetan, "bo");
-            languages.Add(Language.Tigrinya, "ti");
-            languages.Add(Language.Tonga, "to");
-            languages.Add(Language.Tsonga, "ts");
-            languages.Add(Language.Tswana, "tn");
-            languages.Add(Language.Turkish, "tr");
-            languages.Add(Language.Turkmen, "tk");
-            languages.Add(Language.Twi, "tw");
-            languages.Add(Language.Uighur, "ug");
-            languages.Add(Language.Ukrainian, "uk");
-            languages.Add(Language.Urdu, "ur");
-            languages.Add(Language.Uzbek, "uz");
-            languages.Add(Language.Venda, "ve");
-            languages.Add(Language.Vietnamese, "vi");
-            languages.Add(Language.Volapük, "vo");
-            languages.Add(Language.Walloon, "wa");
-            languages.Add(Language.Welsh, "cy");
-            languages.Add(Language.Wolof, "wo");
-            languages.Add(Language.Xhosa, "xh");
-            languages.Add(Language.Yiddish, "yi");
-            languages.Add(Language.Yoruba, "yo");
-            languages.Add(Language.Zhuang, "za");
-            languages.Add(Language.Zulu, "zu");
+            var languages = new Dictionary<Language, string>
+            {
+                { Language.Abkhazian, "ab" },
+                { Language.Afar, "aa" },
+                { Language.Afrikaans, "af" },
+                { Language.Akan, "ak" },
+                { Language.Albanian, "sq" },
+                { Language.Amharic, "am" },
+                { Language.Arabic, "ar" },
+                { Language.Aragonese, "an" },
+                { Language.Armenian, "hy" },
+                { Language.Assamese, "as" },
+                { Language.Avaric, "av" },
+                { Language.Avestan, "ae" },
+                { Language.Aymara, "ay" },
+                { Language.Azerbaijani, "az" },
+                { Language.Bambara, "bm" },
+                { Language.Bashkir, "ba" },
+                { Language.Basque, "eu" },
+                { Language.Belarusian, "be" },
+                { Language.Bengali, "bn" },
+                { Language.Bislama, "bi" },
+                { Language.Bosnian, "bs" },
+                { Language.Breton, "br" },
+                { Language.Bulgarian, "bg" },
+                { Language.Burmese, "my" },
+                { Language.Catalan, "ca" },
+                { Language.Chamorro, "ch" },
+                { Language.Chechen, "ce" },
+                { Language.Chichewa, "ny" },
+                { Language.Chinese, "zh" },
+                { Language.ChurchSlavonic, "cu" },
+                { Language.Chuvash, "cv" },
+                { Language.Cornish, "kw" },
+                { Language.Corsican, "co" },
+                { Language.Cree, "cr" },
+                { Language.Croatian, "hr" },
+                { Language.Czech, "cs" },
+                { Language.Danish, "da" },
+                { Language.Divehi, "dv" },
+                { Language.Dutch, "nl" },
+                { Language.Dzongkha, "dz" },
+                { Language.English, "en" },
+                { Language.Esperanto, "eo" },
+                { Language.Estonian, "et" },
+                { Language.Ewe, "ee" },
+                { Language.Faroese, "fo" },
+                { Language.Fijian, "fj" },
+                { Language.Finnish, "fi" },
+                { Language.French, "fr" },
+                { Language.WesternFrisian, "fy" },
+                { Language.Fulah, "ff" },
+                { Language.Gaelic, "gd" },
+                { Language.Galician, "gl" },
+                { Language.Ganda, "lg" },
+                { Language.Georgian, "ka" },
+                { Language.German, "de" },
+                { Language.ModernGreek, "el" },
+                { Language.Kalaallisut, "kl" },
+                { Language.Guarani, "gn" },
+                { Language.Gujarati, "gu" },
+                { Language.Haitian, "ht" },
+                { Language.Hausa, "ha" },
+                { Language.Hebrew, "he" },
+                { Language.Herero, "hz" },
+                { Language.Hindi, "hi" },
+                { Language.HiriMotu, "ho" },
+                { Language.Hungarian, "hu" },
+                { Language.Icelandic, "is" },
+                { Language.Ido, "io" },
+                { Language.Igbo, "ig" },
+                { Language.Indonesian, "id" },
+                { Language.Interlingua, "ia" },
+                { Language.InterlinguaOccidental, "ie" },
+                { Language.Inuktitut, "iu" },
+                { Language.Inupiaq, "ik" },
+                { Language.Irish, "ga" },
+                { Language.Italian, "it" },
+                { Language.Japanese, "ja" },
+                { Language.Javanese, "jv" },
+                { Language.Kannada, "kn" },
+                { Language.Kanuri, "kr" },
+                { Language.Kashmiri, "ks" },
+                { Language.Kazakh, "kk" },
+                { Language.CentralKhmer, "km" },
+                { Language.Kikuyu, "ki" },
+                { Language.Kinyarwanda, "rw" },
+                { Language.Kirghiz, "ky" },
+                { Language.Komi, "kv" },
+                { Language.Kongo, "kg" },
+                { Language.Korean, "ko" },
+                { Language.Kuanyama, "kj" },
+                { Language.Kurdish, "ku" },
+                { Language.Lao, "lo" },
+                { Language.Latin, "la" },
+                { Language.Latvian, "lv" },
+                { Language.Limburgan, "li" },
+                { Language.Lingala, "ln" },
+                { Language.Lithuanian, "lt" },
+                { Language.LubaKatanga, "lu" },
+                { Language.Luxembourgish, "lb" },
+                { Language.Macedonian, "mk" },
+                { Language.Malagasy, "mg" },
+                { Language.Malay, "ms" },
+                { Language.Malayalam, "ml" },
+                { Language.Maltese, "mt" },
+                { Language.Manx, "gv" },
+                { Language.Maori, "mi" },
+                { Language.Marathi, "mr" },
+                { Language.Marshallese, "mh" },
+                { Language.Mongolian, "mn" },
+                { Language.Nauru, "na" },
+                { Language.NavajoNavaho, "nv" },
+                { Language.NorthNdebele, "nd" },
+                { Language.SouthNdebele, "nr" },
+                { Language.Ndonga, "ng" },
+                { Language.Nepali, "ne" },
+                { Language.Norwegian, "no" },
+                { Language.NorwegianBokmål, "nb" },
+                { Language.NorwegianNynorsk, "nn" },
+                { Language.SichuanYiNuosu, "ii" },
+                { Language.Occitan, "oc" },
+                { Language.Ojibwa, "oj" },
+                { Language.Oriya, "or" },
+                { Language.Oromo, "om" },
+                { Language.Ossetian, "os" },
+                { Language.Pali, "pi" },
+                { Language.Pashto, "ps" },
+                { Language.Persian, "fa" },
+                { Language.Polish, "pl" },
+                { Language.Portuguese, "pt" },
+                { Language.Punjabi, "pa" },
+                { Language.Quechua, "qu" },
+                { Language.Romanian, "ro" },
+                { Language.Romansh, "rm" },
+                { Language.Rundi, "rn" },
+                { Language.Russian, "ru" },
+                { Language.NorthernSami, "se" },
+                { Language.Samoan, "sm" },
+                { Language.Sango, "sg" },
+                { Language.Sanskrit, "sa" },
+                { Language.Sardinian, "sc" },
+                { Language.Serbian, "sr" },
+                { Language.Shona, "sn" },
+                { Language.Sindhi, "sd" },
+                { Language.Sinhala, "si" },
+                { Language.Slovak, "sk" },
+                { Language.Slovenian, "sl" },
+                { Language.Somali, "so" },
+                { Language.SouthernSotho, "st" },
+                { Language.Spanish, "es" },
+                { Language.Sundanese, "su" },
+                { Language.Swahili, "sw" },
+                { Language.Swati, "ss" },
+                { Language.Swedish, "sv" },
+                { Language.Tagalog, "tl" },
+                { Language.Tahitian, "ty" },
+                { Language.Tajik, "tg" },
+                { Language.Tamil, "ta" },
+                { Language.Tatar, "tt" },
+                { Language.Telugu, "te" },
+                { Language.Thai, "th" },
+                { Language.Tibetan, "bo" },
+                { Language.Tigrinya, "ti" },
+                { Language.Tonga, "to" },
+                { Language.Tsonga, "ts" },
+                { Language.Tswana, "tn" },
+                { Language.Turkish, "tr" },
+                { Language.Turkmen, "tk" },
+                { Language.Twi, "tw" },
+                { Language.Uighur, "ug" },
+                { Language.Ukrainian, "uk" },
+                { Language.Urdu, "ur" },
+                { Language.Uzbek, "uz" },
+                { Language.Venda, "ve" },
+                { Language.Vietnamese, "vi" },
+                { Language.Volapük, "vo" },
+                { Language.Walloon, "wa" },
+                { Language.Welsh, "cy" },
+                { Language.Wolof, "wo" },
+                { Language.Xhosa, "xh" },
+                { Language.Yiddish, "yi" },
+                { Language.Yoruba, "yo" },
+                { Language.Zhuang, "za" },
+                { Language.Zulu, "zu" }
+            };
             return languages;
         }
         public static string ToIso639_1(this Language language)

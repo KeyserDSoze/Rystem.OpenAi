@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Moderation
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<ModerationsResponse> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<ModerationsResponse>(_configuration.GetUri(OpenAi.Moderation, _request.ModelId!), _request, cancellationToken);
+            => _client.PostAsync<ModerationsResponse>(_configuration.GetUri(OpenAi.Moderation, _request.ModelId!, _forced), _request, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>
@@ -37,11 +37,12 @@ namespace Rystem.OpenAi.Moderation
         /// <summary>
         /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.TextModerationStable"/>.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="modelId">Override with a custom model id</param>
         /// <returns>Builder</returns>
         public ModerationRequestBuilder WithModel(string modelId)
         {
             _request.ModelId = modelId;
+            _forced = true;
             return this;
         }
     }

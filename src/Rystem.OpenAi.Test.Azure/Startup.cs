@@ -18,10 +18,16 @@ namespace Rystem.OpenAi.Test
             });
         public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
         {
-            var apiKey = context.Configuration["OpenAi:ApiKey"];
+            var apiKey = context.Configuration["Azure:ApiKey"];
+            var resourceName = context.Configuration["Azure:ResourceName"];
             services.AddOpenAi(settings =>
             {
                 settings.ApiKey = apiKey;
+                settings.Azure.ResourceName = resourceName;
+                settings.Azure
+                    .AddDeploymentTextModel("Test", TextModelType.CurieText)
+                    .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+                    .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
             });
         }
     }

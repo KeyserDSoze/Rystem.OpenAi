@@ -9,6 +9,7 @@ namespace Rystem.OpenAi
         private protected readonly HttpClient _client;
         private protected readonly OpenAiConfiguration _configuration;
         private protected readonly T _request;
+        private protected bool _forced;
         private protected RequestBuilder(HttpClient client, OpenAiConfiguration configuration, Func<T> requestCreator)
         {
             _client = client;
