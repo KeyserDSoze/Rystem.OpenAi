@@ -64,6 +64,7 @@ Install-Package Rystem.OpenAi
   - [Retrieve Fine Tune](#retrieve-fine-tune)
   - [Cancel Fine Tune](#cancel-fine-tune)
   - [List Fine Tune Events](#list-fine-tune-events)
+  - [List Fine Tune Events As Stream](#List-fine-tune-events-as-stream)
   - [Delete Fine Tune](#delete-fine-tune-model)
 - [Moderations](#moderations)
   - [Create Moderation](#create-moderation)
@@ -334,6 +335,13 @@ Get fine-grained status updates for a fine-tune job.
     IOpenAiApi _openAiApi;
     var events = await _openAiApi.FineTune
                         .ListEventsAsync(fineTuneId);
+
+### List fine-tune events as stream
+Get fine-grained status updates for a fine-tune job.
+
+    IOpenAiApi _openAiApi;
+    var events = await _openAiApi.FineTune
+                        .ListEventsAsStreamAsync(fineTuneId);
 
 ### Delete fine-tune model
 Delete a fine-tuned model. You must have the Owner role in your organization.

@@ -69,12 +69,13 @@ namespace Rystem.OpenAi
         }
         private const string StartingWith = "data: ";
         private const string Done = "[DONE]";
-        internal static async IAsyncEnumerable<TResponse> PostStreamAsync<TResponse>(this HttpClient client,
+        internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClient client,
             string url,
             object? message,
+            HttpMethod httpMethod,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var response = await client.PrivatedExecuteAsync(url, HttpMethod.Post, message, true, cancellationToken);
+            var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
             string line;

@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Completion
         {
             _request.Stream = true;
             _request.BestOf = null;
-            return _client.PostStreamAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!), _request, cancellationToken);
+            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!), _request, HttpMethod.Post, cancellationToken);
         }
         /// <summary>
         /// Add further prompt to the request.

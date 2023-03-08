@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,5 +26,7 @@ namespace Rystem.OpenAi.FineTune
             => _client.GetAsync<FineTuneEventsResult>($"{_configuration.GetUri(OpenAi.FineTune, fineTuneId)}/{fineTuneId}/events", cancellationToken);
         public ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => _client.DeleteAsync<FineTuneDeleteResult>($"{_configuration.GetUri(OpenAi.Model, fineTuneId)}/{fineTuneId}", cancellationToken);
+        public IAsyncEnumerable<FineTuneEventsResult> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default)
+            => _client.StreamAsync<FineTuneEventsResult>(_configuration.GetUri(OpenAi.FineTune, string.Empty), null, HttpMethod.Get, cancellationToken);
     }
 }
