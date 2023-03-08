@@ -1,6 +1,6 @@
-﻿# C#/.NET SDK for accessing the OpenAI GPT-3 API
+﻿# C#/.NET SDK for accessing the OpenAI API
 
-A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s GPT-3 API.
+A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API.
 
 > This repository is available to transfer to the OpenAI organization if they choose to accept it.
 

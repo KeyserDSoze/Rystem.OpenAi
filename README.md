@@ -1,6 +1,6 @@
-# C#/.NET SDK for accessing the OpenAI GPT-3 API
+﻿# C#/.NET SDK for accessing the OpenAI API
 
-A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s GPT-3 API.
+A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API.
 
 > This repository is available to transfer to the OpenAI organization if they choose to accept it.
 
@@ -52,7 +52,7 @@ Install-Package Rystem.OpenAi
 - [Audio](#audio)
   - [Create Transcription](#create-transcription)
   - [Create Translation](#create-translation)
-- [Files](#files)
+- [File](#file)
   - [List Files](#list-files)
   - [Upload File](#upload-file)
   - [Delete File](#delete-file)
@@ -92,7 +92,8 @@ You still may add a custom model, with AddDeploymentCustomModel.
     });
 
 ## Models
-List and describe the various models available in the API. You can refer to the [Models documentation](https://platform.openai.com/docs/models/overview) to understand what models are available and the differences between them.
+[📖 Back to summary](#documentation)\
+List and describe the various models available in the API. You can refer to the [Models documentation](https://platform.openai.com/docs/models/overview) to understand what models are available and the differences between them.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/models),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ModelEndpointTests.cs) samples from unit test.
 
@@ -110,7 +111,8 @@ Retrieves a model instance, providing basic information about the model such as 
 
 
 ## Completions
-Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+[📖 Back to summary](#documentation)\
+Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/completions),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/CompletionEndpointTests.cs) samples from unit test
 
@@ -136,7 +138,8 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             }
 
 ## Chat
-Given a chat conversation, the model will return a chat completion response.
+[📖 Back to summary](#documentation)\
+Given a chat conversation, the model will return a chat completion response.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/chat),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ChatEndpointTests.cs) samples from unit test.
 
@@ -174,7 +177,8 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             .ExecuteAsync();
 
 ## Images
-Given a prompt and/or an input image, the model will generate a new image.
+[📖 Back to summary](#documentation)\
+Given a prompt and/or an input image, the model will generate a new image.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/images),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ImageEndpointTests.cs) samples from unit test.
 
@@ -221,7 +225,8 @@ Creates a variation of a given image.
         .ExecuteAsync();
 
 ## Embeddings
-Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+[📖 Back to summary](#documentation)\
+Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/embeddings),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/EmbeddingEndpointTests.cs) samples from unit test.
 
@@ -235,6 +240,7 @@ Creates an embedding vector representing the input text.
         .ExecuteAsync();
 
 ## Audio
+[📖 Back to summary](#documentation)\
 You may find more details [here](https://platform.openai.com/docs/api-reference/audio),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/AudioEndpointTests.cs) samples from unit test.
 
@@ -254,8 +260,9 @@ Translates audio into into English.
         .Request(editableFile, "default.mp3")
         .TranslateAsync();
 
-## Files
-Files are used to upload documents that can be used with features like Fine-tuning.
+## File
+[📖 Back to summary](#documentation)\
+Files are used to upload documents that can be used with features like Fine-tuning.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/files),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/FileEndpointTests.cs) samples from unit test.
 
@@ -295,7 +302,8 @@ Returns the contents of the specified file
             .RetrieveFileContentAsStringAsync(uploadResult.Id);
 
 ## Fine-Tunes
-Manage fine-tuning jobs to tailor a model to your specific training data.
+[📖 Back to summary](#documentation)\
+Manage fine-tuning jobs to tailor a model to your specific training data.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/fine-tunes),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/FineTuneEndpointTests.cs) samples from unit test.
 
@@ -351,7 +359,8 @@ Delete a fine-tuned model. You must have the Owner role in your organization.
         .DeleteAsync(fileId);
 
 ## Moderations
-Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+[📖 Back to summary](#documentation)\
+Given a input text, outputs if the model classifies it as violating OpenAI's content policy.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/moderations),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ModerationEndpointTests.cs) samples from unit test.
 
