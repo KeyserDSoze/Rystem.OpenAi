@@ -174,7 +174,7 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             .ExecuteAsync();
 
 ## Images
-[📖 Back to summary](#documentation)
+[📖 Back to summary](#documentation)\
 Given a prompt and/or an input image, the model will generate a new image.
 You may find more details [here](https://platform.openai.com/docs/api-reference/images),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ImageEndpointTests.cs) samples from unit test.
