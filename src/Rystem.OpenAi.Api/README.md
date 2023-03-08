@@ -173,7 +173,8 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             .WithTemperature(0.5)
             .ExecuteAsync();
 
-## Images [📖](#documentation)
+## Images
+[📖 Back to summary](#documentation)
 Given a prompt and/or an input image, the model will generate a new image.
 You may find more details [here](https://platform.openai.com/docs/api-reference/images),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ImageEndpointTests.cs) samples from unit test.
@@ -221,6 +222,7 @@ Creates a variation of a given image.
         .ExecuteAsync();
 
 ## Embeddings
+[📖 Back to summary](#documentation)
 Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
 You may find more details [here](https://platform.openai.com/docs/api-reference/embeddings),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/EmbeddingEndpointTests.cs) samples from unit test.
@@ -235,6 +237,7 @@ Creates an embedding vector representing the input text.
         .ExecuteAsync();
 
 ## Audio
+[📖 Back to summary](#documentation)
 You may find more details [here](https://platform.openai.com/docs/api-reference/audio),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/AudioEndpointTests.cs) samples from unit test.
 
