@@ -52,7 +52,7 @@ Install-Package Rystem.OpenAi
 - [Audio](#audio)
   - [Create Transcription](#create-transcription)
   - [Create Translation](#create-translation)
-- [Files](#files)
+- [File](#file)
   - [List Files](#list-files)
   - [Upload File](#upload-file)
   - [Delete File](#delete-file)
@@ -260,7 +260,7 @@ Translates audio into into English.
         .Request(editableFile, "default.mp3")
         .TranslateAsync();
 
-## Files
+## File
 [📖 Back to summary](#documentation)\
 Files are used to upload documents that can be used with features like Fine-tuning.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/files),
