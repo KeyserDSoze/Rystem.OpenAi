@@ -252,7 +252,7 @@ Transcribes audio into the input language.
         .TranscriptAsync();
 
 ### Create Translation
-Translates audio into into English.
+Translates audio into English.
 
     IOpenAiApi _openAiApi;
     var results = await _openAiApi.Audio
