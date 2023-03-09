@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(_openAiApi.Image);
 
             var response = await _openAiApi.Image
-                .Generate("Create a captive logo with ice and fire for my brand Rystem")
+                .Generate("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.")
                 .WithSize(ImageSize.Large)
                 .ExecuteAsync();
 
