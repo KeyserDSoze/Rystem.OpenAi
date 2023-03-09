@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using Rystem.OpenAi.Completion;
 @using global::Rystem.OpenAi;
 @using global::Rystem.OpenAi;
 
@@ -8,14 +9,9 @@
 
 Welcome to your new app.
 
-@if (_models != null)
+@if (_result != null)
 {
-    @foreach (var model in _models)
-    {
-        <div>@model.Id</div>
-        <div>@model.Object</div>
-        <div>@model.OwnedBy</div>
-    }
+    <div>@_result.Completions[0].Text</div>
 }
 
 
@@ -24,10 +20,16 @@ Welcome to your new app.
 @code {
     [Inject]
     public IOpenAiApi Api { get; set; }
-    
-    private List<Model> _models;
+
+    private CompletionResult _result;
     protected override async Task OnParametersSetAsync()
     {
+        _result = await Api.Completion
+                 .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
+                 .WithModel(TextModelType.CurieText)
+                 .WithTemperature(0.1)
+                 .SetMaxTokens(5)
+                 .ExecuteAsync();
         //_models = await Api.Model.ListAsync();
         //await base.OnParametersSetAsync();
     }

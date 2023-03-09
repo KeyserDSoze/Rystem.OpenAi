@@ -1,26 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Identity.Client;
 
 namespace Rystem.OpenAi
 {
-    public enum OpenAi
-    {
-        Completion,
-        Chat,
-        Edit,
-        Embedding,
-        File,
-        FineTune,
-        Model,
-        Moderation,
-        Image,
-        AudioTranscription,
-        AudioTranslation
-    }
     public sealed class OpenAiConfiguration
     {
         private const string Forced = nameof(Forced);
-        public Func<OpenAi, string, bool, string> GetUri { get; }
+        public Func<OpenAiType, string, bool, string> GetUri { get; }
+        public Func<HttpClient, Task>? BeforeRequest { get; }
+        public bool NeedClientEnrichment => BeforeRequest != null;
+        public Task EnrichClientAsync(HttpClient client)
+        {
+            if (BeforeRequest != null)
+                return BeforeRequest.Invoke(client);
+            else
+                return Task.CompletedTask;
+        }
         internal OpenAiConfiguration(OpenAiSettings settings)
         {
             var uri = $"{{1}}/{{0}}";
@@ -36,27 +37,56 @@ namespace Rystem.OpenAi
             var audioTranscriptionUri = string.Format(uri, "audio/transcriptions", "{0}");
             var audioTranslationUri = string.Format(uri, "audio/translations", "{0}");
 
+            var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
             if (settings.Azure.HasConfiguration)
             {
-                var uris = new Dictionary<string, string>();
-                if (settings.Azure.Deployments.Count < 1)
-                    throw new ArgumentNullException($"When you set an Azure resource name you have to add at least one {nameof(OpenAiSettings.Azure.Deployments)} in configuration setup. Go to Model deployments blade in your Open Ai Azure resource.");
+                if (settings.Azure.HasManagedIdentity)
+                {
+                    var credential = settings.Azure.ManagedIdentity.UseDefault ?
+                        new DefaultAzureCredential() :
+                        new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                        {
+                            ManagedIdentityClientId = settings.Azure.ManagedIdentity.Id
+                        });
+                    BeforeRequest = async client =>
+                    {
+                        var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
+                    };
+                }
+                else if (settings.Azure.HasAppRegistration)
+                {
+                    var credential = ConfidentialClientApplicationBuilder.Create(settings.Azure.AppRegistration.ClientId)
+                        .WithClientSecret(settings.Azure.AppRegistration.ClientSecret)
+                        .WithAuthority(AadAuthorityAudience.AzureAdMyOrg, true)
+                        .WithTenantId(settings.Azure.AppRegistration.TenantId)
+                        .Build();
+                    BeforeRequest = async client =>
+                    {
+                        var accessToken = await credential
+                                            .AcquireTokenForClient(scopes)
+                                            .ExecuteAsync();
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);
+                    };
+                }
 
+                var uris = new Dictionary<string, string>();
                 settings.Version ??= "2022-12-01";
                 settings.Azure.Deployments.Add("{0}", Forced);
+
                 foreach (var deployment in settings.Azure.Deployments)
                 {
-                    uris.Add($"{deployment.Value}_{OpenAi.Completion}", $"{string.Format(completionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Chat}", $"{string.Format(chatUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Edit}", $"{string.Format(editUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Embedding}", $"{string.Format(embeddingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.File}", $"{string.Format(fileUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.FineTune}", $"{string.Format(fineTuneUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}/")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Model}", $"{string.Format(modelUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Moderation}", $"{string.Format(moderationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.Image}", $"{string.Format(imageUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.AudioTranscription}", $"{string.Format(audioTranscriptionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAi.AudioTranslation}", $"{string.Format(audioTranslationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Completion}", $"{string.Format(completionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(chatUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Edit}", $"{string.Format(editUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(embeddingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.File}", $"{string.Format(fileUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.FineTune}", $"{string.Format(fineTuneUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}/")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Model}", $"{string.Format(modelUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(moderationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(imageUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(audioTranscriptionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(audioTranslationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
                 }
 
                 GetUri = (type, modelId, forceModel) =>
@@ -89,28 +119,28 @@ namespace Rystem.OpenAi
                 {
                     switch (type)
                     {
-                        case OpenAi.AudioTranscription:
+                        case OpenAiType.AudioTranscription:
                             return audioTranscriptionUri;
-                        case OpenAi.AudioTranslation:
+                        case OpenAiType.AudioTranslation:
                             return audioTranslationUri;
-                        case OpenAi.Completion:
+                        case OpenAiType.Completion:
                             return completionUri;
-                        case OpenAi.Edit:
+                        case OpenAiType.Edit:
                             return editUri;
-                        case OpenAi.Moderation:
+                        case OpenAiType.Moderation:
                             return moderationUri;
-                        case OpenAi.Image:
+                        case OpenAiType.Image:
                             return imageUri;
-                        case OpenAi.Embedding:
+                        case OpenAiType.Embedding:
                             return embeddingUri;
-                        case OpenAi.Chat:
+                        case OpenAiType.Chat:
                             return chatUri;
-                        case OpenAi.File:
+                        case OpenAiType.File:
                             return fileUri;
-                        case OpenAi.FineTune:
+                        case OpenAiType.FineTune:
                             return fineTuneUri;
                         default:
-                        case OpenAi.Model:
+                        case OpenAiType.Model:
                             return modelUri;
                     }
                 };

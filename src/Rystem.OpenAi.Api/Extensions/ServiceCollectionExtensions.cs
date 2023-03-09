@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Polly;
+using Polly.Extensions.Http;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
@@ -10,10 +12,7 @@ using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
-using Rystem.OpenAi;
 using Rystem.OpenAi.Moderation;
-using Polly;
-using Polly.Extensions.Http;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -24,14 +23,17 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);
-            if (openAiSettings.ApiKey == null)
+            if (openAiSettings.ApiKey == null && !openAiSettings.Azure.HasAnotherKindOfAuthentication)
                 throw new ArgumentNullException($"{nameof(OpenAiSettings.ApiKey)} is empty.");
 
             services.AddSingleton(new OpenAiConfiguration(openAiSettings));
             var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
             {
                 if (openAiSettings.Azure.HasConfiguration)
-                    client.DefaultRequestHeaders.Add("api-key", openAiSettings.ApiKey);
+                {
+                    if (!openAiSettings.Azure.HasAnotherKindOfAuthentication)
+                        client.DefaultRequestHeaders.Add("api-key", openAiSettings.ApiKey);
+                }
                 else
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", openAiSettings.ApiKey);
                 if (!string.IsNullOrEmpty(openAiSettings.OrganizationName))

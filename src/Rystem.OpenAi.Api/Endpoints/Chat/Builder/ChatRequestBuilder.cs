@@ -28,7 +28,7 @@ namespace Rystem.OpenAi.Chat
         public ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = false;
-            return _client.PostAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!, _forced), _request, cancellationToken);
+            return _client.PostAsync<ChatResult>(_configuration.GetUri(OpenAiType.Chat, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -37,7 +37,7 @@ namespace Rystem.OpenAi.Chat
         public IAsyncEnumerable<ChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = true;
-            return _client.StreamAsync<ChatResult>(_configuration.GetUri(OpenAi.Chat, _request.ModelId!, _forced), _request, HttpMethod.Post, cancellationToken);
+            return _client.StreamAsync<ChatResult>(_configuration.GetUri(OpenAiType.Chat, _request.ModelId!, _forced), _request, HttpMethod.Post, _configuration, cancellationToken);
         }
         /// <summary>
         /// Add a message to the request
