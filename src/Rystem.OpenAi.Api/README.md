@@ -34,6 +34,7 @@ Install-Package Rystem.OpenAi
 ### Table of Contents
 
 - [Dependency Injection](#dependency-injection)
+  - [Azure](#dependency-injection-with-azure)
 - [Models](#models)
   - [List Models](#list-models)
   - [Retrieve Models](#retrieve-model)
@@ -78,6 +79,8 @@ Install-Package Rystem.OpenAi
         settings.ApiKey = apiKey;
     });
 
+## Dependency Injection With Azure
+
 ### Add to service collection the OpenAi service in your DI with Azure integration
 When you want to use the integration with Azure, you need to specify all the models you're going to use. In the example you may find the model name for DavinciText3.
 You still may add a custom model, with AddDeploymentCustomModel.
@@ -88,6 +91,54 @@ You still may add a custom model, with AddDeploymentCustomModel.
         settings.Azure.ResourceName = "AzureResourceName (Name of your deployed service on Azure)";
         settings.Azure
             .AddDeploymentTextModel("Test (The name from column 'Model deployment name' in Model deployments blade in your Azure service)", TextModelType.DavinciText3);
+    });
+
+### Add to service collection the OpenAi service in your DI with Azure integration and app registration
+See how to create an app registration [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
+
+    var resourceName = builder.Configuration["Azure:ResourceName"];
+    var clientId = builder.Configuration["AzureAd:ClientId"];
+    var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+    var tenantId = builder.Configuration["AzureAd:TenantId"];
+    builder.Services.AddOpenAi(settings =>
+    {
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.AppRegistration.ClientId = clientId;
+        settings.Azure.AppRegistration.ClientSecret = clientSecret;
+        settings.Azure.AppRegistration.TenantId = tenantId;
+        settings.Azure
+            .AddDeploymentTextModel("Test", TextModelType.CurieText)
+            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+    });
+
+### Add to service collection the OpenAi service in your DI with Azure integration and system assigned managed identity
+See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+
+    var resourceName = builder.Configuration["Azure:ResourceName"];
+    builder.Services.AddOpenAi(settings =>
+    {
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.ManagedIdentity.UseDefault = true;
+        settings.Azure
+            .AddDeploymentTextModel("Test", TextModelType.CurieText)
+            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+    });
+
+### Add to service collection the OpenAi service in your DI with Azure integration and user assigned managed identity
+See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+
+    var resourceName = builder.Configuration["Azure:ResourceName"];
+    var managedIdentityId = builder.Configuration["ManagedIdentity:ClientId"];
+    builder.Services.AddOpenAi(settings =>
+    {
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.ManagedIdentity.Id = managedIdentityId;
+        settings.Azure
+            .AddDeploymentTextModel("Test", TextModelType.CurieText)
+            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
 
 ## Models
