@@ -20,10 +20,16 @@ namespace Rystem.OpenAi.Test
         {
             var apiKey = context.Configuration["Azure:ApiKey"];
             var resourceName = context.Configuration["Azure:ResourceName"];
+            var clientId = context.Configuration["AzureAd:ClientId"];
+            var clientSecret = context.Configuration["AzureAd:ClientSecret"];
+            var tenantId = context.Configuration["AzureAd:TenantId"];
             services.AddOpenAi(settings =>
             {
                 settings.ApiKey = apiKey;
                 settings.Azure.ResourceName = resourceName;
+                settings.Azure.AppRegistration.ClientId = clientId;
+                settings.Azure.AppRegistration.ClientSecret = clientSecret;
+                settings.Azure.AppRegistration.TenantId = tenantId;
                 settings.Azure
                     .AddDeploymentTextModel("Test", TextModelType.CurieText)
                     .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)

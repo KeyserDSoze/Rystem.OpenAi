@@ -22,7 +22,7 @@ namespace Rystem.OpenAi.FineTune
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<FineTuneResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAi.FineTune, _request.TrainingFile!, _forced), _request, cancellationToken);
+            => _client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAiType.FineTune, _request.TrainingFile!, _forced), _request, _configuration, cancellationToken);
         /// <summary>
         /// The ID of an uploaded file that contains validation data.
         /// If you provide this file, the data is used to generate validation metrics periodically during fine-tuning. These metrics can be viewed in the <see href="https://platform.openai.com/docs/guides/fine-tuning/analyzing-your-fine-tuned-model">fine-tuning results file</see>. Your train and validation data should be mutually exclusive.

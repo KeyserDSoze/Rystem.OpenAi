@@ -18,7 +18,7 @@ namespace Rystem.OpenAi
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
-        internal static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
+        private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
             string url,
             HttpMethod method,
             object? message,
@@ -49,20 +49,48 @@ namespace Rystem.OpenAi
                 throw new HttpRequestException(await response.Content.ReadAsStringAsync());
             }
         }
-        internal static async ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClient client, string url, CancellationToken cancellationToken)
+        internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClient client,
+            string url,
+            HttpMethod method,
+            object? message,
+            bool isStreaming,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
         {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
+            return await PrivatedExecuteAsync(client, url, method, message, isStreaming, cancellationToken);
+        }
+        internal static async ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClient client,
+            string url,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+        {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, HttpMethod.Delete, null, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
         }
-        internal static async ValueTask<TResponse> GetAsync<TResponse>(this HttpClient client, string url, CancellationToken cancellationToken)
+        internal static async ValueTask<TResponse> GetAsync<TResponse>(this HttpClient client,
+            string url,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
         {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, HttpMethod.Get, null, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
         }
-        internal static async ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client, string url, object? message, CancellationToken cancellationToken)
+        internal static async ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
         {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, HttpMethod.Post, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
@@ -73,8 +101,11 @@ namespace Rystem.OpenAi
             string url,
             object? message,
             HttpMethod httpMethod,
+            OpenAiConfiguration configuration,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);

@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Edit
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EditResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<EditResult>(_configuration.GetUri(OpenAi.Edit, _request.ModelId!, _forced), _request, cancellationToken);
+            => _client.PostAsync<EditResult>(_configuration.GetUri(OpenAiType.Edit, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

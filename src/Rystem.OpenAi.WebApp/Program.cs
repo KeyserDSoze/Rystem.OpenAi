@@ -1,4 +1,5 @@
-﻿using Rystem.OpenAi;
+﻿using Polly;
+using Rystem.OpenAi;
 using Rystem.OpenAi.WebApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,24 +9,31 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 var apiKey = builder.Configuration["OpenAi:ApiKey"];
-
+var resourceName = builder.Configuration["Azure:ResourceName"];
+var clientId = builder.Configuration["AzureAd:ClientId"];
+var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
+var tenantId = builder.Configuration["AzureAd:TenantId"];
+var managedIdentityId = builder.Configuration["ManagedIdentity:ClientId"];
 builder.Services.AddOpenAi(settings =>
 {
-    settings.ApiKey = apiKey;
-    settings.Azure.ResourceName = "AzureResourceNameFrom";
-    settings.Azure.AddDeploymentTextModel("Test", TextModelType.DavinciText3);
+    //settings.ApiKey = apiKey;
+    settings.Azure.ResourceName = resourceName;
+    //settings.Azure.AppRegistration.ClientId = clientId;
+    //settings.Azure.AppRegistration.ClientSecret = clientSecret;
+    //settings.Azure.AppRegistration.TenantId = tenantId;
+    settings.Azure.ManagedIdentity.Id = managedIdentityId;
+    //settings.Azure.ManagedIdentity.UseDefault = true;
+    settings.Azure
+        .AddDeploymentTextModel("Test", TextModelType.CurieText)
+        .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+        .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
 });
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+app.UseExceptionHandler("/Error");
+app.UseHsts();
 
 app.UseHttpsRedirection();
 

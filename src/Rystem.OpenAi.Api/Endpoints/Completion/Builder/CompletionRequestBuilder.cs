@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Completion
         public ValueTask<CompletionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _request.Stream = false;
-            return _client.PostAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!, _forced), _request, cancellationToken);
+            return _client.PostAsync<CompletionResult>(_configuration.GetUri(OpenAiType.Completion, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Completion
         {
             _request.Stream = true;
             _request.BestOf = null;
-            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAi.Completion, _request.ModelId!, _forced), _request, HttpMethod.Post, cancellationToken);
+            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAiType.Completion, _request.ModelId!, _forced), _request, HttpMethod.Post, _configuration, cancellationToken);
         }
         /// <summary>
         /// Add further prompt to the request.

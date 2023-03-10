@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Moderation
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<ModerationsResponse> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<ModerationsResponse>(_configuration.GetUri(OpenAi.Moderation, _request.ModelId!, _forced), _request, cancellationToken);
+            => _client.PostAsync<ModerationsResponse>(_configuration.GetUri(OpenAiType.Moderation, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

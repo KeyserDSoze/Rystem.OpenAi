@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Embedding
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<EmbeddingResult>(_configuration.GetUri(OpenAi.Embedding,_request.ModelId!, _forced), _request, cancellationToken);
+            => _client.PostAsync<EmbeddingResult>(_configuration.GetUri(OpenAiType.Embedding,_request.ModelId!, _forced), _request, _configuration, cancellationToken);
         /// <summary>
         /// Add further input to the request.
         /// </summary>

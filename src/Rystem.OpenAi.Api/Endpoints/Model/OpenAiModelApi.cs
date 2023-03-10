@@ -17,10 +17,10 @@ namespace Rystem.OpenAi
             _configuration = configuration;
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => _client.GetAsync<Model>($"{_configuration.GetUri(OpenAi.Model, string.Empty, _forced)}/{id}", cancellationToken);
+            => _client.GetAsync<Model>($"{_configuration.GetUri(OpenAiType.Model, string.Empty, _forced)}/{id}", _configuration, cancellationToken);
         public async Task<List<Model>> ListAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _client.GetAsync<JsonHelperRoot>(_configuration.GetUri(OpenAi.Model, string.Empty, _forced), cancellationToken);
+            var response = await _client.GetAsync<JsonHelperRoot>(_configuration.GetUri(OpenAiType.Model, string.Empty, _forced), _configuration, cancellationToken);
             return response.Data!;
         }
         private sealed class JsonHelperRoot : ApiBaseResponse
