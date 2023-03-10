@@ -113,7 +113,8 @@ See how to create an app registration [here](https://learn.microsoft.com/en-us/a
     });
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and system assigned managed identity
-See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).\
+[System Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/automation/enable-managed-identity-for-automation)
 
     var resourceName = builder.Configuration["Azure:ResourceName"];
     builder.Services.AddOpenAi(settings =>
@@ -127,7 +128,8 @@ See how to create a managed identity [here](https://learn.microsoft.com/en-us/az
     });
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and user assigned managed identity
-See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).\
+[User Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/automation/add-user-assigned-identity)
 
     var resourceName = builder.Configuration["Azure:ResourceName"];
     var managedIdentityId = builder.Configuration["ManagedIdentity:ClientId"];
