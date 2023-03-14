@@ -198,7 +198,7 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
     IOpenAiApi _openAiApi;
     var results = await _openAiApi.Chat
             .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-            .WithModel(ChatModelType.Gpt35Turbo0301)
+            .WithModel(ChatModelType.Gpt4)
             .WithTemperature(1)
             .ExecuteAsync();
 

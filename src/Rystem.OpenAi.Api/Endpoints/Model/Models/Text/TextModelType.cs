@@ -33,14 +33,28 @@
         /// </summary>
         DavinciText3 = 302,
         /// <summary>
+        /// Turbo is the same model family that powers ChatGPT. It is optimized for conversational chat input and output but does equally well on completions when compared with the Davinci model family. Any use case that can be done well in ChatGPT should perform well with the Turbo model family in the API.
+        /// </summary>
+        Gpt35Turbo = 350,
+        /// <summary>
+        /// More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with our latest model iteration.
+        /// 8,192 tokens.
+        /// </summary>
+        Gpt4 = 400,
+        /// <summary>
+        /// Same capabilities as the base gpt-4 mode but with 4x the context length. Will be updated with our latest model iteration.
+        /// 32,768 tokens.
+        /// </summary>
+        Gpt4_32K = 401,
+        /// <summary>
         /// Optimized for code-completion tasks <b>(4000 tokens) Up to Jun 2021</b>.
         /// Most capable Codex model. Particularly good at translating natural language to code. In addition to completing code, also supports <see href="https://platform.openai.com/docs/guides/code/inserting-code">inserting</see> completions within code.
         /// </summary>
-        DavinciCode = 400,
+        DavinciCode = 100400,
         /// <summary>
         /// Almost as capable as Davinci Codex, but slightly faster. This speed advantage may make it preferable for real-time applications.
         /// <b>Up to 2,048 tokens</b>
         /// </summary>
-        CushmanCode = 500,
+        CushmanCode = 100500,
     }
 }
