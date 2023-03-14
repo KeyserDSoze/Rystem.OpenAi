@@ -1,4 +1,4 @@
-﻿# Unofficial C#/.NET SDK for accessing the OpenAI API
+﻿# Unofficial Fluent C#/.NET SDK for accessing the OpenAI API
 
 A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API.
 
