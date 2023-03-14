@@ -51,6 +51,6 @@ body:
     id: lib-version
     attributes:
       label: Library version
-      placeholder: Rystem.OpenAi v1.0.2
+      placeholder: 1.0.3
     validations:
       required: true
