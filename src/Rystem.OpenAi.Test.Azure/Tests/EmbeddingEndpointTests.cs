@@ -9,9 +9,12 @@ namespace Rystem.OpenAi.Test
     public class EmbeddingEndpointTests
     {
         private readonly IOpenAiApi _openAiApi;
-        public EmbeddingEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiUtility _openAiUtility;
+
+        public EmbeddingEndpointTests(IOpenAiApi openAiApi, IOpenAiUtility openAiUtility)
         {
             _openAiApi = openAiApi;
+            _openAiUtility = openAiUtility;
         }
         [Fact]
         public async ValueTask GetBasicEmbeddingAsync()
@@ -38,6 +41,8 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(results.Object);
             Assert.True(results.Data.Count != 0);
             Assert.True(results.Data.First().Embedding.Length == 1536);
+            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
+            Assert.True(resultOfCosineSimilarity >= 1);
         }
 
         [Fact]

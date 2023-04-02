@@ -50,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                      .AddPolicyHandler(defaultPolicy);
             }
             services
+                .AddSingleton<IOpenAiUtility, OpenAiUtility>()
                 .AddScoped<IOpenAiApi, OpenAiApi>()
                 .AddScoped<IOpenAiEmbeddingApi, OpenAiEmbeddingApi>()
                 .AddScoped<IOpenAiFileApi, OpenAiFileApi>()

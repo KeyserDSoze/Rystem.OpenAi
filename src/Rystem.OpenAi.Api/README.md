@@ -68,6 +68,8 @@ Install-Package Rystem.OpenAi
   - [Delete Fine Tune](#delete-fine-tune-model)
 - [Moderations](#moderations)
   - [Create Moderation](#create-moderation)
+- [Utilities](#utilities)
+  - [Cosine similarity](#cosine-similarity)
 
 ## Dependency Injection
 
@@ -291,6 +293,27 @@ Creates an embedding vector representing the input text.
         .Request("A test text for embedding")
         .ExecuteAsync();
 
+### Distance for embedding
+For searching over many vectors quickly, we recommend using a vector database. You can find examples of working with vector databases and the OpenAI API in [our Cookbook](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases) on GitHub.
+Vector database options include:
+
+- [Pinecone](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases/pinecone), a fully managed vector database
+- [Weaviate](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases/weaviate), an open-source vector search engine
+- [Redis](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases/redis) as a vector database
+- [Qdrant](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases/qdrant), a vector search engine
+- [Milvus](https://github.com/openai/openai-cookbook/blob/main/examples/vector_databases/Using_vector_databases_for_embeddings_search.ipynb), a vector database built for scalable similarity search
+- [Chroma](https://github.com/chroma-core/chroma), an open-source embeddings store
+
+### Which distance function should I use?
+We recommend cosine similarity. The choice of distance function typically doesn’t matter much.
+
+OpenAI embeddings are normalized to length 1, which means that:
+
+Cosine similarity can be computed slightly faster using just a dot product
+Cosine similarity and Euclidean distance will result in the identical rankings
+
+You may use the utility service in this repository to calculate in C# the distance with [Cosine similarity](#cosine-similarity)
+
 ## Audio
 [📖 Back to summary](#documentation)\
 You may find more details [here](https://platform.openai.com/docs/api-reference/audio),
@@ -424,3 +447,18 @@ Classifies if text violates OpenAI's Content Policy
             .Create("I want to kill them.")
             .WithModel(ModerationModelType.TextModerationStable)
             .ExecuteAsync();
+
+
+## Utilities
+[📖 Back to summary](#documentation)\
+Utilities for OpenAi, you can inject the interface IOpenAiUtility everywhere you need it.
+In IOpenAiUtility you can find:
+
+### Cosine Similarity
+[📖 Back to embeddings](#embeddings)\
+In data analysis, cosine similarity is a measure of similarity between two non-zero vectors defined in an inner product space. Cosine similarity is the cosine of the angle between the vectors; that is, it is the dot product of the vectors divided by the product of their lengths. It follows that the cosine similarity does not depend on the magnitudes of the vectors, but only on their angle. The cosine similarity always belongs to the interval [−1,1]. For example, two proportional vectors have a cosine similarity of 1, two orthogonal vectors have a similarity of 0, and two opposite vectors have a similarity of -1. In some contexts, the component values of the vectors cannot be negative, in which case the cosine similarity is bounded in [0,1].
+Here an example from Unit test.
+
+    IOpenAiUtility _openAiUtility;
+    var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
+    Assert.True(resultOfCosineSimilarity >= 1);
