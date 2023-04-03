@@ -43,7 +43,7 @@ namespace Rystem.OpenAi.Test
             var results = new List<ChatResult>();
             await foreach (var x in _openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo)
+                .WithModel(ChatModelType.Gpt35Turbo0301)
                 .WithTemperature(1)
                 .ExecuteAsStreamAsync())
                 results.Add(x);

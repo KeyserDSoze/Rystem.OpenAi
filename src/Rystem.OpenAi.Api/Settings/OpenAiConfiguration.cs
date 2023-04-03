@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
@@ -76,17 +77,17 @@ namespace Rystem.OpenAi
 
                 foreach (var deployment in settings.Azure.Deployments)
                 {
-                    uris.Add($"{deployment.Value}_{OpenAiType.Completion}", $"{string.Format(completionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(chatUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Edit}", $"{string.Format(editUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(embeddingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.File}", $"{string.Format(fileUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.FineTune}", $"{string.Format(fineTuneUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}/")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Model}", $"{string.Format(modelUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(moderationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(imageUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(audioTranscriptionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
-                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(audioTranslationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={settings.Version}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Completion}", $"{string.Format(completionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Completion)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(chatUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Chat)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Edit}", $"{string.Format(editUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Edit)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(embeddingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Embedding)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.File}", $"{string.Format(fileUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.File)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.FineTune}", $"{string.Format(fineTuneUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}/")}?api-version={GetVersion(settings, OpenAiType.FineTune)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Model}", $"{string.Format(modelUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Model)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(moderationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Moderation)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(imageUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Image)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(audioTranscriptionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.AudioTranscription)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(audioTranslationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.AudioTranslation)}");
                 }
 
                 GetUri = (type, modelId, forceModel) =>
@@ -103,17 +104,17 @@ namespace Rystem.OpenAi
             else
             {
                 settings.Version ??= "v1";
-                completionUri = string.Format(completionUri, $"https://api.openai.com/{settings.Version}");
-                chatUri = string.Format(chatUri, $"https://api.openai.com/{settings.Version}");
-                editUri = string.Format(editUri, $"https://api.openai.com/{settings.Version}");
-                embeddingUri = string.Format(embeddingUri, $"https://api.openai.com/{settings.Version}");
-                fileUri = string.Format(fileUri, $"https://api.openai.com/{settings.Version}");
-                fineTuneUri = string.Format(fineTuneUri, $"https://api.openai.com/{settings.Version}");
-                modelUri = string.Format(modelUri, $"https://api.openai.com/{settings.Version}");
-                moderationUri = string.Format(moderationUri, $"https://api.openai.com/{settings.Version}");
-                imageUri = string.Format(imageUri, $"https://api.openai.com/{settings.Version}");
-                audioTranscriptionUri = string.Format(audioTranscriptionUri, $"https://api.openai.com/{settings.Version}");
-                audioTranslationUri = string.Format(audioTranslationUri, $"https://api.openai.com/{settings.Version}");
+                completionUri = string.Format(completionUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Completion)}");
+                chatUri = string.Format(chatUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Chat)}");
+                editUri = string.Format(editUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Edit)}");
+                embeddingUri = string.Format(embeddingUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Embedding)}");
+                fileUri = string.Format(fileUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.File)}");
+                fineTuneUri = string.Format(fineTuneUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.FineTune)}");
+                modelUri = string.Format(modelUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Model)}");
+                moderationUri = string.Format(moderationUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Moderation)}");
+                imageUri = string.Format(imageUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Image)}");
+                audioTranscriptionUri = string.Format(audioTranscriptionUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.AudioTranscription)}");
+                audioTranslationUri = string.Format(audioTranslationUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.AudioTranslation)}");
 
                 GetUri = (type, modelId, forceModel) =>
                 {
@@ -145,6 +146,15 @@ namespace Rystem.OpenAi
                     }
                 };
             }
+
+
+        }
+        private string GetVersion(OpenAiSettings settings, OpenAiType type)
+        {
+            if (settings.Versions.ContainsKey(type))
+                return settings.Versions[type];
+            else
+                return settings.Version;
         }
     }
 }

@@ -26,14 +26,17 @@ namespace Rystem.OpenAi.Test
             services.AddOpenAi(settings =>
             {
                 settings.ApiKey = apiKey;
+                settings
+                    .UseVersionForChat("2023-03-15-preview");
                 settings.Azure.ResourceName = resourceName;
                 settings.Azure.AppRegistration.ClientId = clientId;
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;
                 settings.Azure.AppRegistration.TenantId = tenantId;
                 settings.Azure
                     .AddDeploymentTextModel("Test", TextModelType.CurieText)
-                    .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-                    .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+                    .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+                    .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+                    .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
             });
         }
     }

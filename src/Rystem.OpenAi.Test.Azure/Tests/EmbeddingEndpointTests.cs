@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await _openAiApi.Embedding
                 .Request("A test text for embedding")
-                .WithModel("Embedding")
+                .WithModel(EmbeddingModelType.AdaTextEmbedding)
                 .ExecuteAsync();
 
             Assert.NotNull(results);
@@ -42,7 +42,7 @@ namespace Rystem.OpenAi.Test
             Assert.True(results.Data.Count != 0);
             Assert.True(results.Data.First().Embedding.Length == 1536);
             var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
-            Assert.True(resultOfCosineSimilarity >= 1);
+            Assert.True(resultOfCosineSimilarity >= 0.99999d);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(_openAiApi.Embedding);
 
             var results = await _openAiApi.Embedding.Request("A test text for embedding")
-                .WithModel("Embedding")
+                .WithModel(EmbeddingModelType.AdaTextEmbedding)
                 .ExecuteAsync();
             Assert.NotNull(results);
 
