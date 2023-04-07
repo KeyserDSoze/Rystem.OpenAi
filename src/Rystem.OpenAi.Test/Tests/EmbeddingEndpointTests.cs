@@ -19,9 +19,10 @@ namespace Rystem.OpenAi.Test
         [Theory]
         [InlineData("")]
         [InlineData("Azure")]
+        [InlineData("NoDI")]
         public async ValueTask GetBasicEmbeddingAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiService.Create(name) : _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Embedding);
 
             var results = await openAiApi.Embedding
@@ -50,9 +51,10 @@ namespace Rystem.OpenAi.Test
         [Theory]
         [InlineData("")]
         [InlineData("Azure")]
+        [InlineData("NoDI")]
         public async ValueTask ReturnedUsageAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiService.Create(name) : _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Embedding);
 
             var results = await openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();

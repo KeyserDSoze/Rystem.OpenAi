@@ -35,6 +35,8 @@ Install-Package Rystem.OpenAi
 
 - [Dependency Injection](#dependency-injection)
   - [Azure](#dependency-injection-with-azure)
+  - [Factory](#dependency-injection-with-factory)
+- [Without Dependency Injection](#without-dependency-injection)
 - [Models](#models)
   - [List Models](#list-models)
   - [Retrieve Models](#retrieve-model)
@@ -144,6 +146,74 @@ See how to create a managed identity [here](https://learn.microsoft.com/en-us/az
             .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
             .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
+
+## Dependency Injection With Factory
+[📖 Back to summary](#documentation)\
+You may install more than one OpenAi integration, using name parameter in configuration.
+In the next example we have two different configurations, one with OpenAi and a default name and with AzureOpenAi and name "Azure"
+
+    var apiKey = context.Configuration["OpenAi:ApiKey"];
+    services
+        .AddOpenAi(settings =>
+        {
+            settings.ApiKey = apiKey;
+        });
+    var auzreApiKey = context.Configuration["Azure:ApiKey"];
+    var resourceName = context.Configuration["Azure:ResourceName"];
+    var clientId = context.Configuration["AzureAd:ClientId"];
+    var clientSecret = context.Configuration["AzureAd:ClientSecret"];
+    var tenantId = context.Configuration["AzureAd:TenantId"];
+    services.AddOpenAi(settings =>
+    {
+        settings.ApiKey = auzreApiKey;
+        settings
+            .UseVersionForChat("2023-03-15-preview");
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.AppRegistration.ClientId = clientId;
+        settings.Azure.AppRegistration.ClientSecret = clientSecret;
+        settings.Azure.AppRegistration.TenantId = tenantId;
+        settings.Azure
+            .AddDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+            .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+            .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+            .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+    }, "Azure");
+
+I can retrieve the integration with IOpenAiFactory interface and the name of the integration.
+    
+    private readonly IOpenAiFactory _openAiFactory;
+
+    public CompletionEndpointTests(IOpenAiFactory openAiFactory)
+    {
+        _openAiFactory = openAiFactory;
+    }
+
+    public async ValueTask DoSomethingWithDefaultIntegrationAsync()
+    {
+        var openAiApi = _openAiFactory.Create();
+        openAiApi.Completion.........
+    }
+
+    public async ValueTask DoSomethingWithAzureIntegrationAsync()
+    {
+        var openAiApi = _openAiFactory.Create("Azure");
+        openAiApi.Completion.........
+    }
+
+## Without Dependency Injection
+[📖 Back to summary](#documentation)\
+You may configure in a static constructor or during startup your integration without the dependency injection pattern.
+
+      OpenAiService.Setup(settings =>
+        {
+            settings.ApiKey = apiKey;
+        }, "NoDI");
+
+and you can use it with the same static class OpenAiService and the static Create method
+
+    var openAiApi = OpenAiService.Create(name);
+    openAiApi.Embedding......
+
 
 ## Models
 [📖 Back to summary](#documentation)\

@@ -54,6 +54,5 @@ namespace Rystem.OpenAi.Test
             var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
             Assert.True(deleteResult.Deleted);
         }
-
     }
 }

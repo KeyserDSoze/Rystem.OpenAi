@@ -44,6 +44,10 @@ namespace Rystem.OpenAi.Test
                     .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
                     .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
             }, "Azure");
+            OpenAiService.Setup(settings =>
+            {
+                settings.ApiKey = apiKey;
+            }, "NoDI");
         }
     }
 }
