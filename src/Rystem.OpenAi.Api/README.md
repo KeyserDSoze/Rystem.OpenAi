@@ -33,7 +33,7 @@ Install-Package Rystem.OpenAi
 
 ### Table of Contents
 
-- [Setup](#startup-setup)
+- [Startup Setup](#startup-setup)
   - [Dependency Injection](#dependency-injection)
   - [Azure](#dependency-injection-with-azure)
   - [Factory](#dependency-injection-with-factory)
