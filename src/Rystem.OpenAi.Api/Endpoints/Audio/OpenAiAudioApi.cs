@@ -1,16 +1,14 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiAudioApi : IOpenAiAudioApi
+    internal sealed class OpenAiAudioApi : OpenAiBase, IOpenAiAudioApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
-        public OpenAiAudioApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiAudioApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
         public AudioRequestBuilder Request(Stream file, string fileName = "default")
             => new AudioRequestBuilder(_client, _configuration, file, fileName);

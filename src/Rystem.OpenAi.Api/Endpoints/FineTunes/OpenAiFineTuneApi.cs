@@ -5,15 +5,12 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.FineTune
 {
-    internal sealed class OpenAiFineTuneApi : IOpenAiFineTuneApi
+    internal sealed class OpenAiFineTuneApi : OpenAiBase, IOpenAiFineTuneApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
         private readonly bool _forced;
-        public OpenAiFineTuneApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiFineTuneApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
         public FineTuneRequestBuilder Create(string trainingFileId)
             => new FineTuneRequestBuilder(_client, _configuration, trainingFileId);

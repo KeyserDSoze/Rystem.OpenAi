@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,10 +29,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException($"{nameof(OpenAiSettings.ApiKey)} is empty.");
 
             services
-                .TryAddScoped<IOpenAiFactory, OpenAiFactory>();
-            OpenAiFactory.AddCounter(name);
+                .TryAddTransient<IOpenAiFactory, OpenAiFactory>();
 
-            services.AddSingleton(new OpenAiConfiguration(openAiSettings));
+            services.AddSingleton(new OpenAiConfiguration(openAiSettings, name));
             var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
             {
                 if (openAiSettings.Azure.HasConfiguration)
@@ -55,18 +55,29 @@ namespace Microsoft.Extensions.DependencyInjection
                      .AddPolicyHandler(defaultPolicy);
             }
             services
-                .AddSingleton<IOpenAiUtility, OpenAiUtility>()
-                .AddScoped<IOpenAiApi, OpenAiApi>()
-                .AddScoped<IOpenAiEmbeddingApi, OpenAiEmbeddingApi>()
-                .AddScoped<IOpenAiFileApi, OpenAiFileApi>()
-                .AddScoped<IOpenAiAudioApi, OpenAiAudioApi>()
-                .AddScoped<IOpenAiModelApi, OpenAiModelApi>()
-                .AddScoped<IOpenAiModerationApi, OpenAiModerationApi>()
-                .AddScoped<IOpenAiImageApi, OpenAiImageApi>()
-                .AddScoped<IOpenAiFineTuneApi, OpenAiFineTuneApi>()
-                .AddScoped<IOpenAiEditApi, OpenAiEditApi>()
-                .AddScoped<IOpenAiChatApi, OpenAiChatApi>()
-                .AddScoped<IOpenAiCompletionApi, OpenAiCompletionApi>();
+                .TryAddSingleton<IOpenAiUtility, OpenAiUtility>();
+            services
+                .TryAddTransient<IOpenAiApi, OpenAiApi>();
+            services
+                .TryAddTransient<IOpenAiEmbeddingApi, OpenAiEmbeddingApi>();
+            services
+                .TryAddTransient<IOpenAiFileApi, OpenAiFileApi>();
+            services
+                .TryAddTransient<IOpenAiAudioApi, OpenAiAudioApi>();
+            services
+                .TryAddTransient<IOpenAiModelApi, OpenAiModelApi>();
+            services
+                .TryAddTransient<IOpenAiModerationApi, OpenAiModerationApi>();
+            services
+                .TryAddTransient<IOpenAiImageApi, OpenAiImageApi>();
+            services
+                .TryAddTransient<IOpenAiFineTuneApi, OpenAiFineTuneApi>();
+            services
+                .TryAddTransient<IOpenAiEditApi, OpenAiEditApi>();
+            services
+                .TryAddTransient<IOpenAiChatApi, OpenAiChatApi>();
+            services
+                .TryAddTransient<IOpenAiCompletionApi, OpenAiCompletionApi>();
             return services;
         }
     }

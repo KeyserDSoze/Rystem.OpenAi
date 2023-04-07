@@ -16,6 +16,7 @@ namespace Rystem.OpenAi
         public Func<OpenAiType, string, bool, string> GetUri { get; }
         public Func<HttpClient, Task>? BeforeRequest { get; }
         public bool NeedClientEnrichment => BeforeRequest != null;
+        public string Name { get; }
         public Task EnrichClientAsync(HttpClient client)
         {
             if (BeforeRequest != null)
@@ -23,8 +24,9 @@ namespace Rystem.OpenAi
             else
                 return Task.CompletedTask;
         }
-        internal OpenAiConfiguration(OpenAiSettings settings)
+        internal OpenAiConfiguration(OpenAiSettings settings, string? name)
         {
+            Name = name ?? string.Empty;
             var uri = $"{{1}}/{{0}}";
             var completionUri = string.Format(uri, "completions", "{0}");
             var chatUri = string.Format(uri, "chat/completions", "{0}");

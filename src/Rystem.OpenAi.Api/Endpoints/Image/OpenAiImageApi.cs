@@ -1,17 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 
 namespace Rystem.OpenAi.Image
 {
-    internal sealed class OpenAiImageApi : IOpenAiImageApi
+    internal sealed class OpenAiImageApi : OpenAiBase, IOpenAiImageApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
-        public OpenAiImageApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiImageApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
         /// <summary>
         /// Creates an image given a prompt.

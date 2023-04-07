@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi
 {
-    internal sealed class OpenAiModelApi : IOpenAiModelApi
+    internal sealed class OpenAiModelApi : OpenAiBase, IOpenAiModelApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
         private readonly bool _forced;
-        public OpenAiModelApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiModelApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
             => _client.GetAsync<Model>($"{_configuration.GetUri(OpenAiType.Model, string.Empty, _forced)}/{id}", _configuration, cancellationToken);

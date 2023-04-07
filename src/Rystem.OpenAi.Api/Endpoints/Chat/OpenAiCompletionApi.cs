@@ -1,15 +1,13 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Rystem.OpenAi.Chat
 {
-    internal sealed class OpenAiChatApi : IOpenAiChatApi
+    internal sealed class OpenAiChatApi : OpenAiBase, IOpenAiChatApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
-        public OpenAiChatApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiChatApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
         public ChatRequestBuilder Request(ChatMessage message)
             => new ChatRequestBuilder(_client, _configuration, message);

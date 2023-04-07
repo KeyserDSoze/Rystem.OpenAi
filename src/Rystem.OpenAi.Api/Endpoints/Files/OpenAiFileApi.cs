@@ -7,15 +7,12 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Files
 {
-    internal sealed class OpenAiFileApi : IOpenAiFileApi
+    internal sealed class OpenAiFileApi : OpenAiBase, IOpenAiFileApi
     {
-        private readonly HttpClient _client;
-        private readonly OpenAiConfiguration _configuration;
         private readonly bool _forced;
-        public OpenAiFileApi(IHttpClientFactory httpClientFactory, OpenAiConfiguration configuration)
+        public OpenAiFileApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
+            : base(httpClientFactory, configurations)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configuration;
         }
 
         public async Task<List<FileResult>> AllAsync(CancellationToken cancellationToken = default)
