@@ -20,5 +20,11 @@ namespace Rystem.OpenAi
                 name = string.Empty;
             return factory.Create(name);
         }
+        public static IOpenAiUtility Utility()
+        {
+            if (s_serviceProvider == null)
+                s_serviceProvider = s_services.BuildServiceProvider();
+            return s_serviceProvider.GetService<IOpenAiUtility>()!;
+        }
     }
 }

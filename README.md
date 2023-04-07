@@ -539,3 +539,7 @@ Here an example from Unit test.
     IOpenAiUtility _openAiUtility;
     var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
     Assert.True(resultOfCosineSimilarity >= 1);
+
+Without DI, you need to setup an OpenAiService [without Dependency Injection](#without-dependency-injection) and after that you can use
+
+    IOpenAiUtility openAiUtility = OpenAiService.Utility();
