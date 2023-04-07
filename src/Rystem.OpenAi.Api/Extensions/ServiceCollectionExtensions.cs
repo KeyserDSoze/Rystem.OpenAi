@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Polly;
 using Polly.Extensions.Http;
 using Rystem.OpenAi;
@@ -19,12 +20,16 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ", Justification = "The parameter is in the root of the setting class.")]
-        public static IServiceCollection AddOpenAi(this IServiceCollection services, Action<OpenAiSettings> settings)
+        public static IServiceCollection AddOpenAi(this IServiceCollection services, Action<OpenAiSettings> settings, string? name = default)
         {
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);
             if (openAiSettings.ApiKey == null && !openAiSettings.Azure.HasAnotherKindOfAuthentication)
                 throw new ArgumentNullException($"{nameof(OpenAiSettings.ApiKey)} is empty.");
+
+            services
+                .TryAddScoped<IOpenAiFactory, OpenAiFactory>();
+            OpenAiFactory.AddCounter(name);
 
             services.AddSingleton(new OpenAiConfiguration(openAiSettings));
             var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
