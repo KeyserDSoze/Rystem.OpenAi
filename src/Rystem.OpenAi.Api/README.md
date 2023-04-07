@@ -171,7 +171,7 @@ In this example We are adding a different version only for chat, and all the oth
 ## Dependency Injection With Factory
 [📖 Back to summary](#documentation)\
 You may install more than one OpenAi integration, using name parameter in configuration.
-In the next example we have two different configurations, one with OpenAi and a default name and with AzureOpenAi and name "Azure"
+In the next example we have two different configurations, one with OpenAi and a default name and with Azure OpenAi and name "Azure"
 
     var apiKey = context.Configuration["OpenAi:ApiKey"];
     services
