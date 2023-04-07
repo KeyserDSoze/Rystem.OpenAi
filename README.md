@@ -36,6 +36,7 @@ Install-Package Rystem.OpenAi
 - [Startup Setup](#startup-setup)
   - [Dependency Injection](#dependency-injection)
   - [Azure](#dependency-injection-with-azure)
+  - [Use different version](#use-different-version)
   - [Factory](#dependency-injection-with-factory)
 - [Without Dependency Injection](#without-dependency-injection)
 - [Models](#models)
@@ -153,6 +154,19 @@ See how to create a managed identity [here](https://learn.microsoft.com/en-us/az
             .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
             .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
+
+## Use different version
+[📖 Back to summary](#documentation)\
+You may install different version for each endpoint.
+
+     services.AddOpenAi(settings =>
+            {
+                settings.ApiKey = azureApiKey;
+                settings
+                    .UseVersionForChat("2023-03-15-preview");
+            });
+
+In this example We are adding a different version only for chat, and all the other endpoints will use the same (in this case the default version).
 
 ## Dependency Injection With Factory
 [📖 Back to summary](#documentation)\
