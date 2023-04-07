@@ -80,7 +80,7 @@ Install-Package Rystem.OpenAi
 You may install with Dependency Injection one or more than on integrations at the same time. Furthermore you don't need to use the Dependency Injection pattern and use a custom Setup.
 
 ## Dependency Injection
-[📖 Back to summary](#documentation)\
+[📖 Back to summary](#documentation)
 
 ### Add to service collection the OpenAi service in your DI
 
