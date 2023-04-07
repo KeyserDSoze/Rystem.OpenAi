@@ -33,7 +33,8 @@ Install-Package Rystem.OpenAi
 
 ### Table of Contents
 
-- [Dependency Injection](#dependency-injection)
+- [Setup](#setup)
+  - [Dependency Injection](#dependency-injection)
   - [Azure](#dependency-injection-with-azure)
   - [Factory](#dependency-injection-with-factory)
 - [Without Dependency Injection](#without-dependency-injection)
@@ -72,6 +73,10 @@ Install-Package Rystem.OpenAi
   - [Create Moderation](#create-moderation)
 - [Utilities](#utilities)
   - [Cosine similarity](#cosine-similarity)
+
+
+## Setup
+You may install with Dependency Injection one or more than on integrations at the same time. Furthermore you don't need to use the Dependency Injection pattern and use a custom Setup.
 
 ## Dependency Injection
 
