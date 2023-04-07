@@ -24,14 +24,14 @@ namespace Rystem.OpenAi.Test
                 {
                     settings.ApiKey = apiKey;
                 });
-            var auzreApiKey = context.Configuration["Azure:ApiKey"];
+            var azureApiKey = context.Configuration["Azure:ApiKey"];
             var resourceName = context.Configuration["Azure:ResourceName"];
             var clientId = context.Configuration["AzureAd:ClientId"];
             var clientSecret = context.Configuration["AzureAd:ClientSecret"];
             var tenantId = context.Configuration["AzureAd:TenantId"];
             services.AddOpenAi(settings =>
             {
-                settings.ApiKey = auzreApiKey;
+                settings.ApiKey = azureApiKey;
                 settings
                     .UseVersionForChat("2023-03-15-preview");
                 settings.Azure.ResourceName = resourceName;
