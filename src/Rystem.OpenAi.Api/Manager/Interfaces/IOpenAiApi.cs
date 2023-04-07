@@ -11,10 +11,6 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    public interface IOpenAiApiFactory
-    {
-        IOpenAiApi CreateApi();
-    }
     public interface IOpenAiApi
     {
         IOpenAiModelApi Model { get; }

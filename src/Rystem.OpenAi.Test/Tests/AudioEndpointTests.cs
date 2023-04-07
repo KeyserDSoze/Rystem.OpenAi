@@ -8,15 +8,17 @@ namespace Rystem.OpenAi.Test
 {
     public class AudioEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public AudioEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public AudioEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask CreateTranslationAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateTranslationAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Audio);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Audio);
 
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
@@ -25,7 +27,7 @@ namespace Rystem.OpenAi.Test
             await readableStream.CopyToAsync(editableFile);
             editableFile.Position = 0;
 
-            var results = await _openAiApi.Audio
+            var results = await openAiApi.Audio
                 .Request(editableFile, "default.mp3")
                 .TranslateAsync();
 
@@ -33,9 +35,11 @@ namespace Rystem.OpenAi.Test
             Assert.True(results.Text.Length > 100);
         }
 
-        [Fact]
-        public async ValueTask CreateTranscriptionAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateTranscriptionAsync(string name)
         {
+            var openAiApi = _openAiFactory.Create(name);
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
             using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
@@ -44,7 +48,7 @@ namespace Rystem.OpenAi.Test
             readableStream.CopyTo(editableFile);
             editableFile.Position = 0;
 
-            var results = await _openAiApi.Audio
+            var results = await openAiApi.Audio
                 .Request(editableFile, "default.mp3")
                 .TranscriptAsync();
 

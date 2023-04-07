@@ -5,17 +5,19 @@ namespace Rystem.OpenAi.Test
 {
     public class EditEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public EditEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public EditEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask CreateAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Edit);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Edit);
 
-            var results = await _openAiApi.Edit
+            var results = await openAiApi.Edit
                 .Request("Fix the spelling mistakes")
                 .WithModel(EditModelType.TextDavinciEdit)
                 .SetInput("What day of the wek is it?")

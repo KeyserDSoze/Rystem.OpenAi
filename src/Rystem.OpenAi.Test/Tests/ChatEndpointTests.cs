@@ -9,17 +9,20 @@ namespace Rystem.OpenAi.Test
 {
     public class ChatEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public ChatEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public ChatEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask CreateChatCompletionAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Chat);
+            var openAiApi = _openAiFactory.Create(name);
 
-            var results = await _openAiApi.Chat
+            Assert.NotNull(openAiApi.Chat);
+            var results = await openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelType.Gpt35Turbo0301)
                 .WithTemperature(1)
@@ -35,15 +38,18 @@ namespace Rystem.OpenAi.Test
         }
 
 
-        [Fact]
-        public async ValueTask CreateChatCompletionWithStreamAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithStreamAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Chat);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
 
             var results = new List<ChatResult>();
-            await foreach (var x in _openAiApi.Chat
+            await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo)
+                .WithModel(ChatModelType.Gpt35Turbo0301)
                 .WithTemperature(1)
                 .ExecuteAsStreamAsync())
                 results.Add(x);

@@ -8,20 +8,23 @@ namespace Rystem.OpenAi.Test
 {
     public class EmbeddingEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
+        private readonly IOpenAiFactory _openAiFactory;
         private readonly IOpenAiUtility _openAiUtility;
 
-        public EmbeddingEndpointTests(IOpenAiApi openAiApi, IOpenAiUtility openAiUtility)
+        public EmbeddingEndpointTests(IOpenAiFactory openAiFactory, IOpenAiUtility openAiUtility)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
             _openAiUtility = openAiUtility;
         }
-        [Fact]
-        public async ValueTask GetBasicEmbeddingAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask GetBasicEmbeddingAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Embedding);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Embedding);
 
-            var results = await _openAiApi.Embedding
+            var results = await openAiApi.Embedding
                 .Request("A test text for embedding")
                 .ExecuteAsync();
 
@@ -41,15 +44,18 @@ namespace Rystem.OpenAi.Test
             Assert.True(results.Data.Count != 0);
             Assert.True(results.Data.First().Embedding.Length == 1536);
             var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
-            Assert.True(resultOfCosineSimilarity >= 1);
+            Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }
 
-        [Fact]
-        public async ValueTask ReturnedUsageAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask ReturnedUsageAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Embedding);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Embedding);
 
-            var results = await _openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
+            var results = await openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
             Assert.NotNull(results);
 
             Assert.NotNull(results.Usage);

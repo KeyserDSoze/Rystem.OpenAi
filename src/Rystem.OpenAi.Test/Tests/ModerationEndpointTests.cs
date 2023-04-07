@@ -1,24 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Completion;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
 {
     public class ModerationEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public ModerationEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public ModerationEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask CreateAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Moderation);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Moderation);
 
-            var results = await _openAiApi.Moderation
+            var results = await openAiApi.Moderation
                 .Create("I want to kill them.")
                 .WithModel(ModerationModelType.TextModerationStable)
                 .ExecuteAsync();

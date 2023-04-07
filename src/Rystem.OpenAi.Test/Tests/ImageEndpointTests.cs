@@ -10,17 +10,19 @@ namespace Rystem.OpenAi.Test
 {
     public class ImageEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public ImageEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public ImageEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask CreateAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Image);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Image);
 
-            var response = await _openAiApi.Image
+            var response = await openAiApi.Image
                 .Generate("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.")
                 .WithSize(ImageSize.Large)
                 .ExecuteAsync();
@@ -29,13 +31,15 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(uri);
             Assert.Contains("blob.core.windows.net", uri.Url);
         }
-        [Fact]
-        public async ValueTask CreateAndDownloadAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask CreateAndDownloadAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Image);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Image);
 
             var streams = new List<Stream>();
-            await foreach (var image in _openAiApi.Image
+            await foreach (var image in openAiApi.Image
                 .Generate("A cute baby sea otter")
                 .WithSize(ImageSize.Small)
                 .DownloadAsync())
@@ -50,10 +54,12 @@ namespace Rystem.OpenAi.Test
             await firstImage.CopyToAsync(memoryStream);
             Assert.True(memoryStream.Length == firstImage.Length);
         }
-        [Fact]
-        public async ValueTask EditAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask EditAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Image);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Image);
 
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
@@ -62,7 +68,7 @@ namespace Rystem.OpenAi.Test
             await readableStream.CopyToAsync(editableFile);
             editableFile.Position = 0;
 
-            var response = await _openAiApi.Image
+            var response = await openAiApi.Image
                 .Generate("A cute baby sea otter wearing a beret")
                 .EditAndTrasformInPng(editableFile, "otter.png")
                 .WithSize(ImageSize.Small)
@@ -74,10 +80,12 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(uri);
             Assert.Contains("blob.core.windows.net", uri.Url);
         }
-        [Fact]
-        public async ValueTask VariateAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask VariateAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Image);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Image);
 
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
@@ -85,7 +93,7 @@ namespace Rystem.OpenAi.Test
             var editableFile = new MemoryStream();
             await readableStream.CopyToAsync(editableFile);
             editableFile.Position = 0;
-            var response = await _openAiApi.Image
+            var response = await openAiApi.Image
                 .VariateAndTransformInPng(editableFile, "otter.png")
                 .WithSize(ImageSize.Small)
                 .WithNumberOfResults(1)

@@ -8,17 +8,20 @@ namespace Rystem.OpenAi.Test
 {
     public class CompletionEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public CompletionEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public CompletionEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask GetBasicCompletionAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask GetBasicCompletionAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Completion);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Completion);
 
-            var results = await _openAiApi.Completion
+            var results = await openAiApi.Completion
                 .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
                 .WithModel(TextModelType.CurieText)
                 .WithTemperature(0.1)
@@ -35,12 +38,15 @@ namespace Rystem.OpenAi.Test
         }
 
 
-        [Fact]
-        public async ValueTask GetSimpleCompletionAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask GetSimpleCompletionAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Completion);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Completion);
 
-            var results = await _openAiApi.Completion
+            var results = await openAiApi.Completion
                 .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
                 .WithTemperature(0.1)
                 .SetMaxTokens(5)
@@ -51,12 +57,15 @@ namespace Rystem.OpenAi.Test
         }
 
 
-        [Fact]
-        public async ValueTask CompletionUsageDataWorksAsync()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CompletionUsageDataWorksAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Completion);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Completion);
 
-            var results = await _openAiApi.Completion
+            var results = await openAiApi.Completion
                .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
                .WithModel(TextModelType.CurieText)
                .WithTemperature(0.1)
@@ -70,13 +79,16 @@ namespace Rystem.OpenAi.Test
         }
 
 
-        [Fact]
-        public async Task CreateCompletionAsync_MultiplePrompts_ShouldReturnResult()
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async Task CreateCompletionAsync_MultiplePrompts_ShouldReturnResult(string name)
         {
-            Assert.NotNull(_openAiApi.Completion);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Completion);
 
             var results = new List<CompletionResult>();
-            await foreach (var x in _openAiApi.Completion
+            await foreach (var x in openAiApi.Completion
                .Request("Today is Monday, tomorrow is", "10 11 12 13 14")
                .WithTemperature(0)
                .SetMaxTokens(3)

@@ -6,27 +6,31 @@ namespace Rystem.OpenAi.Test
 {
     public class ModelEndpointTests
     {
-        private readonly IOpenAiApi _openAiApi;
-        public ModelEndpointTests(IOpenAiApi openAiApi)
+        private readonly IOpenAiFactory _openAiFactory;
+        public ModelEndpointTests(IOpenAiFactory openAiFactory)
         {
-            _openAiApi = openAiApi;
+            _openAiFactory = openAiFactory;
         }
-        [Fact]
-        public async ValueTask GetAllModelsAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask GetAllModelsAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Model);
-            var results = await _openAiApi.Model.ListAsync();
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Model);
+            var results = await openAiApi.Model.ListAsync();
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             Assert.Contains(results, c => c.Id.ToLower().StartsWith("text-davinci"));
         }
 
-        [Fact]
-        public async ValueTask GetModelDetailsAsync()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask GetModelDetailsAsync(string name)
         {
-            Assert.NotNull(_openAiApi.Model);
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Model);
 
-            var result = await _openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
+            var result = await openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
             Assert.NotNull(result);
 
             Assert.NotNull(result.CreatedUnixTime);
@@ -41,21 +45,24 @@ namespace Rystem.OpenAi.Test
         }
 
 
-        [Fact]
-        public async ValueTask GetEnginesAsync_ShouldReturnTheEngineList()
+        [Theory]
+        [InlineData("")]
+        public async ValueTask GetEnginesAsync_ShouldReturnTheEngineList(string name)
         {
-            var models = await _openAiApi.Model.ListAsync();
+            var openAiApi = _openAiFactory.Create(name);
+            var models = await openAiApi.Model.ListAsync();
             Assert.True(models.Count > 5);
         }
 
         [Theory]
-        [InlineData("ada")]
-        [InlineData("babbage")]
-        [InlineData("curie")]
-        [InlineData("davinci")]
-        public async ValueTask RetrieveEngineDetailsAsync_ShouldRetrieveEngineDetails(string modelId)
+        [InlineData("ada", "")]
+        [InlineData("babbage", "")]
+        [InlineData("curie", "")]
+        [InlineData("davinci", "")]
+        public async ValueTask RetrieveEngineDetailsAsync_ShouldRetrieveEngineDetails(string modelId, string name)
         {
-            var modelData = await _openAiApi.Model.RetrieveAsync(modelId);
+            var openAiApi = _openAiFactory.Create(name);
+            var modelData = await openAiApi.Model.RetrieveAsync(modelId);
             Assert.Equal(modelId, modelData.Id);
             Assert.True(modelData.Created > new DateTime(2018, 1, 1));
             Assert.True(modelData.Created < DateTime.UtcNow.AddDays(1));
