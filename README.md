@@ -321,6 +321,7 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
             }
 
 ## Edits
+[📖 Back to summary](#documentation)\
 Given a prompt and an instruction, the model will return an edited version of the prompt.
 You may find more details [here](https://platform.openai.com/docs/api-reference/edits),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/EditEndpointTests.cs) samples from unit test.
