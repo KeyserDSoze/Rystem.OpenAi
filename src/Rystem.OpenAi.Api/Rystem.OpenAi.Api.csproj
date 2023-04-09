@@ -12,7 +12,7 @@
 		<Company>Alessandro Rapiti</Company>
 		<Product>Rystem.OpenAi</Product>
 		<Title>OpenAI API for Azure</Title>
-		<Description>.Net wrapper for OpenAI with Dependency injection integration.</Description>
+		<Description>.Net wrapper for OpenAI with Dependency injection integration, factory integration: you may inject more than one endpoint, azure integration: you may swap among openai endpoint and any azure endpoint quickly and easily.</Description>
 		<Copyright>2023</Copyright>
 		<PackageIcon>openai.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
