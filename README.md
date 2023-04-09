@@ -221,6 +221,14 @@ I can retrieve the integration with IOpenAiFactory interface and the name of the
         openAiApi.Completion.........
     }
 
+or get the more specific service
+
+    public async ValueTask DoSomethingWithAzureIntegrationAsync()
+    {
+        var openAiEmbeddingApi = _openAiFactory.CreateEmbedding(name);
+        openAiEmbeddingApi.Request(....);
+    }
+
 ## Without Dependency Injection
 [📖 Back to summary](#documentation)\
 You may configure in a static constructor or during startup your integration without the dependency injection pattern.
@@ -235,6 +243,10 @@ and you can use it with the same static class OpenAiService and the static Creat
     var openAiApi = OpenAiService.Create(name);
     openAiApi.Embedding......
 
+or get the more specific service
+
+    var openAiEmbeddingApi = OpenAiService.CreateEmbedding(name);
+    openAiEmbeddingApi.Request(....);
 
 ## Models
 [📖 Back to summary](#documentation)\

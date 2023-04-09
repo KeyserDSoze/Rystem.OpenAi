@@ -11,6 +11,7 @@ namespace Rystem.OpenAi.FineTune
         public OpenAiFineTuneApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
             : base(httpClientFactory, configurations)
         {
+            _forced = false;
         }
         public FineTuneRequestBuilder Create(string trainingFileId)
             => new FineTuneRequestBuilder(_client, _configuration, trainingFileId);

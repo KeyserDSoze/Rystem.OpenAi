@@ -13,6 +13,7 @@ namespace Rystem.OpenAi.Files
         public OpenAiFileApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
             : base(httpClientFactory, configurations)
         {
+            _forced = false;
         }
 
         public async Task<List<FileResult>> AllAsync(CancellationToken cancellationToken = default)

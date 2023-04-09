@@ -12,6 +12,7 @@ namespace Rystem.OpenAi
         public OpenAiModelApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
             : base(httpClientFactory, configurations)
         {
+            _forced = false;
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
             => _client.GetAsync<Model>($"{_configuration.GetUri(OpenAiType.Model, string.Empty, _forced)}/{id}", _configuration, cancellationToken);

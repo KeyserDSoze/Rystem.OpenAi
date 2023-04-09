@@ -151,7 +151,7 @@ namespace Rystem.OpenAi
 
 
         }
-        private string GetVersion(OpenAiSettings settings, OpenAiType type)
+        private string? GetVersion(OpenAiSettings settings, OpenAiType type)
         {
             if (settings.Versions.ContainsKey(type))
                 return settings.Versions[type];
