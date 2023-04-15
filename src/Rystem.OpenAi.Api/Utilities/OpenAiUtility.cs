@@ -4,6 +4,12 @@ namespace Rystem.OpenAi
 {
     internal sealed class OpenAiUtility : IOpenAiUtility
     {
+        public IOpenAiTokenizer Tokenizer { get; }
+        public OpenAiUtility(IOpenAiTokenizer tokenizer)
+        {
+            Tokenizer = tokenizer;
+        }
+
         public double CosineSimilarity(float[] from, float[] to)
         {
             var value = (to.Length < from.Length) ? to.Length : from.Length;

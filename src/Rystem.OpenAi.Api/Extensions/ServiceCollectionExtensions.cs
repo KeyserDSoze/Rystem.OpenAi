@@ -57,6 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddSingleton<IOpenAiUtility, OpenAiUtility>();
             services
+                .TryAddSingleton<IOpenAiTokenizer, OpenAiTokenizer>();
+            services
+                .TryAddSingleton<IOpenAiCost, OpenAiCost>();
+            services
                 .TryAddTransient<IOpenAiApi, OpenAiApi>();
             services
                 .TryAddTransient<IOpenAiEmbeddingApi, OpenAiEmbeddingApi>();
