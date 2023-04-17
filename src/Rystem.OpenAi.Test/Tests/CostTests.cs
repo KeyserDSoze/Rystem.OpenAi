@@ -22,15 +22,15 @@ namespace Rystem.OpenAi.Test
             _utility = utility;
         }
         [Theory]
-        [InlineData(9, 0.002, 3)]
-        public void CalculateManually(int numberOfTokens, decimal currentPrice, int times)
+        [InlineData("", 9, 0.002, 3)]
+        public void CalculateManually(string integrationName, int numberOfTokens, decimal currentPrice, int times)
         {
             var manualCostCalculator = _openAiCost.Configure(x =>
             {
                 x
                 .WithFamily(ModelFamilyType.Gpt3_5)
                 .WithType(OpenAiType.Chat);
-            });
+            }, integrationName);
             var manualCalculatedPrice = manualCostCalculator.Invoke(new OpenAiUsage
             {
                 PromptTokens = numberOfTokens * times,
@@ -40,11 +40,11 @@ namespace Rystem.OpenAi.Test
         [Theory]
         [InlineData("", ModelFamilyType.Ada, true, 40, 0.0004)]
         [InlineData("", ModelFamilyType.Ada, false, 40, 0.0016)]
-        public void CalculateCostForFineTune(string name, ModelFamilyType familyType, bool forTraining, int promptTokens, decimal price)
+        public void CalculateCostForFineTune(string integrationName, ModelFamilyType familyType, bool forTraining, int promptTokens, decimal price)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(integrationName);
             var fineTuneCost = openAiApi.FineTune
-                .Create(name)
+                .Create(integrationName)
                 .WithModel("test", familyType)
                 .CalculateCost(forTraining, promptTokens);
             Assert.Equal(price * promptTokens / 1000, fineTuneCost);
@@ -53,9 +53,9 @@ namespace Rystem.OpenAi.Test
         [InlineData("", ImageSize.Large, 9, 0.02)]
         [InlineData("", ImageSize.Medium, 9, 0.018)]
         [InlineData("", ImageSize.Small, 10, 0.016)]
-        public void CalculateCostForImage(string name, ImageSize size, int numberOfResults, decimal price)
+        public void CalculateCostForImage(string integrationName, ImageSize size, int numberOfResults, decimal price)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(integrationName);
             var imageCost = openAiApi.Image
                 .Generate("Something")
                 .WithSize(size)
@@ -67,9 +67,9 @@ namespace Rystem.OpenAi.Test
         [InlineData("", 9, 0.006)]
         [InlineData("", 5, 0.006)]
         [InlineData("", 10, 0.006)]
-        public void CalculateCostForAudio(string name, int minutes, decimal price)
+        public void CalculateCostForAudio(string integrationName, int minutes, decimal price)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(integrationName);
             var memoryStream = new MemoryStream();
             var translationCost = openAiApi.Audio
                 .Request(memoryStream, "name")
@@ -87,16 +87,16 @@ namespace Rystem.OpenAi.Test
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Completion, "", 1, "one two three four five six seven", 7, 0.02, 0, 0, "DavinciText3", false)]
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 2, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 1, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
-        public async Task CalculateCosts(ModelFamilyType model, OpenAiType type, string name, int times, string content, int numberOfTokens, decimal currentPrice, int startingAndEndingTokens, int fixedTokens, string modelType, bool imNotAbleToUnderstandHowToCalculateCompletionTokens)
+        public async Task CalculateCosts(ModelFamilyType model, OpenAiType type, string integrationName, int times, string content, int numberOfTokens, decimal currentPrice, int startingAndEndingTokens, int fixedTokens, string modelType, bool imNotAbleToUnderstandHowToCalculateCompletionTokens)
         {
             var promptedTokens = times * numberOfTokens + (times * fixedTokens) + startingAndEndingTokens;
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(integrationName);
             var manualCostCalculator = _openAiCost.Configure(configuration =>
             {
                 configuration
                     .WithFamily(model)
                     .WithType(type);
-            });
+            }, integrationName);
             var manualCalculatedPrice = manualCostCalculator.Invoke(new OpenAiUsage
             {
                 PromptTokens = promptedTokens,

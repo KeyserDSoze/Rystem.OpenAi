@@ -43,6 +43,9 @@ namespace Rystem.OpenAi.Test
                     .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
                     .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
                     .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+                settings.Price
+                    .SetFineTuneForAda(0.0004M, 0.0016M)
+                    .SetAudioForTranslation(0.006M);
             }, "Azure");
             OpenAiService.Setup(settings =>
             {

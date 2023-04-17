@@ -4,6 +4,6 @@ namespace Rystem.OpenAi
 {
     public interface IOpenAiCost
     {
-        CostCalculation Configure(Action<OpenAiCostBuilder> action);
+        CostCalculation Configure(Action<OpenAiCostBuilder> action, string integrationName);
     }
 }

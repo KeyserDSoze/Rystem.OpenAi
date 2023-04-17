@@ -113,7 +113,7 @@ namespace Rystem.OpenAi.Embedding
                 settings
                     .WithFamily(_familyType)
                     .WithType(OpenAiType.Embedding);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = tokens
             });

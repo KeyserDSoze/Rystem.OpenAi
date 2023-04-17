@@ -30,7 +30,7 @@ namespace Rystem.OpenAi
                 settings
                     .WithFamily(_familyType)
                     .WithType(type);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = usage?.PromptTokens ?? 0,
                 CompletionTokens = usage?.CompletionTokens ?? 0

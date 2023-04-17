@@ -65,7 +65,7 @@ namespace Rystem.OpenAi.Moderation
                 settings
                     .WithFamily(_familyType)
                     .WithType(OpenAiType.Moderation);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = tokens
             });

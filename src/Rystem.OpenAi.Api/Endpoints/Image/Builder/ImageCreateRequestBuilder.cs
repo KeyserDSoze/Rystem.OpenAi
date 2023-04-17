@@ -133,7 +133,7 @@ namespace Rystem.OpenAi.Image
                 settings
                     .WithType(OpenAiType.Image)
                     .WithImageSize(_size);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 ImageSize = _size,
                 Units = Request.NumberOfResults

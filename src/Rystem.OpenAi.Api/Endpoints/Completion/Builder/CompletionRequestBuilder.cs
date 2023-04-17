@@ -334,7 +334,7 @@ namespace Rystem.OpenAi.Completion
                 settings
                     .WithFamily(_familyType)
                     .WithType(OpenAiType.Completion);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = tokens
             });

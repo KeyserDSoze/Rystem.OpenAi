@@ -127,7 +127,7 @@ namespace Rystem.OpenAi.Audio
             {
                 settings
                     .WithType(OpenAiType.AudioTranscription);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 Minutes = minutes
             });
@@ -143,7 +143,7 @@ namespace Rystem.OpenAi.Audio
             {
                 settings
                     .WithType(OpenAiType.AudioTranslation);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 Minutes = minutes
             });

@@ -168,7 +168,7 @@ namespace Rystem.OpenAi.Image
                 settings
                     .WithFamily(_familyType)
                     .WithType(OpenAiType.Image);
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 ImageSize = _size,
                 Units = Request.NumberOfResults

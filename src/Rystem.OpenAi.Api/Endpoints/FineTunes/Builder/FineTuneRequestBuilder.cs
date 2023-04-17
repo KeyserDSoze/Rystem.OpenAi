@@ -157,7 +157,7 @@ namespace Rystem.OpenAi.FineTune
                 if (forTraining)
                     setup
                         .ForTraining();
-            }).Invoke(new OpenAiUsage
+            }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = promptTokens
             });

@@ -54,7 +54,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 httpClientBuilder
                      .AddPolicyHandler(defaultPolicy);
             }
-            services.TryAddSingleton(openAiSettings.Price);
+            if (!OpenAiPriceList.Instance.Prices.ContainsKey(name ?? string.Empty))
+                OpenAiPriceList.Instance.Prices.Add(name ?? string.Empty, openAiSettings.Price);
+            else
+                OpenAiPriceList.Instance.Prices[name ?? string.Empty] = openAiSettings.Price;
+            services.TryAddSingleton(OpenAiPriceList.Instance);
             services
                 .TryAddSingleton<IOpenAiUtility, OpenAiUtility>();
             services
