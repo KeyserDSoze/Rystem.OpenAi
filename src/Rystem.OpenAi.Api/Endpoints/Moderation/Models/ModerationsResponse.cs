@@ -3,11 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Moderation
 {
-    public sealed class ModerationsResponse : ApiBaseResponse
+    public sealed class ModerationResult : ApiBaseResponse
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("results")]
-        public List<ModerationResult>? Results { get; set; }
+        public List<ModerationData>? Results { get; set; }
     }
 }

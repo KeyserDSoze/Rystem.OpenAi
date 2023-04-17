@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi;
+using Rystem.OpenAi.Completion;
 using Rystem.OpenAi.Edit;
 
 namespace Rystem.OpenAi.Embedding

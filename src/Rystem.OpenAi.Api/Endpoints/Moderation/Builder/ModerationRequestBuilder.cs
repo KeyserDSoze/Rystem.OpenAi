@@ -24,8 +24,8 @@ namespace Rystem.OpenAi.Moderation
         /// Classifies if text violates OpenAI's Content Policy.
         /// </summary>
         /// <returns>Builder</returns>
-        public ValueTask<ModerationsResponse> ExecuteAsync(CancellationToken cancellationToken = default)
-            => Client.PostAsync<ModerationsResponse>(Configuration.GetUri(OpenAiType.Moderation, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
+        public ValueTask<ModerationResult> ExecuteAsync(CancellationToken cancellationToken = default)
+            => Client.PostAsync<ModerationResult>(Configuration.GetUri(OpenAiType.Moderation, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

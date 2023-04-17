@@ -122,7 +122,7 @@ namespace Rystem.OpenAi
                 Usage = usage
             });
         }
-        public OpenAiPriceSettings SetModeration(decimal usage = 0.0004M)
+        public OpenAiPriceSettings SetModeration(decimal usage = 0M)
         {
             return Set($"{OpenAiType.Moderation}_{ModelFamilyType.Moderation}", new CostFormula
             {

@@ -2,7 +2,7 @@
 
 namespace Rystem.OpenAi.Moderation
 {
-    public sealed class ModerationResult
+    public sealed class ModerationData
     {
         [JsonPropertyName("categories")]
         public ModerationCategories? Categories { get; set; }

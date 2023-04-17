@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Rystem.OpenAi.Completion;
 
 namespace Rystem.OpenAi.Edit
 {
@@ -27,6 +28,15 @@ namespace Rystem.OpenAi.Edit
         /// <returns>Builder</returns>
         public ValueTask<EditResult> ExecuteAsync(CancellationToken cancellationToken = default)
             => Client.PostAsync<EditResult>(Configuration.GetUri(OpenAiType.Edit, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
+        /// <summary>
+        /// Execute operation.
+        /// </summary>
+        /// <returns>CostResult<EditResult></returns>
+        public async ValueTask<CostResult<EditResult>> ExecuteAndCalculateCostAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await ExecuteAsync(cancellationToken);
+            return new CostResult<EditResult>(response, () => CalculateCost(OpenAiType.Edit, response?.Usage));
+        }
         /// <summary>
         /// ID of the model to use.
         /// </summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi;
@@ -30,7 +31,7 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// Execute operation.
         /// </summary>
-        /// <returns>Builder</returns>
+        /// <returns>ChatResult</returns>
         public ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
@@ -39,7 +40,7 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// Execute operation.
         /// </summary>
-        /// <returns>Builder</returns>
+        /// <returns>CostResult<ChatResult></returns>
         public async ValueTask<CostResult<ChatResult>> ExecuteAndCalculateCostAsync(CancellationToken cancellationToken = default)
         {
             var response = await ExecuteAsync(cancellationToken);
@@ -48,11 +49,23 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
-        /// <returns>Builder</returns>
+        /// <returns>ChatResult</returns>
         public IAsyncEnumerable<ChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
             return Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced), Request, HttpMethod.Post, Configuration, cancellationToken);
+        }
+        /// <summary>
+        /// Specifies where the results should stream and be returned at one time.
+        /// </summary>
+        /// <returns>CostResult<ChatResult></returns>
+        public async IAsyncEnumerable<CostResult<ChatResult>> ExecuteAsStreamAndCalculateCostAsync(
+           [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await foreach (var response in ExecuteAsStreamAsync(cancellationToken))
+            {
+                yield return new CostResult<ChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.Usage));
+            }
         }
         /// <summary>
         /// Add a message to the request

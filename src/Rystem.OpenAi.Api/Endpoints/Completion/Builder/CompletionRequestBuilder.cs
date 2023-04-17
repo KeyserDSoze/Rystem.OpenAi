@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,21 +30,42 @@ namespace Rystem.OpenAi.Completion
         /// <summary>
         /// Execute operation.
         /// </summary>
-        /// <returns>Builder</returns>
+        /// <returns>CompletionResult</returns>
         public ValueTask<CompletionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
             return Client.PostAsync<CompletionResult>(Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
         }
         /// <summary>
+        /// Execute operation.
+        /// </summary>
+        /// <returns>CostResult<CompletionResult></returns>
+        public async ValueTask<CostResult<CompletionResult>> ExecuteAndCalculateCostAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await ExecuteAsync(cancellationToken);
+            return new CostResult<CompletionResult>(response, () => CalculateCost(OpenAiType.Completion, response?.Usage));
+        }
+        /// <summary>
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
-        /// <returns>Builder</returns>
+        /// <returns>CompletionResult</returns>
         public IAsyncEnumerable<CompletionResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
             Request.BestOf = null;
             return Client.StreamAsync<CompletionResult>(Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced), Request, HttpMethod.Post, Configuration, cancellationToken);
+        }
+        /// <summary>
+        /// Specifies where the results should stream and be returned at one time.
+        /// </summary>
+        /// <returns>CostResult<CompletionResult></returns>
+        public async IAsyncEnumerable<CostResult<CompletionResult>> ExecuteAsStreamAndCalculateCostAsync(
+           [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await foreach (var response in ExecuteAsStreamAsync(cancellationToken))
+            {
+                yield return new CostResult<CompletionResult>(response, () => CalculateCost(OpenAiType.Completion, response?.Usage));
+            }
         }
         /// <summary>
         /// Add further prompt to the request.
