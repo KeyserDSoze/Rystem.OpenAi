@@ -116,6 +116,39 @@ namespace Rystem.OpenAi.Audio
             Request.Language = language.ToIso639_1();
             return this;
         }
-        //todo Create calculation for audio with minutes
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCostForTranscription(int minutes = 0)
+        {
+            var cost = Utility.Cost;
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.AudioTranscription);
+            }).Invoke(new OpenAiUsage
+            {
+                Minutes = minutes
+            });
+        }
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCostForTranslation(int minutes = 0)
+        {
+            var cost = Utility.Cost;
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.AudioTranslation);
+            }).Invoke(new OpenAiUsage
+            {
+                Minutes = minutes
+            });
+        }
     }
 }

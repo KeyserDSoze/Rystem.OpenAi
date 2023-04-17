@@ -118,16 +118,12 @@ namespace Rystem.OpenAi.Edit
         public decimal CalculateCost()
         {
             var tokenizer = Utility.Tokenizer.WithEditModel(_modelType);
-            var cost = Utility.Cost;
-            var tokens = tokenizer.Encode(Request.Instruction).NumberOfTokens + tokenizer.Encode(Request.Input).NumberOfTokens;
-            return cost.Configure(settings =>
+            var promptTokens = tokenizer.Encode(Request.Instruction).NumberOfTokens + 11;
+            if (Request?.Input != null)
+                promptTokens += tokenizer.Encode(Request.Input).NumberOfTokens + 1;
+            return CalculateCost(OpenAiType.Edit, new CompletionUsage
             {
-                settings
-                    .WithFamily(_familyType)
-                    .WithType(OpenAiType.Edit);
-            }).Invoke(new OpenAiUsage
-            {
-                PromptTokens = tokens
+                PromptTokens = promptTokens
             });
         }
     }

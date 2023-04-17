@@ -1,5 +1,4 @@
-﻿using System.Drawing.Printing;
-using Rystem.OpenAi.Image;
+﻿using Rystem.OpenAi.Image;
 
 namespace Rystem.OpenAi
 {

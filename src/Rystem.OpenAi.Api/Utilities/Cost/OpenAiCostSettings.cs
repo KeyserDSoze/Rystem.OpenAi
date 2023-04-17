@@ -22,7 +22,8 @@ namespace Rystem.OpenAi
             SetImage(ImageSize.Large, 0.02M);
             SetImage(ImageSize.Medium, 0.018M);
             SetImage(ImageSize.Small, 0.016M);
-            SetAudio();
+            SetAudioForTranslation();
+            SetAudioForTranscription();
             SetModeration();
         }
         private OpenAiPriceSettings Set(string key, CostFormula formula)
@@ -64,31 +65,43 @@ namespace Rystem.OpenAi
         }
         public OpenAiPriceSettings SetAda(decimal usage = 0.0004M)
         {
-            return Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", new CostFormula
+            var formula = new CostFormula
             {
                 Usage = usage
-            });
+            };
+            return
+                Set($"{OpenAiType.Edit}_{ModelFamilyType.Ada}", formula)
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula);
         }
         public OpenAiPriceSettings SetBabbage(decimal usage = 0.0005M)
         {
-            return Set($"{OpenAiType.Completion}_{ModelFamilyType.Babbage}", new CostFormula
+            var formula = new CostFormula
             {
                 Usage = usage
-            });
+            };
+            return
+                Set($"{OpenAiType.Edit}_{ModelFamilyType.Babbage}", formula)
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Babbage}", formula);
         }
         public OpenAiPriceSettings SetCurie(decimal usage = 0.002M)
         {
-            return Set($"{OpenAiType.Completion}_{ModelFamilyType.Curie}", new CostFormula
+            var formula = new CostFormula
             {
                 Usage = usage
-            });
+            };
+            return
+                Set($"{OpenAiType.Edit}_{ModelFamilyType.Curie}", formula)
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Curie}", formula);
         }
         public OpenAiPriceSettings SetDavinci(decimal usage = 0.02M)
         {
-            return Set($"{OpenAiType.Completion}_{ModelFamilyType.Davinci}", new CostFormula
+            var formula = new CostFormula
             {
                 Usage = usage
-            });
+            };
+            return
+                Set($"{OpenAiType.Edit}_{ModelFamilyType.Davinci}", formula)
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Davinci}", formula);
         }
         public OpenAiPriceSettings SetFineTuneForAda(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
@@ -135,7 +148,14 @@ namespace Rystem.OpenAi
             {
                 PerUnit = perUnit,
             });
-        public OpenAiPriceSettings SetAudio(decimal perMinute = 0.006M)
+        public OpenAiPriceSettings SetAudioForTranslation(decimal perMinute = 0.006M)
+        {
+            return Set($"{OpenAiType.AudioTranslation}", new CostFormula
+            {
+                PerMinute = perMinute
+            });
+        }
+        public OpenAiPriceSettings SetAudioForTranscription(decimal perMinute = 0.006M)
         {
             return Set($"{OpenAiType.AudioTranscription}", new CostFormula
             {
