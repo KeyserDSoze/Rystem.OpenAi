@@ -1,5 +1,7 @@
 ﻿# Unofficial Fluent C#/.NET SDK for accessing the OpenAI API (Easy swap among OpenAi and Azure OpenAi)
 
+## Last update with Cost and Tokens calculation
+
 A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API.
 
 [![MIT License](https://img.shields.io/github/license/dotnet/aspnetcore?color=%230b0&style=flat-square)](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/LICENSE.txt) 
@@ -74,6 +76,9 @@ Install-Package Rystem.OpenAi
   - [Create Moderation](#create-moderation)
 - [Utilities](#utilities)
   - [Cosine similarity](#cosine-similarity)
+  - [Tokens](#tokens)
+  - [Cost](#cost)
+  - [Setup Price](#setup-price)
 
 
 ## Startup Setup
@@ -570,3 +575,72 @@ Here an example from Unit test.
 Without DI, you need to setup an OpenAiService [without Dependency Injection](#without-dependency-injection) and after that you can use
 
     IOpenAiUtility openAiUtility = OpenAiService.Utility();
+
+### Tokens
+[📖 Back to summary](#documentation)\
+You can think of tokens as pieces of words, where 1,000 tokens is about 750 words. You can calculate your request tokens with the Tokenizer service in Utility.
+
+    IOpenAiUtility _openAiUtility
+    var encoded = _openAiUtility.Tokenizer
+        .WithChatModel(ChatModelType.Gpt4)
+        .Encode(value);
+    Assert.Equal(numberOfTokens, encoded.NumberOfTokens);
+    var decoded = _openAiUtility.Tokenizer.Decode(encoded.EncodedTokens);
+    Assert.Equal(value, decoded);
+
+### Cost
+[📖 Back to summary](#documentation)\
+You can think of tokens as pieces of words, where 1,000 tokens is about 750 words.
+
+    IOpenAiCost _openAiCost;
+    var integrationName = "Azure";
+    var manualCostCalculator = _openAiCost.Configure(x =>
+    {
+        x
+        .WithFamily(ModelFamilyType.Gpt3_5)
+        .WithType(OpenAiType.Chat);
+    }, integrationName);
+    var manualCalculatedPrice = manualCostCalculator.Invoke(new OpenAiUsage
+    {
+        PromptTokens = numberOfTokens * times,
+    });
+
+You may get price for your request directly from any endpoint
+
+     var chat = openAiApi.Chat
+            .Request(new ChatMessage { Role = ChatRole.User, Content = content })
+            .WithModel(chatModel)
+            .WithTemperature(1);
+     var costForRequest = chat.CalculateCost();
+
+You can get the cost for current request
+    
+    var chat = openAiApi.Chat
+            .Request(new ChatMessage { Role = ChatRole.User, Content = content })
+            .WithModel(chatModel)
+            .WithTemperature(1);
+     var responseForChatWithCost = await chat.ExecuteAndCalculateCostAsync();
+     var costForRequestAndResponse = responseForChatWithCost.CalculateCost();
+
+### Setup price
+[📖 Back to summary](#documentation)\
+During setup of your OpenAi service you may add your custom price table with settings.Price property.
+
+    services.AddOpenAi(settings =>
+    {
+        settings.ApiKey = azureApiKey;
+        settings
+            .UseVersionForChat("2023-03-15-preview");
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.AppRegistration.ClientId = clientId;
+        settings.Azure.AppRegistration.ClientSecret = clientSecret;
+        settings.Azure.AppRegistration.TenantId = tenantId;
+        settings.Azure
+            .AddDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+            .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+            .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+            .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+        settings.Price
+            .SetFineTuneForAda(0.2M, 0.2M)
+            .SetAudioForTranslation(0.2M);
+    }, "Azure");
