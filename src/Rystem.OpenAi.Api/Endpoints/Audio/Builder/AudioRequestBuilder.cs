@@ -126,7 +126,6 @@ namespace Rystem.OpenAi.Audio
             return cost.Configure(settings =>
             {
                 settings
-                    .WithFamily(_familyType)
                     .WithType(OpenAiType.AudioTranscription);
             }).Invoke(new OpenAiUsage
             {
@@ -143,7 +142,6 @@ namespace Rystem.OpenAi.Audio
             return cost.Configure(settings =>
             {
                 settings
-                    .WithFamily(_familyType)
                     .WithType(OpenAiType.AudioTranslation);
             }).Invoke(new OpenAiUsage
             {

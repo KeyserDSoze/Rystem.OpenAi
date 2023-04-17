@@ -141,6 +141,26 @@ namespace Rystem.OpenAi.FineTune
             Request.Suffix = value;
             return this;
         }
-        //todo calculate cost and download the file to calculate the current cost
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <param name="forTraining">True calculate cost for tokens during training, with False calculate the cost for usage.</param>
+        /// <param name="promptTokens">Number of tokens during training/usage.</param>
+        /// <returns></returns>
+        public decimal CalculateCost(bool forTraining, int promptTokens)
+        {
+            return Utility.Cost.Configure(setup =>
+            {
+                setup
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.FineTune);
+                if (forTraining)
+                    setup
+                        .ForTraining();
+            }).Invoke(new OpenAiUsage
+            {
+                PromptTokens = promptTokens
+            });
+        }
     }
 }

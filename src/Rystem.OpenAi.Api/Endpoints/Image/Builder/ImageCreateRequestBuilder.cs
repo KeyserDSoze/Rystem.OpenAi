@@ -131,8 +131,8 @@ namespace Rystem.OpenAi.Image
             return cost.Configure(settings =>
             {
                 settings
-                    .WithFamily(_familyType)
-                    .WithType(OpenAiType.Image);
+                    .WithType(OpenAiType.Image)
+                    .WithImageSize(_size);
             }).Invoke(new OpenAiUsage
             {
                 ImageSize = _size,

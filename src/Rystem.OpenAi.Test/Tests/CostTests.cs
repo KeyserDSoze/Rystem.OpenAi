@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Rystem.OpenAi.Chat;
+using Rystem.OpenAi.Image;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -34,6 +36,49 @@ namespace Rystem.OpenAi.Test
                 PromptTokens = numberOfTokens * times,
             });
             Assert.Equal(times * numberOfTokens * currentPrice / 1_000, manualCalculatedPrice);
+        }
+        [Theory]
+        [InlineData("", ModelFamilyType.Ada, true, 40, 0.0004)]
+        [InlineData("", ModelFamilyType.Ada, false, 40, 0.0016)]
+        public void CalculateCostForFineTune(string name, ModelFamilyType familyType, bool forTraining, int promptTokens, decimal price)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            var fineTuneCost = openAiApi.FineTune
+                .Create(name)
+                .WithModel("test", familyType)
+                .CalculateCost(forTraining, promptTokens);
+            Assert.Equal(price * promptTokens / 1000, fineTuneCost);
+        }
+        [Theory]
+        [InlineData("", ImageSize.Large, 9, 0.02)]
+        [InlineData("", ImageSize.Medium, 9, 0.018)]
+        [InlineData("", ImageSize.Small, 10, 0.016)]
+        public void CalculateCostForImage(string name, ImageSize size, int numberOfResults, decimal price)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            var imageCost = openAiApi.Image
+                .Generate("Something")
+                .WithSize(size)
+                .WithNumberOfResults(numberOfResults)
+                .CalculateCost();
+            Assert.Equal(price * numberOfResults, imageCost);
+        }
+        [Theory]
+        [InlineData("", 9, 0.006)]
+        [InlineData("", 5, 0.006)]
+        [InlineData("", 10, 0.006)]
+        public void CalculateCostForAudio(string name, int minutes, decimal price)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            var memoryStream = new MemoryStream();
+            var translationCost = openAiApi.Audio
+                .Request(memoryStream, "name")
+                .CalculateCostForTranslation(minutes);
+            var transcriptionCost = openAiApi.Audio
+                .Request(memoryStream, "name")
+                .CalculateCostForTranscription(minutes);
+            Assert.Equal(price * minutes, translationCost);
+            Assert.Equal(price * minutes, transcriptionCost);
         }
         [Theory]
         [InlineData(ModelFamilyType.Gpt3_5, OpenAiType.Chat, "", 1, "This model is the perfect model for you.", 9, 0.002, 3, 5, "Gpt35Turbo", false)]

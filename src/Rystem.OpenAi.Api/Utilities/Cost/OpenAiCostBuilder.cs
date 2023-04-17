@@ -46,7 +46,7 @@ namespace Rystem.OpenAi
                 forKeys.Add(_imageSize.Value.ToString());
             var forCalculation = _price.Settings[string.Join("_", forKeys)];
             return new CostCalculation((usage)
-                => forCalculation.Calculate(_isTraining ? usage.PromptTokens : 0, usage.PromptTokens + usage.CompletionTokens, usage.Minutes, usage.Units, usage.PromptTokens, usage.CompletionTokens));
+                => forCalculation.Calculate(_isTraining ? usage.PromptTokens : 0, !_isTraining ? usage.PromptTokens + usage.CompletionTokens : 0, usage.Minutes, usage.Units, !_isTraining ? usage.PromptTokens : 0, !_isTraining ? usage.CompletionTokens : 0));
         }
     }
 }
