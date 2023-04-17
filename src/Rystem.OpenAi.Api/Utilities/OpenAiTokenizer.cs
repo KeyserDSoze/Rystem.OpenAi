@@ -6,13 +6,6 @@ namespace Rystem.OpenAi
     internal sealed class OpenAiTokenizer : IOpenAiTokenizer
     {
         private BpeEconding _encoder = BpeInMemory.GetEncoder(null);
-        private readonly IOpenAiCost _openAiCost;
-
-        public OpenAiTokenizer(IOpenAiCost openAiCost)
-        {
-            _openAiCost = openAiCost;
-        }
-
         public IOpenAiTokenizer WithModel(string modelId)
         {
             _encoder = BpeInMemory.GetEncoder(modelId);
@@ -32,13 +25,9 @@ namespace Rystem.OpenAi
             => _encoder.Decode(tokens);
         public string Decode(BytePairEncodingType type, List<int> tokens)
             => BpeInMemory.GetRight(type).Decode(tokens);
-        public List<int> Encode(string text)
-            => _encoder.Encode(text);
-        public List<int> Encode(BytePairEncodingType type, string text)
-            => BpeInMemory.GetRight(type).Encode(text);
-        public decimal GetCost(string text)
-            => _openAiCost.Get(Encode(text));
-        public decimal GetCost(BytePairEncodingType type, string text)
-            => _openAiCost.Get(Encode(type, text));
+        public BytePairEncodingResponse Encode(string? text)
+            => text != null ? _encoder.Encode(text) : BytePairEncodingResponse.Default;
+        public BytePairEncodingResponse Encode(BytePairEncodingType type, string? text)
+            => text != null ? BpeInMemory.GetRight(type).Encode(text) : BytePairEncodingResponse.Default;
     }
 }

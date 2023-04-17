@@ -1,22 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace Rystem.OpenAi
 {
     internal sealed class OpenAiCost : IOpenAiCost
     {
-        private readonly OpenAiCostSettings _price;
-        public OpenAiCost(OpenAiSettings settings)
+        private readonly OpenAiPriceSettings _price;
+        public OpenAiCost(OpenAiPriceSettings price)
         {
-            _price = settings.Price;
+            _price = price;
         }
-        public decimal Get(List<int> tokens)
+        public CostCalculation Configure(Action<OpenAiCostBuilder> action)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public decimal Get(int numberOfTokens)
-        {
-            throw new System.NotImplementedException();
+            var costBuilder = new OpenAiCostBuilder(_price);
+            action.Invoke(costBuilder);
+            return costBuilder.Calculate();
         }
     }
 }

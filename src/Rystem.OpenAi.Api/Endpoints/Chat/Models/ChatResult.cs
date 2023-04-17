@@ -22,6 +22,6 @@ namespace Rystem.OpenAi.Chat
         /// API token usage as reported by the OpenAI API for this request
         /// </summary>
         [JsonPropertyName("usage")]
-        public ChatUsage? Usage { get; set; }
+        public CompletionUsage? Usage { get; set; }
     }
 }

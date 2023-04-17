@@ -54,6 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 httpClientBuilder
                      .AddPolicyHandler(defaultPolicy);
             }
+            services.TryAddSingleton(openAiSettings.Price);
             services
                 .TryAddSingleton<IOpenAiUtility, OpenAiUtility>();
             services

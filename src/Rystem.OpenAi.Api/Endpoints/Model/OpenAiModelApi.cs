@@ -9,8 +9,8 @@ namespace Rystem.OpenAi
     internal sealed class OpenAiModelApi : OpenAiBase, IOpenAiModelApi
     {
         private readonly bool _forced;
-        public OpenAiModelApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiModelApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
         }

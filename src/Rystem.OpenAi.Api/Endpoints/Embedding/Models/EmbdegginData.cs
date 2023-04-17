@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Embedding
     /// <summary>
     /// Data returned from the Embedding API.
     /// </summary>
-    public class EmbdegginData
+    public class EmbeddingData
     {
         /// <summary>
         /// Type of the response. In case of Data, this will be "embedding"  

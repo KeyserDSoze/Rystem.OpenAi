@@ -15,6 +15,17 @@
                     return s_textModerationLatest;
             }
         }
+        public static ModelFamilyType ToFamily(this ModerationModelType type)
+        {
+            switch (type)
+            {
+                case ModerationModelType.TextModerationStable:
+                    return ModelFamilyType.Moderation;
+                default:
+                case ModerationModelType.TextModerationLatest:
+                    return ModelFamilyType.Moderation;
+            }
+        }
         public static string ToModelId(this ModerationModelType type)
             => type.ToModel().Id!;
     }

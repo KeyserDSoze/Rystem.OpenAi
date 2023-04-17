@@ -17,6 +17,6 @@ namespace Rystem.OpenAi.Edit
         /// Usage statistics of how many tokens have been used for this request
         /// </summary>
         [JsonPropertyName("usage")]
-        public EditUsage? Usage { get; set; }
+        public CompletionUsage? Usage { get; set; }
     }
 }

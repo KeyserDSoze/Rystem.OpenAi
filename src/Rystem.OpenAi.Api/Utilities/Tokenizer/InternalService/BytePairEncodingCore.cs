@@ -47,9 +47,10 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         public Regex RegexTls { get; }
         public Regex SpecialTokenPatternRegex { get; }
 
-        public (List<int>, int) EncodeNative(string text, ISet<string> allowedSpecial)
+        public BytePairEncodingResponse EncodeNative(string text, ISet<string> allowedSpecial)
         {
             var encodedTokens = new List<int>();
+            var allTokens = new List<string>();
             var startIndex = 0;
             var lastTokenLength = 0;
 
@@ -63,6 +64,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
                 foreach (var match in RegexTls.Matches(textSegment).Cast<Match>())
                 {
+                    allTokens.Add(match.Value);
                     var encodedPiece = Encoding.UTF8.GetBytes(match.Value);
                     if (Encoder.TryGetValue(encodedPiece, out var token))
                     {
@@ -90,7 +92,12 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 }
             }
 
-            return (encodedTokens, lastTokenLength);
+            return new BytePairEncodingResponse
+            {
+                EncodedTokens = encodedTokens,
+                LastTokenLength = lastTokenLength,
+                Tokens = allTokens
+            };
         }
 
         private static int? FindNextSpecialStartIndex(string text, ISet<string> allowedSpecial, int startIndex,

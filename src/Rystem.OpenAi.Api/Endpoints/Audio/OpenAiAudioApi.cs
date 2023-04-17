@@ -6,11 +6,13 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiAudioApi : OpenAiBase, IOpenAiAudioApi
     {
-        public OpenAiAudioApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiAudioApi(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
         }
         public AudioRequestBuilder Request(Stream file, string fileName = "default")
-            => new AudioRequestBuilder(_client, _configuration, file, fileName);
+            => new AudioRequestBuilder(_client, _configuration, file, fileName, _utility);
     }
 }

@@ -15,6 +15,17 @@
                     return s_codeDavinciEdit;
             }
         }
+        public static ModelFamilyType ToFamily(this EditModelType type)
+        {
+            switch (type)
+            {
+                case EditModelType.TextDavinciEdit:
+                    return ModelFamilyType.Davinci;
+                default:
+                case EditModelType.CodeDavinciEdit:
+                    return ModelFamilyType.Davinci;
+            }
+        }
         public static string ToModelId(this EditModelType type)
             => type.ToModel().Id!;
     }

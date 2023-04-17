@@ -1,11 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.Completion
+namespace Rystem.OpenAi
 {
     /// <summary>
     /// API usage as reported by the OpenAI API for this request
     /// </summary>
-    public class CompletionUsage : Usage
+    public sealed class CompletionUsage : Usage
     {
         /// <summary>
         /// How many tokens are in the completion(s)

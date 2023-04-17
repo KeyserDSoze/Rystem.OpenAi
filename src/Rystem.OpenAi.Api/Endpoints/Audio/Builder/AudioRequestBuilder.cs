@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Dynamic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -11,7 +10,7 @@ namespace Rystem.OpenAi.Audio
     public sealed class AudioRequestBuilder : RequestBuilder<AudioRequest>
     {
         internal AudioRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            Stream audio, string audioName) :
+            Stream audio, string audioName, IOpenAiUtility utility) :
             base(client, configuration, () =>
             {
                 var request = new AudioRequest()
@@ -23,8 +22,9 @@ namespace Rystem.OpenAi.Audio
                 request.Audio = memoryStream;
                 request.AudioName = audioName ?? "default";
                 return request;
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Whisper;
         }
         internal const string ResponseFormatJson = "json";
         /// <summary>
@@ -34,27 +34,27 @@ namespace Rystem.OpenAi.Audio
         /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranscriptAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ResponseFormatJson;
+            Request.ResponseFormat = ResponseFormatJson;
             using var content = new MultipartFormDataContent();
-            if (_request.Audio != null)
+            if (Request.Audio != null)
             {
-                var byteContent = new ByteArrayContent(_request.Audio.ToArray());
-                content.Add(byteContent, "file", _request.AudioName);
+                var byteContent = new ByteArrayContent(Request.Audio.ToArray());
+                content.Add(byteContent, "file", Request.AudioName);
             }
-            if (_request.ModelId != null)
-                content.Add(new StringContent(_request.ModelId.ToString()), "model");
-            if (_request.Prompt != null)
-                content.Add(new StringContent(_request.Prompt), "prompt");
-            if (_request.ResponseFormat != null)
-                content.Add(new StringContent(_request.ResponseFormat), "response_format");
-            if (_request.Language != null)
-                content.Add(new StringContent(_request.Language), "language");
-            if (_request.Temperature != null)
-                content.Add(new StringContent(_request.Temperature.ToString()), "temperature");
+            if (Request.ModelId != null)
+                content.Add(new StringContent(Request.ModelId.ToString()), "model");
+            if (Request.Prompt != null)
+                content.Add(new StringContent(Request.Prompt), "prompt");
+            if (Request.ResponseFormat != null)
+                content.Add(new StringContent(Request.ResponseFormat), "response_format");
+            if (Request.Language != null)
+                content.Add(new StringContent(Request.Language), "language");
+            if (Request.Temperature != null)
+                content.Add(new StringContent(Request.Temperature.ToString()), "temperature");
 
-            _request.Dispose();
+            Request.Dispose();
 
-            var response = await _client.PostAsync<AudioResult>(_configuration.GetUri(OpenAiType.AudioTranscription, _request.ModelId!, _forced), content, _configuration, cancellationToken);
+            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranscription, Request.ModelId!, _forced), content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
@@ -64,22 +64,22 @@ namespace Rystem.OpenAi.Audio
         /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ResponseFormatJson;
+            Request.ResponseFormat = ResponseFormatJson;
             using var content = new MultipartFormDataContent();
-            if (_request.Audio != null)
-                content.Add(new ByteArrayContent(_request.Audio.ToArray()), "file", _request.AudioName);
-            if (_request.ModelId != null)
-                content.Add(new StringContent(_request.ModelId.ToString()), "model");
-            if (_request.Prompt != null)
-                content.Add(new StringContent(_request.Prompt), "prompt");
-            if (_request.ResponseFormat != null)
-                content.Add(new StringContent(_request.ResponseFormat), "response_format");
-            if (_request.Temperature != null)
-                content.Add(new StringContent(_request.Temperature.ToString()), "temperature");
+            if (Request.Audio != null)
+                content.Add(new ByteArrayContent(Request.Audio.ToArray()), "file", Request.AudioName);
+            if (Request.ModelId != null)
+                content.Add(new StringContent(Request.ModelId.ToString()), "model");
+            if (Request.Prompt != null)
+                content.Add(new StringContent(Request.Prompt), "prompt");
+            if (Request.ResponseFormat != null)
+                content.Add(new StringContent(Request.ResponseFormat), "response_format");
+            if (Request.Temperature != null)
+                content.Add(new StringContent(Request.Temperature.ToString()), "temperature");
 
-            _request.Dispose();
+            Request.Dispose();
 
-            var response = await _client.PostAsync<AudioResult>(_configuration.GetUri(OpenAiType.AudioTranslation, _request.ModelId!, _forced), content, _configuration, cancellationToken);
+            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranslation, Request.ModelId!, _forced), content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
@@ -89,7 +89,7 @@ namespace Rystem.OpenAi.Audio
         /// <returns>AudioRequestBuilder</returns>
         public AudioRequestBuilder WithPrompt(string prompt)
         {
-            _request.Prompt = prompt;
+            Request.Prompt = prompt;
             return this;
         }
         /// <summary>
@@ -103,7 +103,7 @@ namespace Rystem.OpenAi.Audio
                 throw new ArgumentException("Temperature with a value lesser than 0");
             if (temperature > 1)
                 throw new ArgumentException("Temperature with a value greater than 1");
-            _request.Temperature = temperature;
+            Request.Temperature = temperature;
             return this;
         }
         /// <summary>
@@ -113,8 +113,9 @@ namespace Rystem.OpenAi.Audio
         /// <returns></returns>
         public AudioRequestBuilder WithLanguage(Language language)
         {
-            _request.Language = language.ToIso639_1();
+            Request.Language = language.ToIso639_1();
             return this;
         }
+        //todo Create calculation for audio with minutes
     }
 }

@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.Image
         public string? ImageName { get; set; }
         public MemoryStream? Mask { get; set; }
         public string? MaskName { get; set; }
-        public int? NumberOfResults { get; set; }
+        public int NumberOfResults { get; set; }
         public string? Size { get; set; }
         public string? User { get; set; }
         public string? ResponseFormat { get; set; }

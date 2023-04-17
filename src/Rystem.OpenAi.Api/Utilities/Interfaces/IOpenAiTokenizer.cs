@@ -13,9 +13,7 @@ namespace Rystem.OpenAi
         IOpenAiTokenizer WithModerationModel(ModerationModelType moderationModelType);
         string Decode(List<int> tokens);
         string Decode(BytePairEncodingType type, List<int> tokens);
-        List<int> Encode(string text);
-        List<int> Encode(BytePairEncodingType type, string text);
-        decimal GetCost(string text);
-        decimal GetCost(BytePairEncodingType type, string text);
+        BytePairEncodingResponse Encode(string? text);
+        BytePairEncodingResponse Encode(BytePairEncodingType type, string? text);
     }
 }

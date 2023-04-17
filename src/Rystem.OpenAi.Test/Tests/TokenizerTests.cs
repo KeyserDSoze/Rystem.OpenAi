@@ -11,12 +11,12 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("This model is the perfect model for you.", 9)]
-        [InlineData("Multiple models, each with different capabilities and price points. Prices are per 1,000 tokens. You can think of tokens as pieces of words, where 1,000 tokens is about 750 words. This paragraph is 35 tokens.", 35)]
+        [InlineData("Multiple models, each with different capabilities and price points. Prices are per 1000 tokens. You can think of tokens as pieces of words, where 1000 tokens is about 750 words.", 40)]
         public void Gpt4(string value, int numberOfTokens)
         {
             var encoded = _openAiUtility.Tokenizer.WithChatModel(ChatModelType.Gpt4).Encode(value);
-            Assert.Equal(numberOfTokens, encoded.Count);
-            var decoded = _openAiUtility.Tokenizer.Decode(encoded);
+            Assert.Equal(numberOfTokens, encoded.NumberOfTokens);
+            var decoded = _openAiUtility.Tokenizer.Decode(encoded.EncodedTokens);
             Assert.Equal(value, decoded);
         }
     }

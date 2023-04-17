@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
 
 namespace Rystem.OpenAi.Edit
 {
     public sealed class EditRequestBuilder : RequestBuilder<EditRequest>
     {
-        internal EditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string instruction) :
+        private EditModelType _modelType;
+        internal EditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string instruction, IOpenAiUtility utility) :
             base(client, configuration, () =>
             {
                 return new EditRequest
@@ -17,34 +16,41 @@ namespace Rystem.OpenAi.Edit
                     Instruction = instruction,
                     ModelId = EditModelType.TextDavinciEdit.ToModel().Id
                 };
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Davinci;
+            _modelType = EditModelType.TextDavinciEdit;
         }
         /// <summary>
         /// Creates a new edit for the provided input, instruction, and parameters.
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EditResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<EditResult>(_configuration.GetUri(OpenAiType.Edit, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
+            => Client.PostAsync<EditResult>(Configuration.GetUri(OpenAiType.Edit, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="model">Model</param>
         /// <returns>Builder</returns>
         public EditRequestBuilder WithModel(EditModelType model)
         {
-            _request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel().Id;
+            _familyType = model.ToFamily();
+            _modelType = model;
             return this;
         }
         /// <summary>
-        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
+        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.ListAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
         /// <param name="modelId">Override with a custom model id</param>
+        /// <param name="basedOnFamily">Family of your custom model</param>
         /// <returns>Builder</returns>
-        public EditRequestBuilder WithModel(string modelId)
+        public EditRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            _request.ModelId = modelId;
+            Request.ModelId = modelId;
             _forced = true;
+            if (basedOnFamily != null)
+                _familyType = basedOnFamily.Value;
             return this;
         }
         /// <summary>
@@ -54,7 +60,7 @@ namespace Rystem.OpenAi.Edit
         /// <returns></returns>
         public EditRequestBuilder SetInput(string input)
         {
-            _request.Input = input;
+            Request.Input = input;
             return this;
         }
         /// <summary>
@@ -68,7 +74,7 @@ namespace Rystem.OpenAi.Edit
                 throw new ArgumentException("Temperature with a value lesser than 0");
             if (value > 2)
                 throw new ArgumentException("Temperature with a value greater than 2");
-            _request.Temperature = value;
+            Request.Temperature = value;
             return this;
         }
         /// <summary>
@@ -82,7 +88,7 @@ namespace Rystem.OpenAi.Edit
                 throw new ArgumentException("Nucleus sampling with a value lesser than 0");
             if (value > 1)
                 throw new ArgumentException("Nucleus sampling with a value greater than 1");
-            _request.TopP = value;
+            Request.TopP = value;
             return this;
         }
         /// <summary>
@@ -92,8 +98,27 @@ namespace Rystem.OpenAi.Edit
         /// <returns>Builder</returns>
         public EditRequestBuilder WithNumberOfChoicesPerPrompt(int value)
         {
-            _request.NumberOfChoicesPerPrompt = value;
+            Request.NumberOfChoicesPerPrompt = value;
             return this;
+        }
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCost()
+        {
+            var tokenizer = Utility.Tokenizer.WithEditModel(_modelType);
+            var cost = Utility.Cost;
+            var tokens = tokenizer.Encode(Request.Instruction).NumberOfTokens + tokenizer.Encode(Request.Input).NumberOfTokens;
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.Edit);
+            }).Invoke(new OpenAiUsage
+            {
+                PromptTokens = tokens
+            });
         }
     }
 }

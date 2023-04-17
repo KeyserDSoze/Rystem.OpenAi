@@ -12,6 +12,15 @@
                     return s_adaTextEmbedding;
             }
         }
+        public static ModelFamilyType ToFamily(this EmbeddingModelType type)
+        {
+            switch (type)
+            {
+                default:
+                case EmbeddingModelType.AdaTextEmbedding:
+                    return ModelFamilyType.Ada;
+            }
+        }
         public static string ToModelId(this EmbeddingModelType type)
             => type.ToModel().Id!;
     }

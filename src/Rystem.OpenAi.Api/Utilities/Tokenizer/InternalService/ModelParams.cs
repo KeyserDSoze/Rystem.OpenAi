@@ -5,20 +5,20 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
     internal sealed class ModelParams
     {
         public int? ExplicitNVocab { get; }
-        public string PatStr { get; }
+        public string Regex { get; }
         public Dictionary<byte[], int> MergeableRanks { get; }
         public Dictionary<string, int> SpecialTokens { get; }
 
         public ModelParams(
-            int? explicitNVocab = null,
-            string patStr = null!,
-            Dictionary<byte[], int> mergeableRanks = null!,
-            Dictionary<string, int>? specialTokens = null)
+            string regex,
+            Dictionary<byte[], int> mergeableRanks,
+            Dictionary<string, int> specialTokens,
+            int? explicitNVocab = null)
         {
             ExplicitNVocab = explicitNVocab;
-            PatStr = patStr;
+            Regex = regex;
             MergeableRanks = mergeableRanks;
-            SpecialTokens = specialTokens ?? new Dictionary<string, int>();
+            SpecialTokens = specialTokens;
         }
     }
 }

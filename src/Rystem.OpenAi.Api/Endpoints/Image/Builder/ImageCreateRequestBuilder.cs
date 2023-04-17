@@ -11,7 +11,8 @@ namespace Rystem.OpenAi.Image
 {
     public sealed class ImageCreateRequestBuilder : RequestBuilder<ImageCreateRequest>
     {
-        internal ImageCreateRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string prompt)
+        private ImageSize _size;
+        internal ImageCreateRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string prompt, IOpenAiUtility utility)
             : base(client, configuration, () =>
             {
                 return new ImageCreateRequest()
@@ -21,8 +22,10 @@ namespace Rystem.OpenAi.Image
                     Size = ImageSize.Large.AsString(),
                     ResponseFormat = ResponseFormatUrl,
                 };
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Image;
+            _size = ImageSize.Large;
         }
         internal const string ResponseFormatUrl = "url";
         internal const string ResponseFormatB64Json = "b64_json";
@@ -34,9 +37,9 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ResponseFormatUrl;
-            var uri = $"{_configuration.GetUri(OpenAiType.Image, _request.ModelId!, _forced)}/generations";
-            return _client.PostAsync<ImageResult>(uri, _request, _configuration, cancellationToken);
+            Request.ResponseFormat = ResponseFormatUrl;
+            var uri = $"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/generations";
+            return Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
         }
         /// <summary>
         /// Creates an image given a prompt.
@@ -76,7 +79,7 @@ namespace Rystem.OpenAi.Image
         {
             if (numberOfResults > 10 || numberOfResults < 1)
                 throw new ArgumentOutOfRangeException(nameof(numberOfResults), "The number of results must be between 1 and 10");
-            _request.NumberOfResults = numberOfResults;
+            Request.NumberOfResults = numberOfResults;
             return this;
         }
         /// <summary>
@@ -86,7 +89,8 @@ namespace Rystem.OpenAi.Image
         /// <returns></returns>
         public ImageCreateRequestBuilder WithSize(ImageSize size)
         {
-            _request.Size = size.AsString();
+            _size = size;
+            Request.Size = size.AsString();
             return this;
         }
         /// <summary>
@@ -97,7 +101,7 @@ namespace Rystem.OpenAi.Image
         /// <returns>Builder</returns>
         public ImageCreateRequestBuilder WithUser(string user)
         {
-            _request.User = user;
+            Request.User = user;
             return this;
         }
         /// <summary>
@@ -107,7 +111,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Edit Builder</returns>
         public ImageEditRequestBuilder Edit(Stream image, string imageName = "image.png")
-            => new ImageEditRequestBuilder(_client, _configuration, _request.Prompt, image, imageName, false);
+            => new ImageEditRequestBuilder(Client, Configuration, Request.Prompt, image, imageName, false, _size, Utility);
         /// <summary>
         /// The image to use as the basis for the edit(s). Must be a valid PNG file, less than 4MB, and square.
         /// Take the streamed image and transform it before sending in a correct png.
@@ -116,6 +120,24 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Edit Builder</returns>
         public ImageEditRequestBuilder EditAndTrasformInPng(Stream image, string imageName = "image.png")
-            => new ImageEditRequestBuilder(_client, _configuration, _request.Prompt, image, imageName, true);
+            => new ImageEditRequestBuilder(Client, Configuration, Request.Prompt, image, imageName, true, _size, Utility);
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCost()
+        {
+            var cost = Utility.Cost;
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.Image);
+            }).Invoke(new OpenAiUsage
+            {
+                ImageSize = _size,
+                Units = Request.NumberOfResults
+            });
+        }
     }
 }

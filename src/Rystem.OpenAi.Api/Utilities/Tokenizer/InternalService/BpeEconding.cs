@@ -46,7 +46,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         {
             var modelParams = ModelParamsGenerator.GetModelParams(modelName);
 
-            var encoding = new BpeEconding(modelParams.PatStr, modelParams.MergeableRanks,
+            var encoding = new BpeEconding(modelParams.Regex, modelParams.MergeableRanks,
                 modelParams.SpecialTokens, modelParams.ExplicitNVocab);
             return encoding;
         }
@@ -63,40 +63,18 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             return $"({inner})";
         }
 
-        public List<int> Encode(string lineToEncode,
-            ISet<string>? allowedSpecial = null,
-            ISet<string>? disallowedSpecial = null)
+        public BytePairEncodingResponse Encode(string lineToEncode)
         {
             var specialTokensSet = new HashSet<string>(_specialTokenMappings.Keys);
-
-            allowedSpecial ??= new HashSet<string>();
-
-            disallowedSpecial ??= new HashSet<string> { "all" };
-
-            if (disallowedSpecial.Contains("all"))
+            var regexPattern = SpecialTokenRegex(specialTokensSet);
+            var match = Regex.Match(lineToEncode, regexPattern);
+            if (match.Success)
             {
-                disallowedSpecial = new HashSet<string>(specialTokensSet);
-                disallowedSpecial.ExceptWith(allowedSpecial);
+                throw new ArgumentException($"Disallowed special token found: {match.Value}");
             }
 
-            if (allowedSpecial.Contains("all"))
-            {
-                allowedSpecial = specialTokensSet;
-            }
-
-            if (disallowedSpecial.Count > 0)
-            {
-                var disallowedSpecialFrozen = new HashSet<string>(disallowedSpecial);
-                var regexPattern = SpecialTokenRegex(disallowedSpecialFrozen);
-                var match = Regex.Match(lineToEncode, regexPattern);
-                if (match.Success)
-                {
-                    throw new ArgumentException($"Disallowed special token found: {match.Value}");
-                }
-            }
-
-            var encodedLine = _bytePairEncodingCoreProcessor.EncodeNative(lineToEncode, allowedSpecial);
-            return encodedLine.Item1;
+            var encodedLine = _bytePairEncodingCoreProcessor.EncodeNative(lineToEncode, specialTokensSet);
+            return encodedLine;
         }
 
         public string Decode(List<int> inputTokensToDecode)

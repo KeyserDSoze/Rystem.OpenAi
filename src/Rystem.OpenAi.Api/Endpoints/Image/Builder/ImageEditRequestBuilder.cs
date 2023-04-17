@@ -13,15 +13,16 @@ namespace Rystem.OpenAi.Image
 {
     public sealed class ImageEditRequestBuilder : RequestBuilder<ImageEditRequest>
     {
+        private ImageSize _size;
         internal ImageEditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string? prompt,
-            Stream image, string imageName, bool transform) :
+            Stream image, string imageName, bool transform, ImageSize size, IOpenAiUtility utility) :
             base(client, configuration, () =>
             {
                 var request = new ImageEditRequest
                 {
                     Prompt = prompt,
                     NumberOfResults = 1,
-                    Size = ImageSize.Large.AsString(),
+                    Size = size.AsString(),
                     ImageName = imageName
                 };
                 if (!transform)
@@ -44,8 +45,9 @@ namespace Rystem.OpenAi.Image
                 }
                 request.Image.Position = 0;
                 return request;
-            })
+            }, utility)
         {
+            _size = size;
         }
         /// <summary>
         /// Edit an image given a prompt.
@@ -55,25 +57,24 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public async ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
+            Request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
             using var content = new MultipartFormDataContent();
-            if (_request.Image != null)
-                content.Add(new ByteArrayContent(_request.Image.ToArray()), "image", _request.ImageName);
-            if (_request.Mask != null)
-                content.Add(new ByteArrayContent(_request.Mask.ToArray()), "mask", _request.MaskName);
-            if (_request.Prompt != null)
-                content.Add(new StringContent(_request.Prompt), "prompt");
-            if (_request.NumberOfResults != null)
-                content.Add(new StringContent(_request.NumberOfResults.ToString()), "n");
-            if (_request.Size != null)
-                content.Add(new StringContent(_request.Size), "size");
+            if (Request.Image != null)
+                content.Add(new ByteArrayContent(Request.Image.ToArray()), "image", Request.ImageName);
+            if (Request.Mask != null)
+                content.Add(new ByteArrayContent(Request.Mask.ToArray()), "mask", Request.MaskName);
+            if (Request.Prompt != null)
+                content.Add(new StringContent(Request.Prompt), "prompt");
+            content.Add(new StringContent(Request.NumberOfResults.ToString()), "n");
+            if (Request.Size != null)
+                content.Add(new StringContent(Request.Size), "size");
 
-            if (!string.IsNullOrWhiteSpace(_request.User))
-                content.Add(new StringContent(_request.User), "user");
+            if (!string.IsNullOrWhiteSpace(Request.User))
+                content.Add(new StringContent(Request.User), "user");
 
-            _request.Dispose();
+            Request.Dispose();
 
-            var response = await _client.PostAsync<ImageResult>($"{_configuration.GetUri(OpenAiType.Image, _request.ModelId!, _forced)}/edits", content, _configuration, cancellationToken);
+            var response = await Client.PostAsync<ImageResult>($"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/edits", content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
@@ -84,8 +85,8 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var uri = $"{_configuration.GetUri(OpenAiType.Image, _request.ModelId!, _forced)}/generations";
-            var responses = await _client.PostAsync<ImageResult>(uri, _request, _configuration, cancellationToken);
+            var uri = $"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/generations";
+            var responses = await Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
             if (responses.Data != null)
             {
                 using var client = new HttpClient();
@@ -115,7 +116,7 @@ namespace Rystem.OpenAi.Image
         {
             if (numberOfResults > 10 || numberOfResults < 1)
                 throw new ArgumentOutOfRangeException(nameof(numberOfResults), "The number of results must be between 1 and 10");
-            _request.NumberOfResults = numberOfResults;
+            Request.NumberOfResults = numberOfResults;
             return this;
         }
         /// <summary>
@@ -125,7 +126,8 @@ namespace Rystem.OpenAi.Image
         /// <returns></returns>
         public ImageEditRequestBuilder WithSize(ImageSize size)
         {
-            _request.Size = size.AsString();
+            _size = size;
+            Request.Size = size.AsString();
             return this;
         }
         /// <summary>
@@ -138,9 +140,9 @@ namespace Rystem.OpenAi.Image
         {
             var memoryStream = new MemoryStream();
             mask.CopyTo(memoryStream);
-            _request.Mask = memoryStream;
-            _request.MaskName = maskName;
-            _request.Mask.Position = 0;
+            Request.Mask = memoryStream;
+            Request.MaskName = maskName;
+            Request.Mask.Position = 0;
             return this;
         }
         /// <summary>
@@ -151,8 +153,26 @@ namespace Rystem.OpenAi.Image
         /// <returns>Builder</returns>
         public ImageEditRequestBuilder WithUser(string user)
         {
-            _request.User = user;
+            Request.User = user;
             return this;
+        }
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCost()
+        {
+            var cost = Utility.Cost;
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.Image);
+            }).Invoke(new OpenAiUsage
+            {
+                ImageSize = _size,
+                Units = Request.NumberOfResults
+            });
         }
     }
 }

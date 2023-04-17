@@ -29,10 +29,10 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return new ModelParams
             (
-                50257,
                 @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+",
                 mergeableRanks,
-                new Dictionary<string, int> { { EndOfText, 50256 } }
+                new Dictionary<string, int> { { EndOfText, 50256 } },
+                50257
             );
         }
 
@@ -42,10 +42,10 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return new ModelParams
             (
-                50281,
                 @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+",
                 mergeableRanks,
-                new Dictionary<string, int> { { EndOfText, 50256 } }
+                new Dictionary<string, int> { { EndOfText, 50256 } },
+                50281
             );
         }
 
@@ -60,7 +60,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return new ModelParams
             (
-                patStr: @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+",
+                regex: @"'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+",
                 mergeableRanks: mergeableRanks,
                 specialTokens: specialTokens
             );
@@ -82,10 +82,9 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return new ModelParams
             (
-                patStr:
                 @"(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+",
-                mergeableRanks: mergeableRanks,
-                specialTokens: specialTokens
+                mergeableRanks,
+                specialTokens
             );
         }
     }

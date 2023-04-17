@@ -8,13 +8,13 @@ namespace Rystem.OpenAi.FineTune
     internal sealed class OpenAiFineTuneApi : OpenAiBase, IOpenAiFineTuneApi
     {
         private readonly bool _forced;
-        public OpenAiFineTuneApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiFineTuneApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
         }
         public FineTuneRequestBuilder Create(string trainingFileId)
-            => new FineTuneRequestBuilder(_client, _configuration, trainingFileId);
+            => new FineTuneRequestBuilder(_client, _configuration, trainingFileId, _utility);
         public ValueTask<FineTuneResults> ListAsync(CancellationToken cancellationToken = default)
             => _client.GetAsync<FineTuneResults>(_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced), _configuration, cancellationToken);
         public ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default)

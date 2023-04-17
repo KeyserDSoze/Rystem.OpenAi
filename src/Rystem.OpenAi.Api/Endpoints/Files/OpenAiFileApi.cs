@@ -10,8 +10,8 @@ namespace Rystem.OpenAi.Files
     internal sealed class OpenAiFileApi : OpenAiBase, IOpenAiFileApi
     {
         private readonly bool _forced;
-        public OpenAiFileApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiFileApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
         }

@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
         public sealed class BpeMapper
         {
-            public List<string> StartsWith { get; set; }
+            public List<string>? StartsWith { get; set; }
             public BytePairEncodingType Type { get; set; }
         }
 

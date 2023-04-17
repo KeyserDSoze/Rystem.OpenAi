@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace Rystem.OpenAi
 {
     public interface IOpenAiCost
     {
-        decimal Get(List<int> tokens);
-        decimal Get(int numberOfTokens);
+        CostCalculation Configure(Action<OpenAiCostBuilder> action);
     }
 }

@@ -5,9 +5,11 @@ namespace Rystem.OpenAi
     internal sealed class OpenAiUtility : IOpenAiUtility
     {
         public IOpenAiTokenizer Tokenizer { get; }
-        public OpenAiUtility(IOpenAiTokenizer tokenizer)
+        public IOpenAiCost Cost { get; }
+        public OpenAiUtility(IOpenAiTokenizer tokenizer, IOpenAiCost cost)
         {
             Tokenizer = tokenizer;
+            Cost = cost;
         }
 
         public double CosineSimilarity(float[] from, float[] to)

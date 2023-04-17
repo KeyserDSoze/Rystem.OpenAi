@@ -7,8 +7,8 @@ namespace Rystem.OpenAi.Image
 {
     internal sealed class OpenAiImageApi : OpenAiBase, IOpenAiImageApi
     {
-        public OpenAiImageApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiImageApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
         }
         /// <summary>
@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Image
         {
             if (prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
-            return new ImageCreateRequestBuilder(_client, _configuration, prompt);
+            return new ImageCreateRequestBuilder(_client, _configuration, prompt, _utility);
         }
         /// <summary>
         /// Creates a variation of a given image.
@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder Variate(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, false);
+            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, false, _utility);
         /// <summary>
         /// Creates a variation of a given image. Take the streamed image and transform it before sending in a correct png.
         /// </summary>
@@ -38,6 +38,6 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder VariateAndTransformInPng(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, true);
+            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, true, _utility);
     }
 }

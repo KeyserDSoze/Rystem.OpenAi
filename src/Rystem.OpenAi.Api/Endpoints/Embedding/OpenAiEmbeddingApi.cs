@@ -5,11 +5,12 @@ namespace Rystem.OpenAi.Embedding
 {
     internal sealed class OpenAiEmbeddingApi : OpenAiBase, IOpenAiEmbeddingApi
     {
-        public OpenAiEmbeddingApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations)
-            : base(httpClientFactory, configurations)
+        public OpenAiEmbeddingApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
         }
         public EmbeddingRequestBuilder Request(params string[] inputs)
-            => new EmbeddingRequestBuilder(_client, _configuration, inputs);
+            => new EmbeddingRequestBuilder(_client, _configuration, inputs, _utility);
     }
 }

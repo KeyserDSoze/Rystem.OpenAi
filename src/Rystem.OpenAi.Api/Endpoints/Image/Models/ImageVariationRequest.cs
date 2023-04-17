@@ -8,7 +8,7 @@ namespace Rystem.OpenAi.Image
     {
         public MemoryStream? Image { get; set; }
         public string? ImageName { get; set; }
-        public int? NumberOfResults { get; set; }
+        public int NumberOfResults { get; set; }
         public string? Size { get; set; }
         public string? User { get; set; }
         public string? ResponseFormat { get; set; }

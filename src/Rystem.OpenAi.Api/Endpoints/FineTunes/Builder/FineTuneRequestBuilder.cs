@@ -1,28 +1,33 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
 
 namespace Rystem.OpenAi.FineTune
 {
     public sealed class FineTuneRequestBuilder : RequestBuilder<FineTuneRequest>
     {
-        public FineTuneRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string trainingFileId)
+        public FineTuneRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string trainingFileId, IOpenAiUtility utility)
             : base(client, configuration, () =>
             {
                 return new FineTuneRequest
                 {
                     TrainingFile = trainingFileId,
                 };
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Ada;
         }
         /// <summary>
         /// Execute operation.
         /// </summary>
         /// <returns>Builder</returns>
-        public ValueTask<FineTuneResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => _client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAiType.FineTune, _request.TrainingFile!, _forced), _request, _configuration, cancellationToken);
+        public ValueTask<FineTuneResult> ExecuteAsync(ModelFamilyType? basedOn = null, CancellationToken cancellationToken = default)
+        {
+            if (basedOn != null)
+                _familyType = basedOn.Value;
+            return Client.PostAsync<FineTuneResult>(Configuration.GetUri(OpenAiType.FineTune, Request.TrainingFile!, _forced), Request, Configuration, cancellationToken);
+        }
+
         /// <summary>
         /// The ID of an uploaded file that contains validation data.
         /// If you provide this file, the data is used to generate validation metrics periodically during fine-tuning. These metrics can be viewed in the <see href="https://platform.openai.com/docs/guides/fine-tuning/analyzing-your-fine-tuned-model">fine-tuning results file</see>. Your train and validation data should be mutually exclusive.
@@ -33,18 +38,21 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithValidationFile(string validationFileId)
         {
-            _request.ValidationFile = validationFileId;
+            Request.ValidationFile = validationFileId;
             return this;
         }
         /// <summary>
-        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
+        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.ListAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
         /// <param name="modelId">Override with a custom model id</param>
+        /// <param name="basedOnFamily">Family of your custom model</param>
         /// <returns>Builder</returns>
-        public FineTuneRequestBuilder WithModel(string modelId)
+        public FineTuneRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            _request.ModelId = modelId;
+            Request.ModelId = modelId;
             _forced = true;
+            if (basedOnFamily != null)
+                _familyType = basedOnFamily.Value;
             return this;
         }
         /// <summary>
@@ -54,7 +62,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithNumberOfEpochs(int value)
         {
-            _request.NEpochs = value;
+            Request.NEpochs = value;
             return this;
         }
         /// <summary>
@@ -65,7 +73,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithBatchSize(int size)
         {
-            _request.BatchSize = size;
+            Request.BatchSize = size;
             return this;
         }
         /// <summary>
@@ -76,7 +84,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithLearningRateMultiplier(double value)
         {
-            _request.LearningRateMultiplier = value;
+            Request.LearningRateMultiplier = value;
             return this;
         }
         /// <summary>
@@ -87,7 +95,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithPromptLossWeight(double value)
         {
-            _request.PromptLossWeight = value;
+            Request.PromptLossWeight = value;
             return this;
         }
         /// <summary>
@@ -97,7 +105,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithComputeClassificationMetrics()
         {
-            _request.ComputeClassificationMetrics = true;
+            Request.ComputeClassificationMetrics = true;
             return this;
         }
         /// <summary>
@@ -108,7 +116,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithClassificationPositiveClass(string value)
         {
-            _request.ClassificationPositiveClass = value;
+            Request.ClassificationPositiveClass = value;
             return this;
         }
         /// <summary>
@@ -119,7 +127,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithClassificationBetas(params string[] betas)
         {
-            _request.ClassificationBetas = betas;
+            Request.ClassificationBetas = betas;
             return this;
         }
         /// <summary>
@@ -130,8 +138,9 @@ namespace Rystem.OpenAi.FineTune
         /// <returns></returns>
         public FineTuneRequestBuilder WithSuffix(string value)
         {
-            _request.Suffix = value;
+            Request.Suffix = value;
             return this;
         }
+        //todo calculate cost and download the file to calculate the current cost
     }
 }

@@ -13,7 +13,7 @@ namespace Rystem.OpenAi.Embedding
         /// List of results of the embedding
         /// </summary>
         [JsonPropertyName("data")]
-        public List<EmbdegginData>? Data { get; set; }
+        public List<EmbeddingData>? Data { get; set; }
         /// <summary>
         /// Usage statistics of how many tokens have been used for this request
         /// </summary>

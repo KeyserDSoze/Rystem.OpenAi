@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi;
+using Rystem.OpenAi.Completion;
 
 namespace Rystem.OpenAi.Chat
 {
     public sealed class ChatRequestBuilder : RequestBuilder<ChatRequest>
     {
-        internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration, ChatMessage message) : base(client,
+        private ChatModelType _modelType;
+        internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
+            ChatMessage message, IOpenAiUtility utility) : base(client,
             configuration,
             () =>
             {
@@ -18,8 +22,10 @@ namespace Rystem.OpenAi.Chat
                     Messages = new List<ChatMessage>() { message },
                     ModelId = ChatModelType.Gpt35Turbo0301.ToModel().Id
                 };
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Gpt3_5;
+            _modelType = ChatModelType.Gpt35Turbo0301;
         }
         /// <summary>
         /// Execute operation.
@@ -27,8 +33,17 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _request.Stream = false;
-            return _client.PostAsync<ChatResult>(_configuration.GetUri(OpenAiType.Chat, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
+            Request.Stream = false;
+            return Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
+        }
+        /// <summary>
+        /// Execute operation.
+        /// </summary>
+        /// <returns>Builder</returns>
+        public async ValueTask<CostResult<ChatResult>> ExecuteAndCalculateCostAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await ExecuteAsync(cancellationToken);
+            return new CostResult<ChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.Usage));
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -36,8 +51,8 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public IAsyncEnumerable<ChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
-            _request.Stream = true;
-            return _client.StreamAsync<ChatResult>(_configuration.GetUri(OpenAiType.Chat, _request.ModelId!, _forced), _request, HttpMethod.Post, _configuration, cancellationToken);
+            Request.Stream = true;
+            return Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced), Request, HttpMethod.Post, Configuration, cancellationToken);
         }
         /// <summary>
         /// Add a message to the request
@@ -46,8 +61,8 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder AddMessage(ChatMessage message)
         {
-            _request.Messages ??= new List<ChatMessage>();
-            _request.Messages.Add(message);
+            Request.Messages ??= new List<ChatMessage>();
+            Request.Messages.Add(message);
             return this;
         }
         /// <summary>
@@ -61,22 +76,27 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// ID of the model to use.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="model">Model</param>
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithModel(ChatModelType model)
         {
-            _request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel().Id;
+            _familyType = model.ToFamily();
+            _modelType = model;
             return this;
         }
         /// <summary>
-        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
+        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.ListAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
         /// <param name="modelId">Override with a custom model id</param>
+        /// <param name="basedOnFamily">Family of your custom model</param>
         /// <returns>Builder</returns>
-        public ChatRequestBuilder WithModel(string modelId)
+        public ChatRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            _request.ModelId = modelId;
+            Request.ModelId = modelId;
             _forced = true;
+            if (basedOnFamily != null)
+                _familyType = basedOnFamily.Value;
             return this;
         }
         /// <summary>
@@ -90,7 +110,7 @@ namespace Rystem.OpenAi.Chat
                 throw new ArgumentException("Temperature with a value lesser than 0");
             if (value > 2)
                 throw new ArgumentException("Temperature with a value greater than 2");
-            _request.Temperature = value;
+            Request.Temperature = value;
             return this;
         }
         /// <summary>
@@ -104,7 +124,7 @@ namespace Rystem.OpenAi.Chat
                 throw new ArgumentException("Nucleus sampling with a value lesser than 0");
             if (value > 1)
                 throw new ArgumentException("Nucleus sampling with a value greater than 1");
-            _request.TopP = value;
+            Request.TopP = value;
             return this;
         }
         /// <summary>
@@ -114,7 +134,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithNumberOfChoicesPerPrompt(int value)
         {
-            _request.NumberOfChoicesPerPrompt = value;
+            Request.NumberOfChoicesPerPrompt = value;
             return this;
         }
         /// <summary>
@@ -125,9 +145,9 @@ namespace Rystem.OpenAi.Chat
         public ChatRequestBuilder WithStopSequence(params string[] values)
         {
             if (values.Length > 1)
-                _request.StopSequence = values;
+                Request.StopSequence = values;
             else if (values.Length == 1)
-                _request.StopSequence = values[0];
+                Request.StopSequence = values[0];
             return this;
         }
         /// <summary>
@@ -137,16 +157,16 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder AddStopSequence(string value)
         {
-            if (_request.StopSequence == null)
-                _request.StopSequence = value;
-            else if (_request.StopSequence is string stringableSequence)
-                _request.StopSequence = new string[2] { stringableSequence, value };
-            else if (_request.StopSequence is string[] array)
+            if (Request.StopSequence == null)
+                Request.StopSequence = value;
+            else if (Request.StopSequence is string stringableSequence)
+                Request.StopSequence = new string[2] { stringableSequence, value };
+            else if (Request.StopSequence is string[] array)
             {
                 var newArray = new string[array.Length + 1];
                 array.CopyTo(newArray, 0);
                 newArray[^1] = value;
-                _request.StopSequence = newArray;
+                Request.StopSequence = newArray;
             }
             return this;
         }
@@ -157,7 +177,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder SetMaxTokens(int value)
         {
-            _request.MaxTokens = value;
+            Request.MaxTokens = value;
             return this;
         }
         /// <summary>
@@ -172,7 +192,7 @@ namespace Rystem.OpenAi.Chat
                 throw new ArgumentException("Presence penalty with a value lesser than -2");
             if (value > 2)
                 throw new ArgumentException("Presence penalty with a value greater than 2");
-            _request.PresencePenalty = value;
+            Request.PresencePenalty = value;
             return this;
         }
         /// <summary>
@@ -187,10 +207,9 @@ namespace Rystem.OpenAi.Chat
                 throw new ArgumentException("Frequency penalty with a value lesser than -2");
             if (value > 2)
                 throw new ArgumentException("Frequency penalty with a value greater than 2");
-            _request.FrequencyPenalty = value;
+            Request.FrequencyPenalty = value;
             return this;
         }
-
         /// <summary>
         /// Modify the likelihood of specified tokens appearing in the completion.
         /// Accepts a json object that maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
@@ -200,11 +219,11 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithBias(string key, int value)
         {
-            _request.Bias ??= new Dictionary<string, int>();
-            if (!_request.Bias.ContainsKey(key))
-                _request.Bias.Add(key, value);
+            Request.Bias ??= new Dictionary<string, int>();
+            if (!Request.Bias.ContainsKey(key))
+                Request.Bias.Add(key, value);
             else
-                _request.Bias[key] = value;
+                Request.Bias[key] = value;
             return this;
         }
         /// <summary>
@@ -227,8 +246,26 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithUser(string user)
         {
-            _request.User = user;
+            Request.User = user;
             return this;
+        }
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCost()
+        {
+            var tokenizer = Utility.Tokenizer.WithChatModel(_modelType);
+            var promptTokens = 3;
+            if (Request?.Messages != null)
+                foreach (var message in Request.Messages)
+                {
+                    promptTokens += tokenizer.Encode(message.Content).NumberOfTokens + 5;
+                }
+            return CalculateCost(OpenAiType.Chat, new CompletionUsage
+            {
+                PromptTokens = promptTokens
+            });
         }
     }
 }

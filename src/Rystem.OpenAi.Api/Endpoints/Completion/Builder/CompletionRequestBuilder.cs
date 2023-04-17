@@ -4,14 +4,16 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Chat;
-using Rystem.OpenAi;
 
 namespace Rystem.OpenAi.Completion
 {
     public sealed class CompletionRequestBuilder : RequestBuilder<CompletionRequest>
     {
-        internal CompletionRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string[] prompts)
+        private TextModelType _modelType;
+        internal CompletionRequestBuilder(HttpClient client,
+            OpenAiConfiguration configuration,
+            string[] prompts,
+            IOpenAiUtility utility)
             : base(client, configuration, () =>
             {
                 return new CompletionRequest()
@@ -19,8 +21,10 @@ namespace Rystem.OpenAi.Completion
                     Prompt = prompts.Length > 1 ? (object)prompts : (prompts.Length == 1 ? prompts.First() : string.Empty),
                     ModelId = TextModelType.DavinciText3.ToModel().Id
                 };
-            })
+            }, utility)
         {
+            _familyType = ModelFamilyType.Davinci;
+            _modelType = TextModelType.DavinciText3;
         }
         /// <summary>
         /// Execute operation.
@@ -28,8 +32,8 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public ValueTask<CompletionResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _request.Stream = false;
-            return _client.PostAsync<CompletionResult>(_configuration.GetUri(OpenAiType.Completion, _request.ModelId!, _forced), _request, _configuration, cancellationToken);
+            Request.Stream = false;
+            return Client.PostAsync<CompletionResult>(Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced), Request, Configuration, cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
@@ -37,9 +41,9 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public IAsyncEnumerable<CompletionResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
         {
-            _request.Stream = true;
-            _request.BestOf = null;
-            return _client.StreamAsync<CompletionResult>(_configuration.GetUri(OpenAiType.Completion, _request.ModelId!, _forced), _request, HttpMethod.Post, _configuration, cancellationToken);
+            Request.Stream = true;
+            Request.BestOf = null;
+            return Client.StreamAsync<CompletionResult>(Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced), Request, HttpMethod.Post, Configuration, cancellationToken);
         }
         /// <summary>
         /// Add further prompt to the request.
@@ -48,42 +52,47 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder AddPrompt(string prompt)
         {
-            if (_request.Prompt is string[] array)
+            if (Request.Prompt is string[] array)
             {
                 var newArray = new string[array.Length + 1];
                 array.CopyTo(newArray, 0);
                 newArray[^1] = prompt;
-                _request.Prompt = newArray;
+                Request.Prompt = newArray;
             }
-            else if (_request.Prompt is string value)
+            else if (Request.Prompt is string value)
             {
-                _request.Prompt = new string[2] { value, prompt };
+                Request.Prompt = new string[2] { value, prompt };
             }
             else
             {
-                _request.Prompt = prompt;
+                Request.Prompt = prompt;
             }
             return this;
         }
         /// <summary>
         /// ID of the model to use.
         /// </summary>
-        /// <param name="value">Value</param>
+        /// <param name="model">Model</param>
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithModel(TextModelType model)
         {
-            _request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel().Id;
+            _familyType = model.ToFamily();
+            _modelType = model;
             return this;
         }
         /// <summary>
-        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.AllAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
+        /// ID of the model to use. You can use <see cref="IOpenAiModelApi.ListAsync()"/> to see all of your available models, or use a standard model like <see cref="Model.DavinciText"/>.
         /// </summary>
         /// <param name="modelId">Override with a custom model id</param>
+        /// <param name="basedOnFamily">Family of your custom model</param>
         /// <returns>Builder</returns>
-        public CompletionRequestBuilder WithModel(string modelId)
+        public CompletionRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            _request.ModelId = modelId;
+            Request.ModelId = modelId;
             _forced = true;
+            if (basedOnFamily != null)
+                _familyType = basedOnFamily.Value;
             return this;
         }
         /// <summary>
@@ -93,7 +102,7 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithSuffix(string suffix)
         {
-            _request.Suffix = suffix;
+            Request.Suffix = suffix;
             return this;
         }
         /// <summary>
@@ -103,7 +112,7 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder SetMaxTokens(int value)
         {
-            _request.MaxTokens = value;
+            Request.MaxTokens = value;
             return this;
         }
         /// <summary>
@@ -117,7 +126,7 @@ namespace Rystem.OpenAi.Completion
                 throw new ArgumentException("Temperature with a value lesser than 0");
             if (value > 2)
                 throw new ArgumentException("Temperature with a value greater than 2");
-            _request.Temperature = value;
+            Request.Temperature = value;
             return this;
         }
         /// <summary>
@@ -131,7 +140,7 @@ namespace Rystem.OpenAi.Completion
                 throw new ArgumentException("Nucleus sampling with a value lesser than 0");
             if (value > 1)
                 throw new ArgumentException("Nucleus sampling with a value greater than 1");
-            _request.TopP = value;
+            Request.TopP = value;
             return this;
         }
         /// <summary>
@@ -142,7 +151,7 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithNumberOfChoicesPerPrompt(int value)
         {
-            _request.NumberOfChoicesPerPrompt = value;
+            Request.NumberOfChoicesPerPrompt = value;
             return this;
         }
         /// <summary>
@@ -153,7 +162,7 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithLogProbs(int value)
         {
-            _request.Logprobs = value;
+            Request.Logprobs = value;
             return this;
         }
         /// <summary>
@@ -162,7 +171,7 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithEcho()
         {
-            _request.Echo = true;
+            Request.Echo = true;
             return this;
         }
         /// <summary>
@@ -173,9 +182,9 @@ namespace Rystem.OpenAi.Completion
         public CompletionRequestBuilder WithStopSequence(params string[] values)
         {
             if (values.Length > 1)
-                _request.StopSequence = values;
+                Request.StopSequence = values;
             else if (values.Length == 1)
-                _request.StopSequence = values[0];
+                Request.StopSequence = values[0];
             return this;
         }
         /// <summary>
@@ -185,16 +194,16 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder AddStopSequence(string value)
         {
-            if (_request.StopSequence == null)
-                _request.StopSequence = value;
-            else if (_request.StopSequence is string stringableSequence)
-                _request.StopSequence = new string[2] { stringableSequence, value };
-            else if (_request.StopSequence is string[] array)
+            if (Request.StopSequence == null)
+                Request.StopSequence = value;
+            else if (Request.StopSequence is string stringableSequence)
+                Request.StopSequence = new string[2] { stringableSequence, value };
+            else if (Request.StopSequence is string[] array)
             {
                 var newArray = new string[array.Length + 1];
                 array.CopyTo(newArray, 0);
                 newArray[^1] = value;
-                _request.StopSequence = newArray;
+                Request.StopSequence = newArray;
             }
             return this;
         }
@@ -209,7 +218,7 @@ namespace Rystem.OpenAi.Completion
                 throw new ArgumentException("Frequency penalty with a value lesser than -1");
             if (value > 1)
                 throw new ArgumentException("Frequency penalty with a value greater than 1");
-            _request.FrequencyPenalty = value;
+            Request.FrequencyPenalty = value;
             return this;
         }
         /// <summary>
@@ -223,7 +232,7 @@ namespace Rystem.OpenAi.Completion
                 throw new ArgumentException("Presence penalty with a value lesser than -1");
             if (value > 1)
                 throw new ArgumentException("Presence penalty with a value greater than 1");
-            _request.PresencePenalty = value;
+            Request.PresencePenalty = value;
             return this;
         }
         /// <summary>
@@ -235,8 +244,8 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder BestOf(int value)
         {
-            _request.Stream = false;
-            _request.BestOf = value;
+            Request.Stream = false;
+            Request.BestOf = value;
             return this;
         }
         /// <summary>
@@ -249,11 +258,11 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithBias(string key, int value)
         {
-            _request.Bias ??= new Dictionary<string, int>();
-            if (!_request.Bias.ContainsKey(key))
-                _request.Bias.Add(key, value);
+            Request.Bias ??= new Dictionary<string, int>();
+            if (!Request.Bias.ContainsKey(key))
+                Request.Bias.Add(key, value);
             else
-                _request.Bias[key] = value;
+                Request.Bias[key] = value;
             return this;
         }
         /// <summary>
@@ -277,8 +286,36 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder WithUser(string user)
         {
-            _request.User = user;
+            Request.User = user;
             return this;
+        }
+        /// <summary>
+        /// Calculate the cost for this request based on configurated price during startup.
+        /// </summary>
+        /// <returns>decimal</returns>
+        public decimal CalculateCost()
+        {
+            var tokenizer = Utility.Tokenizer.WithTextModel(_modelType);
+            var cost = Utility.Cost;
+            var tokens = 0;
+            if (Request.Prompt is string[] array)
+            {
+                foreach (var x in array)
+                    tokens += tokenizer.Encode(x).NumberOfTokens;
+            }
+            else if (Request.Prompt is string stringable)
+            {
+                tokens += tokenizer.Encode(stringable).NumberOfTokens;
+            }
+            return cost.Configure(settings =>
+            {
+                settings
+                    .WithFamily(_familyType)
+                    .WithType(OpenAiType.Completion);
+            }).Invoke(new OpenAiUsage
+            {
+                PromptTokens = tokens
+            });
         }
     }
 }
