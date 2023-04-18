@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Rystem.OpenAi.Chat
 {
     /// <summary>
-    /// Represents a request to the Completions API.  Mostly matches the parameters in <see href="https://beta.openai.com/api-ref#create-completion-post">the OpenAI docs</see>, although some have been renames or expanded into single/multiple properties for ease of use.
+    /// Represents a request to the chat API.
     /// </summary>
     public sealed class ChatRequest : IOpenAiRequest
     {

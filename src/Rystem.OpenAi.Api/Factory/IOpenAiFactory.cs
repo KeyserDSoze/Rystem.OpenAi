@@ -6,6 +6,7 @@ using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
+using Rystem.OpenAi.Management;
 using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
@@ -23,5 +24,6 @@ namespace Rystem.OpenAi
         IOpenAiImageApi CreateImage(string? name = default);
         IOpenAiModelApi CreateModel(string? name = default);
         IOpenAiModerationApi CreateModeration(string? name = default);
+        IOpenAiManagementApi CreateManagement(string? name = default);
     }
 }

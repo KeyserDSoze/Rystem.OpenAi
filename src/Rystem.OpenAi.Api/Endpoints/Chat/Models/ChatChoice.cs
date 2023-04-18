@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
 {
     /// <summary>
-    /// Represents a completion choice returned by the Completion API.  
+    /// Represents a completion choice returned by the Chat API.  
     /// </summary>
     public class ChatChoice
     {

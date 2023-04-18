@@ -7,6 +7,7 @@ using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
+using Rystem.OpenAi.Management;
 using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
@@ -23,6 +24,7 @@ namespace Rystem.OpenAi
         public IOpenAiFineTuneApi FineTune { get; }
         public IOpenAiChatApi Chat { get; }
         public IOpenAiEditApi Edit { get; }
+        public IOpenAiManagementApi Management { get; }
         private readonly List<OpenAiBase> _openAiBases = new List<OpenAiBase>();
 
         public OpenAiApi(IOpenAiCompletionApi completionApi,
@@ -34,7 +36,8 @@ namespace Rystem.OpenAi
             IOpenAiAudioApi audioApi,
             IOpenAiFineTuneApi fineTuneApi,
             IOpenAiChatApi chatApi,
-            IOpenAiEditApi editApi)
+            IOpenAiEditApi editApi,
+            IOpenAiManagementApi managementApi)
         {
             Completion = completionApi;
             if (Completion is OpenAiBase aiBasesForCompletion)
@@ -66,6 +69,9 @@ namespace Rystem.OpenAi
             Edit = editApi;
             if (Edit is OpenAiBase aiBasesForEdit)
                 _openAiBases.Add(aiBasesForEdit);
+            Management = managementApi;
+            if (Management is OpenAiBase aiBasesForManagement)
+                _openAiBases.Add(aiBasesForManagement);
         }
         public void SetName(string? name)
         {

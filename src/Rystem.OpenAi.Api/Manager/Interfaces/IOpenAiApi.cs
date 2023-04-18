@@ -8,6 +8,7 @@ using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Moderation;
+using Rystem.OpenAi.Management;
 
 namespace Rystem.OpenAi
 {
@@ -23,5 +24,6 @@ namespace Rystem.OpenAi
         IOpenAiEmbeddingApi Embedding { get; }
         IOpenAiModerationApi Moderation { get; }
         IOpenAiAudioApi Audio { get; }
+        IOpenAiManagementApi Management { get; }
     }
 }

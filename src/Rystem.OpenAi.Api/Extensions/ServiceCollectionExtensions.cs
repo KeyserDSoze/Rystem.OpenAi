@@ -14,6 +14,7 @@ using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
+using Rystem.OpenAi.Management;
 using Rystem.OpenAi.Moderation;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -87,6 +88,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddTransient<IOpenAiChatApi, OpenAiChatApi>();
             services
                 .TryAddTransient<IOpenAiCompletionApi, OpenAiCompletionApi>();
+            services
+                .TryAddTransient<IOpenAiManagementApi, OpenAiManagementApi>();
             return services;
         }
     }

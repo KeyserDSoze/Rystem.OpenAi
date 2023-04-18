@@ -12,6 +12,7 @@
         Moderation,
         Image,
         AudioTranscription,
-        AudioTranslation
+        AudioTranslation,
+        Billing
     }
 }

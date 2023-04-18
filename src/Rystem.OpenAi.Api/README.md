@@ -79,6 +79,8 @@ Install-Package Rystem.OpenAi
   - [Tokens](#tokens)
   - [Cost](#cost)
   - [Setup Price](#setup-price)
+- [Management](#management)
+  - [Billing](#billing)
 
 
 ## Startup Setup
@@ -644,3 +646,19 @@ During setup of your OpenAi service you may add your custom price table with set
             .SetFineTuneForAda(0.2M, 0.2M)
             .SetAudioForTranslation(0.2M);
     }, "Azure");
+
+## Management
+[📖 Back to summary](#documentation)\
+In your openai dashboard you may get the billing usage, or users, or taxes, or similar. Here you have an api to retrieve this kind of data.
+
+### Billing
+[📖 Back to summary](#documentation)\
+You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of april.
+
+    var management = _openAiFactory.CreateManagement(integrationName);
+            var usages = await management
+                .Billing()
+                .From(new DateTime(2023, 4, 1))
+                .To(new DateTime(2023, 4, 30))
+                .GetUsageAsync();
+            Assert.NotEmpty(usages.DailyCosts);

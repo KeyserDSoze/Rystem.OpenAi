@@ -39,6 +39,7 @@ namespace Rystem.OpenAi
             var imageUri = string.Format(uri, "images", "{0}");
             var audioTranscriptionUri = string.Format(uri, "audio/transcriptions", "{0}");
             var audioTranslationUri = string.Format(uri, "audio/translations", "{0}");
+            var billingUri = string.Format(uri, "dashboard/billing/usage", "{0}");
 
             var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
             if (settings.Azure.HasConfiguration)
@@ -90,6 +91,7 @@ namespace Rystem.OpenAi
                     uris.Add($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(imageUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Image)}");
                     uris.Add($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(audioTranscriptionUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.AudioTranscription)}");
                     uris.Add($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(audioTranslationUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.AudioTranslation)}");
+                    uris.Add($"{deployment.Value}_{OpenAiType.Billing}", $"{string.Format(billingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}")}?api-version={GetVersion(settings, OpenAiType.Billing)}");
                 }
 
                 GetUri = (type, modelId, forceModel) =>
@@ -117,6 +119,7 @@ namespace Rystem.OpenAi
                 imageUri = string.Format(imageUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.Image)}");
                 audioTranscriptionUri = string.Format(audioTranscriptionUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.AudioTranscription)}");
                 audioTranslationUri = string.Format(audioTranslationUri, $"https://api.openai.com/{GetVersion(settings, OpenAiType.AudioTranslation)}");
+                billingUri = string.Format(billingUri, $"https://api.openai.com");
 
                 GetUri = (type, modelId, forceModel) =>
                 {
@@ -142,6 +145,8 @@ namespace Rystem.OpenAi
                             return fileUri;
                         case OpenAiType.FineTune:
                             return fineTuneUri;
+                        case OpenAiType.Billing:
+                            return billingUri;
                         default:
                         case OpenAiType.Model:
                             return modelUri;

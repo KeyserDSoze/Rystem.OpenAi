@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
-using Rystem.OpenAi.Completion;
 
 namespace Rystem.OpenAi.Chat
 {

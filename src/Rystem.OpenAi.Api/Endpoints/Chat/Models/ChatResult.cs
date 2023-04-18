@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Rystem.OpenAi.Chat
 {
     /// <summary>
-    /// Represents a result from calling the Completion API
+    /// Represents a result from calling the Chat API
     /// </summary>
     public class ChatResult : ApiBaseResponse
     {
