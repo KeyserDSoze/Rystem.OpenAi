@@ -12,32 +12,32 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    internal sealed class OpenAiApi : IOpenAiApi
+    internal sealed class OpenAiApi : IOpenAi, IOpenAiApi
     {
-        public IOpenAiModelApi Model { get; }
-        public IOpenAiCompletionApi Completion { get; }
-        public IOpenAiImageApi Image { get; }
-        public IOpenAiEmbeddingApi Embedding { get; }
-        public IOpenAiFileApi File { get; }
-        public IOpenAiModerationApi Moderation { get; }
-        public IOpenAiAudioApi Audio { get; }
-        public IOpenAiFineTuneApi FineTune { get; }
-        public IOpenAiChatApi Chat { get; }
-        public IOpenAiEditApi Edit { get; }
-        public IOpenAiManagementApi Management { get; }
+        public IOpenAiModel Model { get; }
+        public IOpenAiCompletion Completion { get; }
+        public IOpenAiImage Image { get; }
+        public IOpenAiEmbedding Embedding { get; }
+        public IOpenAiFile File { get; }
+        public IOpenAiModeration Moderation { get; }
+        public IOpenAiAudio Audio { get; }
+        public IOpenAiFineTune FineTune { get; }
+        public IOpenAiChat Chat { get; }
+        public IOpenAiEdit Edit { get; }
+        public IOpenAiManagement Management { get; }
         private readonly List<OpenAiBase> _openAiBases = new List<OpenAiBase>();
 
-        public OpenAiApi(IOpenAiCompletionApi completionApi,
-            IOpenAiEmbeddingApi embeddingApi,
-            IOpenAiModelApi modelApi,
-            IOpenAiFileApi fileApi,
-            IOpenAiImageApi imageApi,
-            IOpenAiModerationApi moderationApi,
-            IOpenAiAudioApi audioApi,
-            IOpenAiFineTuneApi fineTuneApi,
-            IOpenAiChatApi chatApi,
-            IOpenAiEditApi editApi,
-            IOpenAiManagementApi managementApi)
+        public OpenAiApi(IOpenAiCompletion completionApi,
+            IOpenAiEmbedding embeddingApi,
+            IOpenAiModel modelApi,
+            IOpenAiFile fileApi,
+            IOpenAiImage imageApi,
+            IOpenAiModeration moderationApi,
+            IOpenAiAudio audioApi,
+            IOpenAiFineTune fineTuneApi,
+            IOpenAiChat chatApi,
+            IOpenAiEdit editApi,
+            IOpenAiManagement managementApi)
         {
             Completion = completionApi;
             if (Completion is OpenAiBase aiBasesForCompletion)
@@ -75,8 +75,7 @@ namespace Rystem.OpenAi
         }
         public void SetName(string? name)
         {
-            if (name == null)
-                name = string.Empty;
+            name ??= string.Empty;
             foreach (var bases in _openAiBases)
                 bases.SetName(name);
         }

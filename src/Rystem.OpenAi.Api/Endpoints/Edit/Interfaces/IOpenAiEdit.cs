@@ -1,9 +1,11 @@
-﻿namespace Rystem.OpenAi.Edit
+﻿using System;
+
+namespace Rystem.OpenAi.Edit
 {
     /// <summary>
     /// Given a prompt and an instruction, the model will return an edited version of the prompt.
     /// </summary>
-    public interface IOpenAiEditApi
+    public interface IOpenAiEdit
     {
         /// <summary>
         /// Given a prompt and an instruction, the model will return an edited version of the prompt.
@@ -11,5 +13,10 @@
         /// <param name="instruction">The instruction that tells the model how to edit the prompt.</param>
         /// <returns></returns>
         EditRequestBuilder Request(string instruction);
+    }
+    [Obsolete("In version 3.x we'll remove IOpenAiEditApi and we'll use only IOpenAiEdit to retrieve services")]
+    public interface IOpenAiEditApi : IOpenAiEdit
+    {
+
     }
 }

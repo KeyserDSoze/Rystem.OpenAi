@@ -3,15 +3,15 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Completion
 {
-    internal sealed class OpenAiCompletionApi : OpenAiBase, IOpenAiCompletionApi
+    internal sealed class OpenAiCompletion : OpenAiBase, IOpenAiCompletion, IOpenAiCompletionApi
     {
-        public OpenAiCompletionApi(IHttpClientFactory httpClientFactory,
+        public OpenAiCompletion(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
         public CompletionRequestBuilder Request(params string[] prompts)
-            => new CompletionRequestBuilder(_client, _configuration, prompts, _utility);
+            => new CompletionRequestBuilder(Client, Configuration, prompts, Utility);
     }
 }

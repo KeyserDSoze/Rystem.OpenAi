@@ -4,15 +4,15 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiAudioApi : OpenAiBase, IOpenAiAudioApi
+    internal sealed class OpenAiAudio : OpenAiBase, IOpenAiAudio, IOpenAiAudioApi
     {
-        public OpenAiAudioApi(IHttpClientFactory httpClientFactory,
+        public OpenAiAudio(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
         public AudioRequestBuilder Request(Stream file, string fileName = "default")
-            => new AudioRequestBuilder(_client, _configuration, file, fileName, _utility);
+            => new AudioRequestBuilder(Client, Configuration, file, fileName, Utility);
     }
 }

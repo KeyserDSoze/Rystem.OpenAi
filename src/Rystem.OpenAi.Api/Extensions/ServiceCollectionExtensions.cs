@@ -67,29 +67,54 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddSingleton<IOpenAiCost, OpenAiCost>();
             services
-                .TryAddTransient<IOpenAiApi, OpenAiApi>();
+                .TryAddTransient<IOpenAi, OpenAiApi>();
             services
-                .TryAddTransient<IOpenAiEmbeddingApi, OpenAiEmbeddingApi>();
+                .TryAddTransient<IOpenAiEmbedding, OpenAiEmbedding>();
             services
-                .TryAddTransient<IOpenAiFileApi, OpenAiFileApi>();
+                .TryAddTransient<IOpenAiFile, OpenAiFile>();
             services
-                .TryAddTransient<IOpenAiAudioApi, OpenAiAudioApi>();
+                .TryAddTransient<IOpenAiAudio, OpenAiAudio>();
             services
-                .TryAddTransient<IOpenAiModelApi, OpenAiModelApi>();
+                .TryAddTransient<IOpenAiModel, OpenAiModel>();
             services
-                .TryAddTransient<IOpenAiModerationApi, OpenAiModerationApi>();
+                .TryAddTransient<IOpenAiModeration, OpenAiModeration>();
             services
-                .TryAddTransient<IOpenAiImageApi, OpenAiImageApi>();
+                .TryAddTransient<IOpenAiImage, OpenAiImage>();
             services
-                .TryAddTransient<IOpenAiFineTuneApi, OpenAiFineTuneApi>();
+                .TryAddTransient<IOpenAiFineTune, OpenAiFineTune>();
             services
-                .TryAddTransient<IOpenAiEditApi, OpenAiEditApi>();
+                .TryAddTransient<IOpenAiEdit, OpenAiEdit>();
             services
-                .TryAddTransient<IOpenAiChatApi, OpenAiChatApi>();
+                .TryAddTransient<IOpenAiChat, OpenAiChat>();
             services
-                .TryAddTransient<IOpenAiCompletionApi, OpenAiCompletionApi>();
+                .TryAddTransient<IOpenAiCompletion, OpenAiCompletion>();
             services
-                .TryAddTransient<IOpenAiManagementApi, OpenAiManagementApi>();
+                .TryAddTransient<IOpenAiManagement, OpenAiManagement>();
+
+            services
+               .TryAddTransient<IOpenAiApi, OpenAiApi>();
+            services
+                .TryAddTransient<IOpenAiEmbeddingApi, OpenAiEmbedding>();
+            services
+                .TryAddTransient<IOpenAiFileApi, OpenAiFile>();
+            services
+                .TryAddTransient<IOpenAiAudioApi, OpenAiAudio>();
+            services
+                .TryAddTransient<IOpenAiModelApi, OpenAiModel>();
+            services
+                .TryAddTransient<IOpenAiModerationApi, OpenAiModeration>();
+            services
+                .TryAddTransient<IOpenAiImageApi, OpenAiImage>();
+            services
+                .TryAddTransient<IOpenAiFineTuneApi, OpenAiFineTune>();
+            services
+                .TryAddTransient<IOpenAiEditApi, OpenAiEdit>();
+            services
+                .TryAddTransient<IOpenAiChatApi, OpenAiChat>();
+            services
+                .TryAddTransient<IOpenAiCompletionApi, OpenAiCompletion>();
+            services
+                .TryAddTransient<IOpenAiManagementApi, OpenAiManagement>();
             return services;
         }
     }

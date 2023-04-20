@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Files
 {
-    internal sealed class OpenAiFileApi : OpenAiBase, IOpenAiFileApi
+    internal sealed class OpenAiFile : OpenAiBase, IOpenAiFile, IOpenAiFileApi
     {
         private readonly bool _forced;
-        public OpenAiFileApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiFile(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
@@ -18,7 +18,7 @@ namespace Rystem.OpenAi.Files
 
         public async Task<List<FileResult>> AllAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _client.GetAsync<FilesData>(_configuration.GetUri(OpenAiType.File, string.Empty, _forced), _configuration, cancellationToken);
+            var response = await Client.GetAsync<FilesData>(Configuration.GetUri(OpenAiType.File, string.Empty, _forced), Configuration, cancellationToken);
             return response.Data ?? new List<FileResult>();
         }
         private const string Purpose = "purpose";
@@ -32,15 +32,15 @@ namespace Rystem.OpenAi.Files
                 { new StringContent(purpose), Purpose },
                 { new ByteArrayContent(memoryStream.ToArray()), FileContent, fileName }
             };
-            return _client.PostAsync<FileResult>(_configuration.GetUri(OpenAiType.File, fileName, _forced), content, _configuration, cancellationToken);
+            return Client.PostAsync<FileResult>(Configuration.GetUri(OpenAiType.File, fileName, _forced), content, Configuration, cancellationToken);
         }
         public ValueTask<FileResult> DeleteAsync(string fileId, CancellationToken cancellationToken = default)
-            => _client.DeleteAsync<FileResult>($"{_configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}", _configuration, cancellationToken);
+            => Client.DeleteAsync<FileResult>($"{Configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}", Configuration, cancellationToken);
         public ValueTask<FileResult> RetrieveAsync(string fileId, CancellationToken cancellationToken = default)
-            => _client.GetAsync<FileResult>($"{_configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}", _configuration, cancellationToken);
+            => Client.GetAsync<FileResult>($"{Configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}", Configuration, cancellationToken);
         public async Task<string> RetrieveFileContentAsStringAsync(string fileId, CancellationToken cancellationToken = default)
         {
-            var response = await _client.ExecuteAsync($"{_configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}/content", HttpMethod.Get, null, false, _configuration, cancellationToken);
+            var response = await Client.ExecuteAsync($"{Configuration.GetUri(OpenAiType.File, fileId, _forced)}/{fileId}/content", HttpMethod.Get, null, false, Configuration, cancellationToken);
             return await response.Content.ReadAsStringAsync();
         }
         private sealed class FilesData : ApiBaseResponse

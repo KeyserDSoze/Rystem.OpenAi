@@ -113,7 +113,7 @@ namespace Rystem.OpenAi
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (line.StartsWith(StartingWith))
-                    line = line.Substring(StartingWith.Length);
+                    line = line[StartingWith.Length..];
                 if (line == Done)
                 {
                     yield break;

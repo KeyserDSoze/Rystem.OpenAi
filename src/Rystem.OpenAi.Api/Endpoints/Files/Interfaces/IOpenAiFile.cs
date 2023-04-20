@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Rystem.OpenAi.Embedding;
 
 namespace Rystem.OpenAi.Files
 {
     /// <summary>
     /// Files are used to upload documents that can be used with features like <see href="https://platform.openai.com/docs/api-reference/fine-tunes">Fine-tuning</see>.
     /// </summary>
-    public interface IOpenAiFileApi
+    public interface IOpenAiFile
     {
         /// <summary>
         /// Returns a list of files that belong to the user's organization.
@@ -40,5 +42,9 @@ namespace Rystem.OpenAi.Files
         /// <param name="file">The stream for the file to use for this request</param>
         /// <param name="purpose">The intendend purpose of the uploaded documents. Use "fine-tune" for Fine-tuning. This allows us to validate the format of the uploaded file.</param>
         ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string purpose = "fine-tune", CancellationToken cancellationToken = default);
+    }
+    [Obsolete("In version 3.x we'll remove IOpenAiFileApi and we'll use only IOpenAiFile to retrieve services")]
+    public interface IOpenAiFileApi : IOpenAiFile
+    {
     }
 }

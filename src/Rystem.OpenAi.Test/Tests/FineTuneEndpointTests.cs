@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -31,28 +32,41 @@ namespace Rystem.OpenAi.Test
                 .UploadFileAsync(editableFile, fileName);
 
             var allFineTunes = await openAiApi.FineTune.ListAsync();
-            Assert.Empty(allFineTunes.Data.Where(x => x.Status != "cancelled"));
+            Assert.Empty(allFineTunes.Runnings);
 
             var createResult = await openAiApi.FineTune.Create(uploadResult.Id)
                                     .ExecuteAsync();
             Assert.NotNull(createResult);
 
             allFineTunes = await openAiApi.FineTune.ListAsync();
-            Assert.NotEmpty(allFineTunes.Data);
+            var inExecutionOrExecuted = allFineTunes.Runnings.ToList();
+            inExecutionOrExecuted.AddRange(allFineTunes.Succeeded);
+            inExecutionOrExecuted.AddRange(allFineTunes.Pendings);
+            Assert.NotEmpty(inExecutionOrExecuted);
 
-            var fineTuneId = allFineTunes.Data.First().Id;
-            var retrieveFineTune = await openAiApi.FineTune.RetrieveAsync(fineTuneId);
-            Assert.NotNull(retrieveFineTune);
+            foreach (var fineTune in inExecutionOrExecuted)
+            {
+                var fineTuneId = fineTune.Id;
+                var retrieveFineTune = await openAiApi.FineTune.RetrieveAsync(fineTuneId);
+                Assert.NotNull(retrieveFineTune);
 
-            var events = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
-            Assert.NotNull(events);
+                var events = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
+                Assert.NotNull(events);
 
-            var cancelResult = await openAiApi.FineTune.CancelAsync(fineTuneId);
-            Assert.NotNull(cancelResult);
+                var cancelResult = await openAiApi.FineTune.CancelAsync(fineTuneId);
+                Assert.NotNull(cancelResult);
 
-            await Task.Delay(5_000);
-            var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
-            Assert.True(deleteResult.Deleted);
+                await Task.Delay(5_000);
+                try
+                {
+                    var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
+                    Assert.True(deleteResult.Deleted);
+                }
+                catch (Exception ex)
+                {
+                    Assert.StartsWith("No such File object:", ex.Message);
+                }
+            }
         }
     }
 }

@@ -3,15 +3,15 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Chat
 {
-    internal sealed class OpenAiChatApi : OpenAiBase, IOpenAiChatApi
+    internal sealed class OpenAiChat : OpenAiBase, IOpenAiChat, IOpenAiChatApi
     {
-        public OpenAiChatApi(IHttpClientFactory httpClientFactory,
+        public OpenAiChat(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
         public ChatRequestBuilder Request(ChatMessage message)
-            => new ChatRequestBuilder(_client, _configuration, message, _utility);
+            => new ChatRequestBuilder(Client, Configuration, message, Utility);
     }
 }

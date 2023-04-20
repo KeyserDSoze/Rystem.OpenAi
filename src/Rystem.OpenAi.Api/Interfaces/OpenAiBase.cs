@@ -6,20 +6,20 @@ namespace Rystem.OpenAi
 {
     internal abstract class OpenAiBase
     {
-        private protected readonly HttpClient _client;
-        private protected OpenAiConfiguration _configuration;
+        private protected readonly HttpClient Client;
+        private protected OpenAiConfiguration Configuration;
         private readonly IEnumerable<OpenAiConfiguration> _configurations;
-        private protected readonly IOpenAiUtility _utility;
+        private protected readonly IOpenAiUtility Utility;
         private protected OpenAiBase(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
         {
-            _client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
-            _configuration = configurations.First();
+            Client = httpClientFactory.CreateClient(OpenAiSettings.HttpClientName);
+            Configuration = configurations.First();
             _configurations = configurations;
-            _utility = utility;
+            Utility = utility;
         }
         public void SetName(string? name)
-          => _configuration = _configurations.FirstOrDefault(x => x.Name == name);
+          => Configuration = _configurations.FirstOrDefault(x => x.Name == name);
     }
 }

@@ -5,9 +5,9 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Image
 {
-    internal sealed class OpenAiImageApi : OpenAiBase, IOpenAiImageApi
+    internal sealed class OpenAiImage : OpenAiBase, IOpenAiImage, IOpenAiImageApi
     {
-        public OpenAiImageApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiImage(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Image
         {
             if (prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
-            return new ImageCreateRequestBuilder(_client, _configuration, prompt, _utility);
+            return new ImageCreateRequestBuilder(Client, Configuration, prompt, Utility);
         }
         /// <summary>
         /// Creates a variation of a given image.
@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder Variate(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, false, _utility);
+            => new ImageVariationRequestBuilder(Client, Configuration, image, imageName, false, Utility);
         /// <summary>
         /// Creates a variation of a given image. Take the streamed image and transform it before sending in a correct png.
         /// </summary>
@@ -38,6 +38,6 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder VariateAndTransformInPng(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(_client, _configuration, image, imageName, true, _utility);
+            => new ImageVariationRequestBuilder(Client, Configuration, image, imageName, true, Utility);
     }
 }

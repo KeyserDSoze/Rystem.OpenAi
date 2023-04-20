@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi
 {
-    internal sealed class OpenAiModelApi : OpenAiBase, IOpenAiModelApi
+    internal sealed class OpenAiModel : OpenAiBase, IOpenAiModel, IOpenAiModelApi
     {
         private readonly bool _forced;
-        public OpenAiModelApi(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiModel(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => _client.GetAsync<Model>($"{_configuration.GetUri(OpenAiType.Model, string.Empty, _forced)}/{id}", _configuration, cancellationToken);
+            => Client.GetAsync<Model>($"{Configuration.GetUri(OpenAiType.Model, string.Empty, _forced)}/{id}", Configuration, cancellationToken);
         public async Task<List<Model>> ListAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _client.GetAsync<JsonHelperRoot>(_configuration.GetUri(OpenAiType.Model, string.Empty, _forced), _configuration, cancellationToken);
+            var response = await Client.GetAsync<JsonHelperRoot>(Configuration.GetUri(OpenAiType.Model, string.Empty, _forced), Configuration, cancellationToken);
             return response.Data!;
         }
         private sealed class JsonHelperRoot : ApiBaseResponse

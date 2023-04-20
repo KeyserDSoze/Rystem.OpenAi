@@ -8,6 +8,7 @@ using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
+using Rystem.OpenAi.Management;
 using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
@@ -20,7 +21,7 @@ namespace Rystem.OpenAi
         {
             s_services.AddOpenAi(settings, name);
         }
-        public static IOpenAiApi Create(string? name = default)
+        public static IOpenAi Create(string? name = default)
         {
             s_serviceProvider ??= s_services.BuildServiceProvider();
             var factory = s_serviceProvider.GetService<IOpenAiFactory>()!;
@@ -28,26 +29,28 @@ namespace Rystem.OpenAi
                 name = string.Empty;
             return factory.Create(name);
         }
-        public static IOpenAiAudioApi CreateAudio(string? name = null)
+        public static IOpenAiAudio CreateAudio(string? name = null)
             => Create(name).Audio;
-        public static IOpenAiChatApi CreateChat(string? name = null)
+        public static IOpenAiChat CreateChat(string? name = null)
             => Create(name).Chat;
-        public static IOpenAiCompletionApi CreateCompletion(string? name = null)
+        public static IOpenAiCompletion CreateCompletion(string? name = null)
             => Create(name).Completion;
-        public static IOpenAiEditApi CreateEdit(string? name = null)
+        public static IOpenAiEdit CreateEdit(string? name = null)
             => Create(name).Edit;
-        public static IOpenAiEmbeddingApi CreateEmbedding(string? name = null)
+        public static IOpenAiEmbedding CreateEmbedding(string? name = null)
             => Create(name).Embedding;
-        public static IOpenAiFileApi CreateFile(string? name = null)
+        public static IOpenAiFile CreateFile(string? name = null)
             => Create(name).File;
-        public static IOpenAiFineTuneApi CreateFineTune(string? name = null)
+        public static IOpenAiFineTune CreateFineTune(string? name = null)
             => Create(name).FineTune;
-        public static IOpenAiImageApi CreateImage(string? name = null)
+        public static IOpenAiImage CreateImage(string? name = null)
             => Create(name).Image;
-        public static IOpenAiModelApi CreateModel(string? name = null)
+        public static IOpenAiModel CreateModel(string? name = null)
             => Create(name).Model;
-        public static IOpenAiModerationApi CreateModeration(string? name = null)
+        public static IOpenAiModeration CreateModeration(string? name = null)
             => Create(name).Moderation;
+        public static IOpenAiManagement CreateManagement(string? name = null)
+            => Create(name).Management;
         public static IOpenAiUtility Utility()
         {
             s_serviceProvider ??= s_services.BuildServiceProvider();

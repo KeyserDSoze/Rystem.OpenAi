@@ -1,9 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Rystem.OpenAi.Audio
 {
-
-    public interface IOpenAiAudioApi
+    public interface IOpenAiAudio
     {
         /// <summary>
         /// Transcribes audio into the input language or translates audio into English.
@@ -12,5 +12,9 @@ namespace Rystem.OpenAi.Audio
         /// <param name="fileName"></param>
         /// <returns></returns>
         AudioRequestBuilder Request(Stream file, string fileName = "default");
+    }
+    [Obsolete("In version 3.x we'll remove IOpenAiAudioApi and we'll use only IOpenAiAudio to retrieve services")]
+    public interface IOpenAiAudioApi : IOpenAiAudio
+    {
     }
 }

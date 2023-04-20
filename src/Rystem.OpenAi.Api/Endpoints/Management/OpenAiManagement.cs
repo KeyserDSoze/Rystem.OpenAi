@@ -3,15 +3,15 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Management
 {
-    internal sealed class OpenAiManagementApi : OpenAiBase, IOpenAiManagementApi
+    internal sealed class OpenAiManagement : OpenAiBase, IOpenAiManagement, IOpenAiManagementApi
     {
-        public OpenAiManagementApi(IHttpClientFactory httpClientFactory,
+        public OpenAiManagement(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
         public BillingBuilder Billing()
-            => new BillingBuilder(_client, _configuration, _utility);
+            => new BillingBuilder(Client, Configuration, Utility);
     }
 }

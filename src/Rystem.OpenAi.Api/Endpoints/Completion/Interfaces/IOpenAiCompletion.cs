@@ -1,6 +1,8 @@
-﻿namespace Rystem.OpenAi.Completion
+﻿using System;
+
+namespace Rystem.OpenAi.Completion
 {
-    public interface IOpenAiCompletionApi
+    public interface IOpenAiCompletion
     {
         /// <summary>
         /// Prepare the fluent request for completion api.
@@ -11,5 +13,9 @@
         /// training, so if a prompt is not specified the model will generate as if from the beginning of a new document.</param>
         /// <returns></returns>
         CompletionRequestBuilder Request(params string[] prompts);
+    }
+    [Obsolete("In version 3.x we'll remove IOpenAiCompletionApi and we'll use only IOpenAiCompletion to retrieve services")]
+    public interface IOpenAiCompletionApi : IOpenAiCompletion
+    {
     }
 }

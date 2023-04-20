@@ -13,40 +13,40 @@ namespace Rystem.OpenAi
 {
     internal sealed class OpenAiFactory : IOpenAiFactory
     {
-        private readonly IOpenAiApi _openAiApi;
+        private readonly IOpenAi _openAiApi;
 
-        public OpenAiFactory(IOpenAiApi openAiApi)
+        public OpenAiFactory(IOpenAi openAiApi)
         {
             _openAiApi = openAiApi;
         }
-        public IOpenAiApi Create(string? name = default)
+        public IOpenAi Create(string? name = default)
         {
             name ??= string.Empty;
             if (_openAiApi is OpenAiApi internalImplementation)
                 internalImplementation.SetName(name);
             return _openAiApi;
         }
-        public IOpenAiAudioApi CreateAudio(string? name = null)
+        public IOpenAiAudio CreateAudio(string? name = null)
             => Create(name).Audio;
-        public IOpenAiChatApi CreateChat(string? name = null)
+        public IOpenAiChat CreateChat(string? name = null)
             => Create(name).Chat;
-        public IOpenAiCompletionApi CreateCompletion(string? name = null)
+        public IOpenAiCompletion CreateCompletion(string? name = null)
             => Create(name).Completion;
-        public IOpenAiEditApi CreateEdit(string? name = null)
+        public IOpenAiEdit CreateEdit(string? name = null)
             => Create(name).Edit;
-        public IOpenAiEmbeddingApi CreateEmbedding(string? name = null)
+        public IOpenAiEmbedding CreateEmbedding(string? name = null)
             => Create(name).Embedding;
-        public IOpenAiFileApi CreateFile(string? name = null)
+        public IOpenAiFile CreateFile(string? name = null)
             => Create(name).File;
-        public IOpenAiFineTuneApi CreateFineTune(string? name = null)
+        public IOpenAiFineTune CreateFineTune(string? name = null)
             => Create(name).FineTune;
-        public IOpenAiImageApi CreateImage(string? name = null)
+        public IOpenAiImage CreateImage(string? name = null)
             => Create(name).Image;
-        public IOpenAiModelApi CreateModel(string? name = null)
+        public IOpenAiModel CreateModel(string? name = null)
             => Create(name).Model;
-        public IOpenAiModerationApi CreateModeration(string? name = null)
+        public IOpenAiModeration CreateModeration(string? name = null)
             => Create(name).Moderation;
-        public IOpenAiManagementApi CreateManagement(string? name = default)
+        public IOpenAiManagement CreateManagement(string? name = default)
             => Create(name).Management;
     }
 }

@@ -13,17 +13,17 @@ namespace Rystem.OpenAi
 {
     public interface IOpenAiFactory
     {
-        IOpenAiApi Create(string? name = default);
-        IOpenAiAudioApi CreateAudio(string? name = default);
-        IOpenAiChatApi CreateChat(string? name = default);
-        IOpenAiCompletionApi CreateCompletion(string? name = default);
-        IOpenAiEditApi CreateEdit(string? name = default);
-        IOpenAiEmbeddingApi CreateEmbedding(string? name = default);
-        IOpenAiFileApi CreateFile(string? name = default);
-        IOpenAiFineTuneApi CreateFineTune(string? name = default);
-        IOpenAiImageApi CreateImage(string? name = default);
-        IOpenAiModelApi CreateModel(string? name = default);
-        IOpenAiModerationApi CreateModeration(string? name = default);
-        IOpenAiManagementApi CreateManagement(string? name = default);
+        IOpenAi Create(string? name = default);
+        IOpenAiAudio CreateAudio(string? name = default);
+        IOpenAiChat CreateChat(string? name = default);
+        IOpenAiCompletion CreateCompletion(string? name = default);
+        IOpenAiEdit CreateEdit(string? name = default);
+        IOpenAiEmbedding CreateEmbedding(string? name = default);
+        IOpenAiFile CreateFile(string? name = default);
+        IOpenAiFineTune CreateFineTune(string? name = default);
+        IOpenAiImage CreateImage(string? name = default);
+        IOpenAiModel CreateModel(string? name = default);
+        IOpenAiModeration CreateModeration(string? name = default);
+        IOpenAiManagement CreateManagement(string? name = default);
     }
 }
