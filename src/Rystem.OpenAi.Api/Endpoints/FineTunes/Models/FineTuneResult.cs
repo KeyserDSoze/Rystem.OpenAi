@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.FineTune
 {
@@ -9,7 +10,7 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("created_at")]
         public int CreatedAt { get; set; }
         [JsonPropertyName("events")]
-        public FineTuneEvent[]? Events { get; set; }
+        public List<FineTuneEvent>? Events { get; set; }
         [JsonPropertyName("fine_tuned_model")]
         public object? FineTuneModel { get; set; }
         [JsonPropertyName("hyperparams")]
@@ -17,13 +18,13 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("organization_id")]
         public string? OrganizationId { get; set; }
         [JsonPropertyName("result_files")]
-        public object[]? ResultFiles { get; set; }
+        public List<object>? ResultFiles { get; set; }
         [JsonPropertyName("status")]
         public string? Status { get; set; }
         [JsonPropertyName("validation_files")]
-        public object[]? ValidationFiles { get; set; }
+        public List<object>? ValidationFiles { get; set; }
         [JsonPropertyName("training_files")]
-        public TrainingFiles[]? TrainingFiles { get; set; }
+        public List<TrainingFiles>? TrainingFiles { get; set; }
         [JsonPropertyName("updated_at")]
         public int UpdatedAt { get; set; }
     }
