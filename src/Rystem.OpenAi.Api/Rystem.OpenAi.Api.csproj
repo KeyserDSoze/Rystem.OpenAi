@@ -12,13 +12,13 @@
 		<Company>Alessandro Rapiti</Company>
 		<Product>Rystem.OpenAi</Product>
 		<Title>OpenAI API for Azure</Title>
-		<Description>.Net wrapper for OpenAI with Dependency injection integration, factory integration: you may inject more than one endpoint, azure integration: you may swap among openai endpoint and any azure endpoint quickly and easily. You can calculate tokens and cost for each request (before the request) and for each response.</Description>
+		<Description>.Net wrapper for OpenAI with Dependency injection integration, factory integration: you may inject more than one endpoint, azure integration: you may swap among openai endpoint and any azure endpoint quickly and easily. You can calculate tokens and cost for each request (before the request) and for each response. You can access to the dashboard api to retrieve your current or previous billing.</Description>
 		<Copyright>2023</Copyright>
 		<PackageIcon>openai.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/KeyserDSoze/Rystem.OpenAi</RepositoryUrl>
 		<PackageId>Rystem.OpenAi</PackageId>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
