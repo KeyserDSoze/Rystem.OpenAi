@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.FineTune
         {
             if (basedOn != null)
                 _familyType = basedOn.Value;
-            return Client.PostAsync<FineTuneResult>(Configuration.GetUri(OpenAiType.FineTune, Request.TrainingFile!, _forced), Request, Configuration, cancellationToken);
+            return Client.PostAsync<FineTuneResult>(Configuration.GetUri(OpenAiType.FineTune, Request.TrainingFile!, _forced, string.Empty), Request, Configuration, cancellationToken);
         }
 
         /// <summary>

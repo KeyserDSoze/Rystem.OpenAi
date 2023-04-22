@@ -54,7 +54,7 @@ namespace Rystem.OpenAi.Audio
 
             Request.Dispose();
 
-            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranscription, Request.ModelId!, _forced), content, Configuration, cancellationToken);
+            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranscription, Request.ModelId!, _forced, string.Empty), content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
@@ -79,7 +79,7 @@ namespace Rystem.OpenAi.Audio
 
             Request.Dispose();
 
-            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranslation, Request.ModelId!, _forced), content, Configuration, cancellationToken);
+            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranslation, Request.ModelId!, _forced, string.Empty), content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>

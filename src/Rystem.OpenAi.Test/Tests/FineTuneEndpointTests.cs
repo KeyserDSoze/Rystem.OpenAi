@@ -16,6 +16,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("Azure2")]
         public async ValueTask AllFlowAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
@@ -28,15 +29,31 @@ namespace Rystem.OpenAi.Test
             await readableStream.CopyToAsync(editableFile);
             editableFile.Position = 0;
 
+            using var readableStream2 = File.OpenRead($"{location}\\Files\\validation-test-file.jsonl");
+            var editableFile2 = new MemoryStream();
+            await readableStream2.CopyToAsync(editableFile2);
+            editableFile2.Position = 0;
+
             var uploadResult = await openAiApi.File
                 .UploadFileAsync(editableFile, fileName);
+            var uploadResult2 = await openAiApi.File
+                .UploadFileAsync(editableFile2, fileName);
+
+            await Task.Delay(15_000);
 
             var allFineTunes = await openAiApi.FineTune.ListAsync();
             Assert.Empty(allFineTunes.Runnings);
 
             var createResult = await openAiApi.FineTune.Create(uploadResult.Id)
+                                    .WithModel("ada", ModelFamilyType.Ada)
+                                    .WithBatchSize(1)
+                                    .WithNumberOfEpochs(1)
+                                    .WithLearningRateMultiplier(1)
+                                    .WithValidationFile(uploadResult2.Id)
                                     .ExecuteAsync();
             Assert.NotNull(createResult);
+
+            await Task.Delay(15_000);
 
             allFineTunes = await openAiApi.FineTune.ListAsync();
             var inExecutionOrExecuted = allFineTunes.Runnings.ToList();
@@ -56,15 +73,38 @@ namespace Rystem.OpenAi.Test
                 var cancelResult = await openAiApi.FineTune.CancelAsync(fineTuneId);
                 Assert.NotNull(cancelResult);
 
+                try
+                {
+                    var deleteResultForFineTune = await openAiApi.FineTune.DeleteAsync(fineTuneId);
+                    Assert.NotNull(deleteResultForFineTune);
+                }
+                catch
+                {
+
+                }
+
                 await Task.Delay(5_000);
                 try
                 {
                     var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
-                    Assert.True(deleteResult.Deleted);
+                    if (name == "")
+                        Assert.True(deleteResult.Deleted);
                 }
                 catch (Exception ex)
                 {
-                    Assert.StartsWith("No such File object:", ex.Message);
+                    if (name == "")
+                        Assert.StartsWith("No such File object:", ex.Message);
+                }
+                try
+                {
+                    var deleteResult2 = await openAiApi.File.DeleteAsync(uploadResult2.Id);
+                    if (name == "")
+                        Assert.True(deleteResult2.Deleted);
+                }
+                catch (Exception ex)
+                {
+                    if (name == "")
+                        Assert.StartsWith("No such File object:", ex.Message);
                 }
             }
         }

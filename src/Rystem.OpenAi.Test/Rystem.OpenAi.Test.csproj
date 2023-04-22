@@ -34,6 +34,9 @@
         <None Update="appsettings.test.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="Files\validation-test-file.jsonl">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
         <None Update="Files\data-test-file.jsonl">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>

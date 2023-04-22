@@ -13,11 +13,20 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("Azure")]
         public async ValueTask GetAllModelsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
+            foreach (var model in results)
+            {
+                var modelResult = await openAiApi.Model.RetrieveAsync(model.Id);
+                Assert.NotNull(modelResult);
+                Assert.Equal(model.Id, modelResult.Id);
+                if (string.IsNullOrWhiteSpace(name))
+                    Assert.True(modelResult.Created > new DateTime(2018, 1, 1));
+            }
             Assert.NotNull(results);
             Assert.NotEmpty(results);
             Assert.Contains(results, c => c.Id.ToLower().StartsWith("text-davinci"));

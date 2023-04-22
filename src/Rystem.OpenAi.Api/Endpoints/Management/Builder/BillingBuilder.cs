@@ -31,7 +31,8 @@ namespace Rystem.OpenAi.Management
         }
         public ValueTask<BillingResult> GetUsageAsync(CancellationToken cancellationToken = default)
         {
-            var uri = $"{Configuration.GetUri(OpenAiType.Billing, Request.ModelId, false)}?end_date={Request.To:yyyy-MM-dd}&start_date={Request.From:yyyy-MM-dd}";
+#warning it doesn't with Azure
+            var uri = $"{Configuration.GetUri(OpenAiType.Billing, string.Empty, false, string.Empty)}?end_date={Request.To:yyyy-MM-dd}&start_date={Request.From:yyyy-MM-dd}";
             return Client.GetAsync<BillingResult>(uri, Configuration, cancellationToken);
         }
     }

@@ -38,7 +38,7 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatUrl;
-            var uri = $"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/generations";
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/generations");
             return Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
         }
         /// <summary>

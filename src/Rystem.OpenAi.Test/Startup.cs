@@ -47,6 +47,14 @@ namespace Rystem.OpenAi.Test
                     .SetFineTuneForAda(0.0004M, 0.0016M)
                     .SetAudioForTranslation(0.006M);
             }, "Azure");
+            var azureApiKey2 = context.Configuration["Azure2:ApiKey"];
+            var resourceName2 = context.Configuration["Azure2:ResourceName"];
+            services
+                .AddOpenAi(settings =>
+                {
+                    settings.ApiKey = azureApiKey2;
+                    settings.Azure.ResourceName = resourceName2;
+                }, "Azure2");
             OpenAiService.Setup(settings =>
             {
                 settings.ApiKey = apiKey;

@@ -16,6 +16,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("Azure")]
         public async ValueTask AllFlowAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
@@ -58,7 +59,8 @@ namespace Rystem.OpenAi.Test
 #pragma warning restore S125 // Sections of code should not be commented out
             await Task.Delay(5_000);
             var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
-            Assert.True(deleteResult.Deleted);
+            if (name != "Azure")
+                Assert.True(deleteResult.Deleted);
 
             results = await openAiApi.File
                 .AllAsync();

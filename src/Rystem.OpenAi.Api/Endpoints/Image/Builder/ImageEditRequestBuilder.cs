@@ -74,7 +74,8 @@ namespace Rystem.OpenAi.Image
 
             Request.Dispose();
 
-            var response = await Client.PostAsync<ImageResult>($"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/edits", content, Configuration, cancellationToken);
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/edits");
+            var response = await Client.PostAsync<ImageResult>(uri, content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
@@ -85,7 +86,7 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var uri = $"{Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced)}/generations";
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/edits");
             var responses = await Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
             if (responses.Data != null)
             {

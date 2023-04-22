@@ -21,6 +21,7 @@
 		<Version>2.0.2</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<UserSecretsId>f8af9352-bb0e-40fc-a4e9-9b584f95729f</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>

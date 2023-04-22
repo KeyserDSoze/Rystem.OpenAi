@@ -41,7 +41,7 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         /// <param name="file">The stream for the file to use for this request</param>
         /// <param name="purpose">The intendend purpose of the uploaded documents. Use "fine-tune" for Fine-tuning. This allows us to validate the format of the uploaded file.</param>
-        ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string purpose = "fine-tune", CancellationToken cancellationToken = default);
+        ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", string purpose = "fine-tune", CancellationToken cancellationToken = default);
     }
     [Obsolete("In version 3.x we'll remove IOpenAiFileApi and we'll use only IOpenAiFile to retrieve services")]
     public interface IOpenAiFileApi : IOpenAiFile
