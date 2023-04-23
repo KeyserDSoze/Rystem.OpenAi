@@ -42,6 +42,7 @@ namespace Rystem.OpenAi
             var audioTranscriptionUri = string.Format(uri, "{0}", "audio/transcriptions", "{1}", "{2}");
             var audioTranslationUri = string.Format(uri, "{0}", "audio/translations", "{1}", "{2}");
             var billingUri = string.Format(uri, "{0}", "dashboard/billing/usage", "{1}", "{2}");
+            var deploymentUri = string.Format(uri, "{0}", "deployments", "{1}", "{2}");
 
             var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
             if (settings.Azure.HasConfiguration)
@@ -85,6 +86,7 @@ namespace Rystem.OpenAi
                 fineTuneUri = string.Format(fineTuneUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(settings, OpenAiType.FineTune)}");
                 fileUri = string.Format(fileUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(settings, OpenAiType.File)}");
                 billingUri = string.Format(billingUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(settings, OpenAiType.Billing)}");
+                deploymentUri = string.Format(deploymentUri, $"https://{settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(settings, OpenAiType.Billing)}");
 
                 foreach (var deployment in settings.Azure.Deployments)
                 {
@@ -110,6 +112,8 @@ namespace Rystem.OpenAi
                             return string.Format(billingUri, appendBeforeQueryString);
                         case OpenAiType.Model:
                             return string.Format(modelUri, appendBeforeQueryString);
+                        case OpenAiType.Deployment:
+                            return string.Format(deploymentUri, appendBeforeQueryString);
                     }
                     if (forceModel)
                         return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);

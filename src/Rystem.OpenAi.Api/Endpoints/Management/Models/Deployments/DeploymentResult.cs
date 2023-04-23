@@ -1,0 +1,24 @@
+﻿using System.Text.Json.Serialization;
+
+namespace Rystem.OpenAi.Management
+{
+    public sealed class DeploymentResult : IOpenAiRequest
+    {
+        [JsonPropertyName("scale_settings")]
+        public DeploymentScaleSettings ScaleSettings { get; set; }
+        [JsonPropertyName("model")]
+        public string ModelId { get; set; }
+        [JsonPropertyName("owner")]
+        public string Owner { get; set; }
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+        [JsonPropertyName("created_at")]
+        public int CreatedAt { get; set; }
+        [JsonPropertyName("updated_at")]
+        public int UpdatedAt { get; set; }
+        [JsonPropertyName("object")]
+        public string Object { get; set; }
+    }
+}

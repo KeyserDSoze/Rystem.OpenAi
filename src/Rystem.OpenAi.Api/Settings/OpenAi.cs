@@ -13,6 +13,7 @@
         Image,
         AudioTranscription,
         AudioTranslation,
-        Billing
+        Billing,
+        Deployment
     }
 }
