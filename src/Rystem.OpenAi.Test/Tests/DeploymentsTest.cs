@@ -15,20 +15,34 @@ namespace Rystem.OpenAi.Test
             _openAiFactory = openAiFactory;
         }
         [Theory]
+        [InlineData("")]
         [InlineData("Azure2")]
         public async ValueTask AllFlowAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Management);
+            try
+            {
+                var createResponse = await openAiApi.Management.Deployment()
+                    .WithCapacity(2)
+                    .WithDeploymentTextModel("ada", TextModelType.AdaText)
+                    .WithScaling(Management.DeploymentScaleType.Standard)
+                    .CreateAsync();
 
-            var createResponse = await openAiApi.Management.Deployment()
-                .WithCapacity(2)
-                .WithDeploymentTextModel("ada", TextModelType.AdaText)
-                .WithScaling(Management.DeploymentScaleType.Standard)
-                .CreateAsync();
-
-            Assert.NotNull(createResponse);
-            Assert.True(createResponse.CreatedAt > 1000);
+                Assert.NotNull(createResponse);
+                Assert.True(createResponse.CreatedAt > 1000);
+            }
+            catch (Exception ex)
+            {
+                var riseException = true;
+                if (ex is MethodAccessException methodException && name == "")
+                {
+                    if (methodException.Message == "This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.")
+                        riseException = false;
+                }
+                if (riseException)
+                    throw ex;
+            }
         }
     }
 }

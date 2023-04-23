@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Files
     /// <summary>
     /// Represents a single file used with the OpenAI Files endpoint.  Files are used to upload and manage documents that can be used with features like Fine-tuning.
     /// </summary>
-    public sealed class FileResult : ApiBaseResponse
+    public sealed class FileResult : ApiBaseResponse, IStatedResult
     {
         /// <summary>
         /// Unique id for this file, so that it can be referenced in other operations
@@ -41,7 +41,7 @@ namespace Rystem.OpenAi.Files
         /// The status of the File (ie when an upload operation was done: "uploaded")
         /// </summary>
         [JsonPropertyName("status")]
-        public string? Status { get; set; }
+        public EventState State { get; set; }
         /// <summary>
         /// The status details, it could be null
         /// </summary>

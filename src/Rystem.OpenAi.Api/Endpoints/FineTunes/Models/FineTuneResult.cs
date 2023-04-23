@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.FineTune
 {
-    public sealed class FineTuneResult : ApiBaseResponse
+    public sealed class FineTuneResult : ApiBaseResponse, IStatedResult
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
@@ -20,7 +20,7 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("result_files")]
         public List<object>? ResultFiles { get; set; }
         [JsonPropertyName("status")]
-        public string? Status { get; set; }
+        public EventState State { get; set; }
         [JsonPropertyName("validation_files")]
         public List<object>? ValidationFiles { get; set; }
         [JsonPropertyName("training_files")]
