@@ -21,8 +21,24 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Management);
-            try
+            if (name == "")
             {
+                try
+                {
+                    _ = openAiApi.Management.Deployment();
+                }
+                catch (Exception ex)
+                {
+                    Assert.Equal("This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.", ex.Message);
+                }
+            }
+            else
+            {
+                foreach (var deployment in (await openAiApi.Management.Deployment().ListAsync()).Data)
+                {
+                    await openAiApi.Management.Deployment().DeleteAsync(deployment.Id);
+                }
+
                 var createResponse = await openAiApi.Management.Deployment()
                     .WithCapacity(2)
                     .WithDeploymentTextModel("ada", TextModelType.AdaText)
@@ -51,15 +67,6 @@ namespace Rystem.OpenAi.Test
 
                 listResponse = await openAiApi.Management.Deployment().ListAsync();
                 Assert.Empty(listResponse.Succeeded);
-
-            }
-            catch (Exception ex)
-            {
-                var riseException = true;
-                if (ex is MethodAccessException methodException && name == "" && methodException.Message == "This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.")
-                    riseException = false;
-                if (riseException)
-                    throw ex;
             }
         }
     }

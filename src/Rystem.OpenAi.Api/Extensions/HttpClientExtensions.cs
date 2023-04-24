@@ -91,9 +91,17 @@ namespace Rystem.OpenAi
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, HttpMethod.Patch, message, false, cancellationToken);
-            var responseAsString = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
+            try
+            {
+                var response = await client.PrivatedExecuteAsync(url, HttpMethod.Patch, message, false, cancellationToken);
+                var responseAsString = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
+            }
+            catch (Exception ec)
+            {
+                var olaf = ec.Message;
+                return default(TResponse);
+            }
         }
         internal static async ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client,
             string url,
