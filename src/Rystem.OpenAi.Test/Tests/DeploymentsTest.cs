@@ -15,9 +15,10 @@ namespace Rystem.OpenAi.Test
             _openAiFactory = openAiFactory;
         }
         [Theory]
-        [InlineData("")]
-        [InlineData("Azure2")]
-        public async ValueTask AllFlowAsync(string name)
+        [InlineData("", null)]
+        [InlineData("Azure2", null)]
+        [InlineData("Azure2", "test")]
+        public async ValueTask AllFlowAsync(string name, string? deploymentId)
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Management);
@@ -43,7 +44,7 @@ namespace Rystem.OpenAi.Test
                     .WithCapacity(2)
                     .WithDeploymentTextModel("ada", TextModelType.AdaText)
                     .WithScaling(Management.DeploymentScaleType.Standard)
-                    .CreateAsync();
+                    .CreateAsync(deploymentId);
 
                 Assert.NotNull(createResponse);
                 Assert.True(createResponse.CreatedAt > 1000);
@@ -54,12 +55,19 @@ namespace Rystem.OpenAi.Test
                 var listResponse = await openAiApi.Management.Deployment().ListAsync();
                 Assert.NotEmpty(listResponse.Succeeded);
 
-                var updateResponse = await openAiApi.Management.Deployment()
-                    .WithCapacity(2)
-                    .WithDeploymentTextModel("ada", TextModelType.AdaText)
-                    .WithScaling(Management.DeploymentScaleType.Standard)
-                    .UpdateAsync(createResponse.Id);
-                Assert.NotNull(updateResponse);
+                try
+                {
+                    var updateResponse = await openAiApi.Management.Deployment()
+                        .WithCapacity(2)
+                        .WithDeploymentTextModel("ada", TextModelType.AdaText)
+                        .WithScaling(Management.DeploymentScaleType.Standard)
+                        .UpdateAsync(createResponse.Id);
+                    Assert.NotNull(updateResponse);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Empty(ex.Message);
+                }
 
                 var deleteResponse = await openAiApi.Management.Deployment()
                     .DeleteAsync(createResponse.Id);

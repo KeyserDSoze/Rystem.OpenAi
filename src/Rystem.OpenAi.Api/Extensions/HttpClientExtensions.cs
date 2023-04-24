@@ -61,59 +61,46 @@ namespace Rystem.OpenAi
                 await configuration.EnrichClientAsync(client);
             return await PrivatedExecuteAsync(client, url, method, message, isStreaming, cancellationToken);
         }
-        internal static async ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClient client,
+        internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClient client,
             string url,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(client, url, null, HttpMethod.Delete, configuration, cancellationToken);
+        internal static ValueTask<TResponse> GetAsync<TResponse>(this HttpClient client,
+            string url,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(client, url, null, HttpMethod.Get, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PatchAsync<TResponse>(this HttpClient client,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Patch, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PutAsync<TResponse>(this HttpClient client,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Put, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Post, configuration, cancellationToken);
+        internal static async ValueTask<TResponse> ExecuteWithResponseAsync<TResponse>(this HttpClient client,
+            string url,
+            object? message,
+            HttpMethod method,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, HttpMethod.Delete, null, false, cancellationToken);
+            var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync();
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default(TResponse)!;
-        }
-        internal static async ValueTask<TResponse> GetAsync<TResponse>(this HttpClient client,
-            string url,
-            OpenAiConfiguration configuration,
-            CancellationToken cancellationToken)
-        {
-            if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, HttpMethod.Get, null, false, cancellationToken);
-            var responseAsString = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
-        }
-        internal static async ValueTask<TResponse> PatchAsync<TResponse>(this HttpClient client,
-            string url,
-            object? message,
-            OpenAiConfiguration configuration,
-            CancellationToken cancellationToken)
-        {
-            if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            try
-            {
-                var response = await client.PrivatedExecuteAsync(url, HttpMethod.Patch, message, false, cancellationToken);
-                var responseAsString = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
-            }
-            catch (Exception ec)
-            {
-                var olaf = ec.Message;
-                return default(TResponse);
-            }
-        }
-        internal static async ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client,
-            string url,
-            object? message,
-            OpenAiConfiguration configuration,
-            CancellationToken cancellationToken)
-        {
-            if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, HttpMethod.Post, message, false, cancellationToken);
-            var responseAsString = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TResponse>(responseAsString)!;
         }
         private const string StartingWith = "data: ";
         private const string Done = "[DONE]";

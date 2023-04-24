@@ -86,9 +86,15 @@ namespace Rystem.OpenAi.Management
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ValueTask<DeploymentResult> CreateAsync(CancellationToken cancellationToken = default)
-            => Client.PostAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, string.Empty),
-                Request, Configuration, cancellationToken);
+        public ValueTask<DeploymentResult> CreateAsync(string? deploymentId = null, CancellationToken cancellationToken = default)
+        {
+            if (deploymentId == null)
+                return Client.PostAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, string.Empty),
+                    Request, Configuration, cancellationToken);
+            else
+                return Client.PutAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"),
+                    Request, Configuration, cancellationToken);
+        }
         /// <summary>
         /// Gets the list of deployments owned by the Azure OpenAI resource.
         /// </summary>
