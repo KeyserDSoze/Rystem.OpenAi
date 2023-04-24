@@ -2,7 +2,7 @@
 
 namespace Rystem.OpenAi.Management
 {
-    public sealed class DeploymentResult : IStatedResult, IOpenAiRequest
+    public sealed class DeploymentResult : StatedResult
     {
         [JsonPropertyName("scale_settings")]
         public DeploymentScaleSettings ScaleSettings { get; set; }
@@ -12,8 +12,6 @@ namespace Rystem.OpenAi.Management
         public string Owner { get; set; }
         [JsonPropertyName("id")]
         public string Id { get; set; }
-        [JsonPropertyName("status")]
-        public EventState State { get; set; }
         [JsonPropertyName("created_at")]
         public int CreatedAt { get; set; }
         [JsonPropertyName("updated_at")]

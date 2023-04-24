@@ -31,15 +31,33 @@ namespace Rystem.OpenAi.Test
 
                 Assert.NotNull(createResponse);
                 Assert.True(createResponse.CreatedAt > 1000);
+
+                var deploymentResult = await openAiApi.Management.Deployment().RetrieveAsync(createResponse.Id);
+                Assert.NotNull(deploymentResult);
+
+                var listResponse = await openAiApi.Management.Deployment().ListAsync();
+                Assert.NotEmpty(listResponse.Succeeded);
+
+                var updateResponse = await openAiApi.Management.Deployment()
+                    .WithCapacity(2)
+                    .WithDeploymentTextModel("ada", TextModelType.AdaText)
+                    .WithScaling(Management.DeploymentScaleType.Standard)
+                    .UpdateAsync(createResponse.Id);
+                Assert.NotNull(updateResponse);
+
+                var deleteResponse = await openAiApi.Management.Deployment()
+                    .DeleteAsync(createResponse.Id);
+                Assert.True(deleteResponse);
+
+                listResponse = await openAiApi.Management.Deployment().ListAsync();
+                Assert.Empty(listResponse.Succeeded);
+
             }
             catch (Exception ex)
             {
                 var riseException = true;
-                if (ex is MethodAccessException methodException && name == "")
-                {
-                    if (methodException.Message == "This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.")
-                        riseException = false;
-                }
+                if (ex is MethodAccessException methodException && name == "" && methodException.Message == "This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.")
+                    riseException = false;
                 if (riseException)
                     throw ex;
             }

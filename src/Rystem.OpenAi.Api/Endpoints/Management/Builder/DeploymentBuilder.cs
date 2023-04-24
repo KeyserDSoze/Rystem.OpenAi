@@ -111,7 +111,7 @@ namespace Rystem.OpenAi.Management
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public ValueTask<DeploymentResult> UpdateAsync(string deploymentId, CancellationToken cancellationToken = default)
-            => Client.PatchAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}/cancel"),
+            => Client.PatchAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"),
                 Request, Configuration, cancellationToken);
         /// <summary>
         /// Deletes the deployment specified by the given deployment-id.

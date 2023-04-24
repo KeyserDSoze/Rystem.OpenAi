@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Rystem.OpenAi
 {
     public abstract class Results<T> : ApiBaseResponse
-        where T : IStatedResult
+        where T : StatedResult
     {
         [JsonPropertyName("data")]
         public List<T>? Data { get; set; }
