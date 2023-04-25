@@ -58,7 +58,7 @@ namespace Rystem.OpenAi.Test
                     settings.Azure.ResourceName = resourceName2;
                 }, "Azure2");
             var result = services.BuildServiceProvider().MapDeploymentsAutomaticallyAsync(true, "Azure").ConfigureAwait(false).GetAwaiter().GetResult();
-            Assert.True(result);
+            Assert.Empty(result);
             OpenAiService.Setup(settings =>
             {
                 settings.ApiKey = apiKey;

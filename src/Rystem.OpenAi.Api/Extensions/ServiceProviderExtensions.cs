@@ -8,13 +8,14 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceProviderExtensions
     {
-        public static async ValueTask<bool> MapDeploymentsAutomaticallyAsync(this IServiceProvider serviceProvider,
+        public static async ValueTask<List<Exception>> MapDeploymentsAutomaticallyAsync(this IServiceProvider serviceProvider,
             bool forceDeploy = false,
             params string[] integrationNames)
         {
+            var exceptions = new List<Exception>();
             var services = serviceProvider.CreateScope().ServiceProvider;
-            var openAiFactory = services.GetService<IOpenAiFactory>();
-            var configurations = services.GetService<IEnumerable<OpenAiConfiguration>>();
+            var openAiFactory = services.GetService<IOpenAiFactory>()!;
+            var configurations = services.GetService<IEnumerable<OpenAiConfiguration>>()!;
             foreach (var integrationName in integrationNames)
             {
                 var openAi = openAiFactory.CreateManagement(integrationName);
@@ -32,17 +33,24 @@ namespace Microsoft.Extensions.DependencyInjection
                         {
                             if (!availableDeployments.Any(x => x.ModelId == deployment.Value))
                             {
-                                await openAi.Deployment()
-                                    .WithCapacity(1)
-                                    .WithScaling(Rystem.OpenAi.Management.DeploymentScaleType.Standard)
-                                    .WithDeploymentCustomModel(deployment.Key, deployment.Value)
-                                    .CreateAsync();
+                                try
+                                {
+                                    _ = await openAi.Deployment()
+                                        .WithCapacity(1)
+                                        .WithScaling(Rystem.OpenAi.Management.DeploymentScaleType.Standard)
+                                        .WithDeploymentCustomModel(deployment.Key, deployment.Value)
+                                        .CreateAsync();
+                                }
+                                catch (Exception exception)
+                                {
+                                    exceptions.Add(exception);
+                                }
                             }
                         }
                     configuration.ConfigureEndpoints();
                 }
             }
-            return true;
+            return exceptions;
         }
     }
 }
