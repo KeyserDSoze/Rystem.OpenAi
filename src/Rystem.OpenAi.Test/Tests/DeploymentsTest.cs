@@ -26,7 +26,7 @@ namespace Rystem.OpenAi.Test
             {
                 try
                 {
-                    _ = openAiApi.Management.Deployment();
+                    _ = openAiApi.Management.Deployment;
                 }
                 catch (Exception ex)
                 {
@@ -35,33 +35,35 @@ namespace Rystem.OpenAi.Test
             }
             else
             {
-                foreach (var deployment in (await openAiApi.Management.Deployment().ListAsync()).Data)
+                foreach (var deployment in (await openAiApi.Management.Deployment.ListAsync()).Data)
                 {
-                    await openAiApi.Management.Deployment().DeleteAsync(deployment.Id);
+                    await openAiApi.Management.Deployment.DeleteAsync(deployment.Id);
                 }
 
-                var createResponse = await openAiApi.Management.Deployment()
+                var createResponse = await openAiApi.Management.Deployment
+                    .Create(deploymentId)
                     .WithCapacity(2)
                     .WithDeploymentTextModel("ada", TextModelType.AdaText)
                     .WithScaling(Management.DeploymentScaleType.Standard)
-                    .CreateAsync(deploymentId);
+                    .ExecuteAsync();
 
                 Assert.NotNull(createResponse);
                 Assert.True(createResponse.CreatedAt > 1000);
 
-                var deploymentResult = await openAiApi.Management.Deployment().RetrieveAsync(createResponse.Id);
+                var deploymentResult = await openAiApi.Management.Deployment.RetrieveAsync(createResponse.Id);
                 Assert.NotNull(deploymentResult);
 
-                var listResponse = await openAiApi.Management.Deployment().ListAsync();
+                var listResponse = await openAiApi.Management.Deployment.ListAsync();
                 Assert.NotEmpty(listResponse.Succeeded);
 
                 try
                 {
-                    var updateResponse = await openAiApi.Management.Deployment()
+                    var updateResponse = await openAiApi.Management.Deployment
+                        .Update(createResponse.Id)
                         .WithCapacity(1)
                         .WithDeploymentTextModel("ada", TextModelType.AdaText)
                         .WithScaling(Management.DeploymentScaleType.Standard)
-                        .UpdateAsync(createResponse.Id);
+                        .ExecuteAsync();
                     Assert.NotNull(updateResponse);
                 }
                 catch (Exception ex)
@@ -69,11 +71,11 @@ namespace Rystem.OpenAi.Test
                     Assert.Empty(ex.Message);
                 }
 
-                var deleteResponse = await openAiApi.Management.Deployment()
+                var deleteResponse = await openAiApi.Management.Deployment
                     .DeleteAsync(createResponse.Id);
                 Assert.True(deleteResponse);
 
-                listResponse = await openAiApi.Management.Deployment().ListAsync();
+                listResponse = await openAiApi.Management.Deployment.ListAsync();
                 Assert.Empty(listResponse.Succeeded);
             }
         }
@@ -83,7 +85,7 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
 
-            foreach (var deployment in (await openAiApi.Management.Deployment().ListAsync()).Data)
+            foreach (var deployment in (await openAiApi.Management.Deployment.ListAsync()).Data)
             {
                 //todo Update AddDeploymentTextModel and others in settings with Create and on startup the entire list
                 Assert.NotNull(deployment);

@@ -1,7 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.FineTune;
 
 namespace Rystem.OpenAi.Management
 {
@@ -11,7 +10,9 @@ namespace Rystem.OpenAi.Management
     /// </summary>
     public sealed class DeploymentBuilder : RequestBuilder<DeploymentRequest>
     {
-        public DeploymentBuilder(HttpClient client, OpenAiConfiguration configuration, IOpenAiUtility utility) :
+        private readonly string? _deploymentId;
+        private readonly bool _isUpdate;
+        public DeploymentBuilder(HttpClient client, OpenAiConfiguration configuration, IOpenAiUtility utility, string? deploymentId, bool isUpdate) :
             base(client, configuration, () =>
             {
                 return new DeploymentRequest()
@@ -24,7 +25,8 @@ namespace Rystem.OpenAi.Management
                 };
             }, utility)
         {
-
+            _deploymentId = deploymentId;
+            _isUpdate = isUpdate;
         }
         public DeploymentBuilder WithDeploymentTextModel(string name, TextModelType model)
         {
@@ -83,56 +85,26 @@ namespace Rystem.OpenAi.Management
             return this;
         }
         /// <summary>
-        /// Creates a new deployment for the Azure OpenAI resource according to the given specification.
+        /// Execute an operation of Creation or Update for the Azure OpenAI resource according to the given specification.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ValueTask<DeploymentResult> CreateAsync(string? deploymentId = null, CancellationToken cancellationToken = default)
+        public ValueTask<DeploymentResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            if (deploymentId == null)
-                return Client.PostAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, string.Empty),
-                    Request, Configuration, cancellationToken);
+            if (!_isUpdate)
+            {
+                if (_deploymentId == null)
+                    return Client.PostAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, string.Empty),
+                        Request, Configuration, cancellationToken);
+                else
+                    return Client.PutAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{_deploymentId}"),
+                        Request, Configuration, cancellationToken);
+            }
             else
-                return Client.PutAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"),
+            {
+                return Client.PatchAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{_deploymentId}"),
                     Request, Configuration, cancellationToken);
-        }
-        /// <summary>
-        /// Gets the list of deployments owned by the Azure OpenAI resource.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public ValueTask<DeploymentResults> ListAsync(CancellationToken cancellationToken = default)
-            => Client.GetAsync<DeploymentResults>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, string.Empty), Configuration, cancellationToken);
-        /// <summary>
-        /// Gets details for a single deployment specified by the given deployment-id.
-        /// </summary>
-        /// <param name="deploymentId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public ValueTask<DeploymentResult> RetrieveAsync(string deploymentId, CancellationToken cancellationToken = default)
-            => Client.GetAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"), Configuration, cancellationToken);
-        /// <summary>
-        /// Updates the mutable details of the deployment with the given deployment-id.
-        /// </summary>
-        /// <param name="deploymentId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public ValueTask<DeploymentResult> UpdateAsync(string deploymentId, CancellationToken cancellationToken = default)
-            => Client.PatchAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"),
-                new UpdateDeploymentRequest
-                {
-                    ScaleSettings = Request.ScaleSettings
-                }, Configuration, cancellationToken);
-        /// <summary>
-        /// Deletes the deployment specified by the given deployment-id.
-        /// </summary>
-        /// <param name="deploymentId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async ValueTask<bool> DeleteAsync(string deploymentId, CancellationToken cancellationToken = default)
-        {
-            _ = await Client.DeleteAsync<bool>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, _forced, $"/{deploymentId}"), Configuration, cancellationToken);
-            return true;
+            }
         }
     }
 }

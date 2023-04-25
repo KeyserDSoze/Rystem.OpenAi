@@ -4,7 +4,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiAudio : OpenAiBase, IOpenAiAudio, IOpenAiAudioApi
+    internal sealed class OpenAiAudio : OpenAiBase, IOpenAiAudio
     {
         public OpenAiAudio(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,

@@ -81,6 +81,7 @@ Install-Package Rystem.OpenAi
   - [Setup Price](#setup-price)
 - [Management](#management)
   - [Billing](#billing)
+  - [Deployments](#deployments)
 
 
 ## Startup Setup
@@ -656,9 +657,73 @@ In your openai dashboard you may get the billing usage, or users, or taxes, or s
 You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of april.
 
     var management = _openAiFactory.CreateManagement(integrationName);
-            var usages = await management
-                .Billing()
-                .From(new DateTime(2023, 4, 1))
-                .To(new DateTime(2023, 4, 30))
-                .GetUsageAsync();
-            Assert.NotEmpty(usages.DailyCosts);
+    var usages = await management
+        .Billing
+        .From(new DateTime(2023, 4, 1))
+        .To(new DateTime(2023, 4, 30))
+        .GetUsageAsync();
+    Assert.NotEmpty(usages.DailyCosts);
+
+### Deployments
+[📖 Back to summary](#documentation)\
+Only for Azure you have to deploy a model to use model in yout application. You can configure Deployment during startup of your application.
+
+    services.AddOpenAi(settings =>
+    {
+        settings.ApiKey = azureApiKey;
+        settings
+            .UseVersionForChat("2023-03-15-preview");
+        settings.Azure.ResourceName = resourceName;
+        settings.Azure.AppRegistration.ClientId = clientId;
+        settings.Azure.AppRegistration.ClientSecret = clientSecret;
+        settings.Azure.AppRegistration.TenantId = tenantId;
+        settings.Azure
+            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301)
+            .MapDeploymentCustomModel("ada001", "text-ada-001");
+        settings.Price
+            .SetFineTuneForAda(0.0004M, 0.0016M)
+            .SetAudioForTranslation(0.006M);
+    }, "Azure");
+
+During startup you can configure other deployments on your application or on Azure.
+
+    var app = builder.Build();
+    await app.Services.MapDeploymentsAutomaticallyAsync(true, "");
+
+MapDeploymentsAutomaticallyAsync is a extensions method for IServiceProvider, with true you can automatically install on Azure the deployments you setup on application.
+In the other parameter you can choose which integration runs this automatic update. In the example it's running for the default integration.
+With the Management endpoint you can programatically configure or manage deployments on Azure.
+
+You can create a new deployment
+
+    var createResponse = await openAiApi.Management.Deployment
+        .Create(deploymentId)
+        .WithCapacity(2)
+        .WithDeploymentTextModel("ada", TextModelType.AdaText)
+        .WithScaling(Management.DeploymentScaleType.Standard)
+        .ExecuteAsync();
+
+Get a deployment by Id
+
+    var deploymentResult = await openAiApi.Management.Deployment.RetrieveAsync(createResponse.Id);
+
+List of all deployments by status
+
+    var listResponse = await openAiApi.Management.Deployment.ListAsync();
+
+Update a deployment
+
+    var updateResponse = await openAiApi.Management.Deployment
+        .Update(createResponse.Id)
+        .WithCapacity(1)
+        .WithDeploymentTextModel("ada", TextModelType.AdaText)
+        .WithScaling(Management.DeploymentScaleType.Standard)
+        .ExecuteAsync();
+
+Delete a deployment by Id
+
+    var deleteResponse = await openAiApi.Management.Deployment
+        .DeleteAsync(createResponse.Id);

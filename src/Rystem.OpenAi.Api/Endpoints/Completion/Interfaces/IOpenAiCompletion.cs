@@ -14,8 +14,4 @@ namespace Rystem.OpenAi.Completion
         /// <returns></returns>
         CompletionRequestBuilder Request(params string[] prompts);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiCompletionApi and we'll use only IOpenAiCompletion to retrieve services")]
-    public interface IOpenAiCompletionApi : IOpenAiCompletion
-    {
-    }
 }

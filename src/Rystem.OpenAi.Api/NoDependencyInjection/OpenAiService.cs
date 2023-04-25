@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Audio;
@@ -14,53 +15,62 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    public static class OpenAiService
+    public sealed class OpenAiService : IOpenAiServiceSetupNoDependencyInjection, IOpenAiFactory
     {
-        private static readonly IServiceCollection s_services = new ServiceCollection();
-        private static IServiceProvider? s_serviceProvider;
-        public static void Setup(Action<OpenAiSettings> settings, string? integrationName = default)
+        private static readonly OpenAiService s_openAiService = new OpenAiService();
+        public static IOpenAiServiceSetupNoDependencyInjection Instance => s_openAiService;
+        public static IOpenAiFactory Factory => s_openAiService;
+        private OpenAiService() { }
+        private readonly IServiceCollection _services = new ServiceCollection();
+        private IServiceProvider? _serviceProvider;
+        public IOpenAiServiceSetupNoDependencyInjection AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
         {
-            s_services.AddOpenAi(settings, integrationName);
+            _services.AddOpenAi(settings, integrationName);
+            return this;
         }
-        public static ValueTask<bool> MapDeploymentsAutomaticallyAsync()
+        public ValueTask<List<AutomaticallyDeploymentResult>> MapDeploymentsAutomaticallyAsync(bool forceDeploy = false, params string[] integrationNames)
         {
-            s_serviceProvider ??= s_services.BuildServiceProvider();
-            return s_serviceProvider.MapDeploymentsAutomaticallyAsync();
+            _serviceProvider ??= _services.BuildServiceProvider();
+            return _serviceProvider.MapDeploymentsAutomaticallyAsync(forceDeploy, integrationNames);
         }
-        public static IOpenAi Create(string? name = default)
+        public IOpenAi Create(string? integrationName = default)
         {
-            s_serviceProvider ??= s_services.BuildServiceProvider();
-            var factory = s_serviceProvider.GetService<IOpenAiFactory>()!;
-            if (name == default)
-                name = string.Empty;
-            return factory.Create(name);
+            _serviceProvider ??= _services.BuildServiceProvider();
+            var factory = _serviceProvider.GetService<IOpenAiFactory>()!;
+            if (integrationName == default)
+                integrationName = string.Empty;
+            return factory.Create(integrationName);
         }
-        public static IOpenAiAudio CreateAudio(string? name = null)
-            => Create(name).Audio;
-        public static IOpenAiChat CreateChat(string? name = null)
-            => Create(name).Chat;
-        public static IOpenAiCompletion CreateCompletion(string? name = null)
-            => Create(name).Completion;
-        public static IOpenAiEdit CreateEdit(string? name = null)
-            => Create(name).Edit;
-        public static IOpenAiEmbedding CreateEmbedding(string? name = null)
-            => Create(name).Embedding;
-        public static IOpenAiFile CreateFile(string? name = null)
-            => Create(name).File;
-        public static IOpenAiFineTune CreateFineTune(string? name = null)
-            => Create(name).FineTune;
-        public static IOpenAiImage CreateImage(string? name = null)
-            => Create(name).Image;
-        public static IOpenAiModel CreateModel(string? name = null)
-            => Create(name).Model;
-        public static IOpenAiModeration CreateModeration(string? name = null)
-            => Create(name).Moderation;
-        public static IOpenAiManagement CreateManagement(string? name = null)
-            => Create(name).Management;
-        public static IOpenAiUtility Utility()
+        public IOpenAiAudio CreateAudio(string? integrationName = null)
+            => Create(integrationName).Audio;
+        public IOpenAiChat CreateChat(string? integrationName = null)
+            => Create(integrationName).Chat;
+        public IOpenAiCompletion CreateCompletion(string? integrationName = null)
+            => Create(integrationName).Completion;
+        public IOpenAiEdit CreateEdit(string? integrationName = null)
+            => Create(integrationName).Edit;
+        public IOpenAiEmbedding CreateEmbedding(string? integrationName = null)
+            => Create(integrationName).Embedding;
+        public IOpenAiFile CreateFile(string? integrationName = null)
+            => Create(integrationName).File;
+        public IOpenAiFineTune CreateFineTune(string? integrationName = null)
+            => Create(integrationName).FineTune;
+        public IOpenAiImage CreateImage(string? integrationName = null)
+            => Create(integrationName).Image;
+        public IOpenAiModel CreateModel(string? integrationName = null)
+            => Create(integrationName).Model;
+        public IOpenAiModeration CreateModeration(string? integrationName = null)
+            => Create(integrationName).Moderation;
+        public IOpenAiManagement CreateManagement(string? integrationName = null)
+            => Create(integrationName).Management;
+        public IOpenAiBilling CreateBilling(string? integrationName = null)
+            => Create(integrationName).Management.Billing;
+        public IOpenAiDeployment CreateDeployment(string? integrationName = null)
+            => Create(integrationName).Management.Deployment;
+        public IOpenAiUtility Utility()
         {
-            s_serviceProvider ??= s_services.BuildServiceProvider();
-            return s_serviceProvider.GetService<IOpenAiUtility>()!;
+            _serviceProvider ??= _services.BuildServiceProvider();
+            return _serviceProvider.GetService<IOpenAiUtility>()!;
         }
     }
 }

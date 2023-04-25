@@ -13,8 +13,4 @@ namespace Rystem.OpenAi.Moderation
         /// <returns>Builder</returns>
         ModerationRequestBuilder Create(string input);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiModerationApi and we'll use only IOpenAiModeration to retrieve services")]
-    public interface IOpenAiModerationApi : IOpenAiModeration
-    {
-    }
 }

@@ -14,9 +14,4 @@ namespace Rystem.OpenAi.Edit
         /// <returns></returns>
         EditRequestBuilder Request(string instruction);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiEditApi and we'll use only IOpenAiEdit to retrieve services")]
-    public interface IOpenAiEditApi : IOpenAiEdit
-    {
-
-    }
 }

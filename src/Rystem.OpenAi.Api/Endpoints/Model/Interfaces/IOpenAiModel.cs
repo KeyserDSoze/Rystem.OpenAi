@@ -23,8 +23,4 @@ namespace Rystem.OpenAi
         /// <returns>Asynchronously returns the list of all <see cref="Model"/>s</returns>
         Task<List<Model>> ListAsync(CancellationToken cancellationToken = default);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiModelApi and we'll use only IOpenAiModel to retrieve services")]
-    public interface IOpenAiModelApi : IOpenAiModel
-    {
-    }
 }

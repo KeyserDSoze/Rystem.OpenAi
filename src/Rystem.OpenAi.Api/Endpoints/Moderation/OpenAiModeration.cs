@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Moderation
 {
-    internal sealed class OpenAiModeration : OpenAiBase, IOpenAiModeration, IOpenAiModerationApi
+    internal sealed class OpenAiModeration : OpenAiBase, IOpenAiModeration
     {
         public OpenAiModeration(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)

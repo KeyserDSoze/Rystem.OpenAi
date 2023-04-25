@@ -12,8 +12,4 @@ namespace Rystem.OpenAi.Embedding
         /// <returns></returns>
         EmbeddingRequestBuilder Request(params string[] inputs);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiEmbeddingApi and we'll use only IOpenAiEmbedding to retrieve services")]
-    public interface IOpenAiEmbeddingApi : IOpenAiEmbedding
-    {
-    }
 }

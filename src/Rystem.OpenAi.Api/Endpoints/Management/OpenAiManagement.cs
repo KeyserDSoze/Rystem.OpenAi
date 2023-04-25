@@ -4,21 +4,30 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Management
 {
-    internal sealed class OpenAiManagement : OpenAiBase, IOpenAiManagement, IOpenAiManagementApi
+    internal sealed class OpenAiManagement : OpenAiBase, IOpenAiManagement
     {
         public OpenAiManagement(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiBilling openAiBilling,
+            IOpenAiDeployment openAiDeployment,
             IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
+            Billing = openAiBilling;
+            _deployment = openAiDeployment;
+            SetAiBase(Billing);
+            SetAiBase(_deployment);
         }
-        public BillingBuilder Billing()
-            => new BillingBuilder(Client, Configuration, Utility);
-        public DeploymentBuilder Deployment()
+        public IOpenAiBilling Billing { get; }
+        private readonly IOpenAiDeployment _deployment;
+        public IOpenAiDeployment Deployment
         {
-            if (!Configuration.WithAzure)
-                throw new MethodAccessException("This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.");
-            return new DeploymentBuilder(Client, Configuration, Utility);
+            get
+            {
+                if (!Configuration.WithAzure)
+                    throw new NotImplementedException("This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.");
+                return _deployment;
+            }
         }
     }
 }

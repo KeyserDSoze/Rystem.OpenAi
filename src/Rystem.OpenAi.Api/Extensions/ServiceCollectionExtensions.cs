@@ -90,31 +90,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddTransient<IOpenAiCompletion, OpenAiCompletion>();
             services
                 .TryAddTransient<IOpenAiManagement, OpenAiManagement>();
-
             services
-               .TryAddTransient<IOpenAiApi, OpenAiApi>();
+                .TryAddTransient<IOpenAiBilling, OpenAiBilling>();
             services
-                .TryAddTransient<IOpenAiEmbeddingApi, OpenAiEmbedding>();
-            services
-                .TryAddTransient<IOpenAiFileApi, OpenAiFile>();
-            services
-                .TryAddTransient<IOpenAiAudioApi, OpenAiAudio>();
-            services
-                .TryAddTransient<IOpenAiModelApi, OpenAiModel>();
-            services
-                .TryAddTransient<IOpenAiModerationApi, OpenAiModeration>();
-            services
-                .TryAddTransient<IOpenAiImageApi, OpenAiImage>();
-            services
-                .TryAddTransient<IOpenAiFineTuneApi, OpenAiFineTune>();
-            services
-                .TryAddTransient<IOpenAiEditApi, OpenAiEdit>();
-            services
-                .TryAddTransient<IOpenAiChatApi, OpenAiChat>();
-            services
-                .TryAddTransient<IOpenAiCompletionApi, OpenAiCompletion>();
-            services
-                .TryAddTransient<IOpenAiManagementApi, OpenAiManagement>();
+                .TryAddTransient<IOpenAiDeployment, OpenAiDeployment>();
             return services;
         }
     }

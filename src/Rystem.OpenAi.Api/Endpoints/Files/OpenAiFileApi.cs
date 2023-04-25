@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Files
 {
-    internal sealed class OpenAiFile : OpenAiBase, IOpenAiFile, IOpenAiFileApi
+    internal sealed class OpenAiFile : OpenAiBase, IOpenAiFile
     {
         private readonly bool _forced;
         public OpenAiFile(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)

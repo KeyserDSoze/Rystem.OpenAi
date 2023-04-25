@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi
 {
-    internal sealed class OpenAiModel : OpenAiBase, IOpenAiModel, IOpenAiModelApi
+    internal sealed class OpenAiModel : OpenAiBase, IOpenAiModel
     {
         private readonly bool _forced;
         public OpenAiModel(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)

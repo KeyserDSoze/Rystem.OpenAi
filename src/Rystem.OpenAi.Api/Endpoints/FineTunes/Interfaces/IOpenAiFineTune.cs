@@ -25,8 +25,4 @@ namespace Rystem.OpenAi.FineTune
         IAsyncEnumerable<FineTuneEventsResult> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default);
         ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiFineTuneApi and we'll use only IOpenAiFineTune to retrieve services")]
-    public interface IOpenAiFineTuneApi : IOpenAiFineTune
-    {
-    }
 }

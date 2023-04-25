@@ -19,34 +19,38 @@ namespace Rystem.OpenAi
         {
             _openAiApi = openAiApi;
         }
-        public IOpenAi Create(string? name = default)
+        public IOpenAi Create(string? integrationName = default)
         {
-            name ??= string.Empty;
+            integrationName ??= string.Empty;
             if (_openAiApi is OpenAiApi internalImplementation)
-                internalImplementation.SetName(name);
+                internalImplementation.SetName(integrationName);
             return _openAiApi;
         }
-        public IOpenAiAudio CreateAudio(string? name = null)
-            => Create(name).Audio;
-        public IOpenAiChat CreateChat(string? name = null)
-            => Create(name).Chat;
-        public IOpenAiCompletion CreateCompletion(string? name = null)
-            => Create(name).Completion;
-        public IOpenAiEdit CreateEdit(string? name = null)
-            => Create(name).Edit;
-        public IOpenAiEmbedding CreateEmbedding(string? name = null)
-            => Create(name).Embedding;
-        public IOpenAiFile CreateFile(string? name = null)
-            => Create(name).File;
-        public IOpenAiFineTune CreateFineTune(string? name = null)
-            => Create(name).FineTune;
-        public IOpenAiImage CreateImage(string? name = null)
-            => Create(name).Image;
-        public IOpenAiModel CreateModel(string? name = null)
-            => Create(name).Model;
-        public IOpenAiModeration CreateModeration(string? name = null)
-            => Create(name).Moderation;
-        public IOpenAiManagement CreateManagement(string? name = default)
-            => Create(name).Management;
+        public IOpenAiAudio CreateAudio(string? integrationName = default)
+            => Create(integrationName).Audio;
+        public IOpenAiChat CreateChat(string? integrationName = default)
+            => Create(integrationName).Chat;
+        public IOpenAiCompletion CreateCompletion(string? integrationName = default)
+            => Create(integrationName).Completion;
+        public IOpenAiEdit CreateEdit(string? integrationName = default)
+            => Create(integrationName).Edit;
+        public IOpenAiEmbedding CreateEmbedding(string? integrationName = default)
+            => Create(integrationName).Embedding;
+        public IOpenAiFile CreateFile(string? integrationName = default)
+            => Create(integrationName).File;
+        public IOpenAiFineTune CreateFineTune(string? integrationName = default)
+            => Create(integrationName).FineTune;
+        public IOpenAiImage CreateImage(string? integrationName = default)
+            => Create(integrationName).Image;
+        public IOpenAiModel CreateModel(string? integrationName = default)
+            => Create(integrationName).Model;
+        public IOpenAiModeration CreateModeration(string? integrationName = default)
+            => Create(integrationName).Moderation;
+        public IOpenAiManagement CreateManagement(string? integrationName = default)
+            => Create(integrationName).Management;
+        public IOpenAiDeployment CreateDeployment(string? integrationName = default)
+            => Create(integrationName).Management.Deployment;
+        public IOpenAiBilling CreateBilling(string? integrationName = default)
+            => Create(integrationName).Management.Billing;
     }
 }

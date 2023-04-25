@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Image
 {
-    internal sealed class OpenAiImage : OpenAiBase, IOpenAiImage, IOpenAiImageApi
+    internal sealed class OpenAiImage : OpenAiBase, IOpenAiImage
     {
         public OpenAiImage(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)

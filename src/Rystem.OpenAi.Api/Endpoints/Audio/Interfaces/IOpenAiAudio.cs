@@ -13,8 +13,4 @@ namespace Rystem.OpenAi.Audio
         /// <returns></returns>
         AudioRequestBuilder Request(Stream file, string fileName = "default");
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiAudioApi and we'll use only IOpenAiAudio to retrieve services")]
-    public interface IOpenAiAudioApi : IOpenAiAudio
-    {
-    }
 }

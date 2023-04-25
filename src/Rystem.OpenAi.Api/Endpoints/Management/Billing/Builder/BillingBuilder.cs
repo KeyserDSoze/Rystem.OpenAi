@@ -7,22 +7,17 @@ namespace Rystem.OpenAi.Management
 {
     public sealed class BillingBuilder : RequestBuilder<BillingRequest>
     {
-        public BillingBuilder(HttpClient client, OpenAiConfiguration configuration, IOpenAiUtility utility) :
+        public BillingBuilder(HttpClient client, OpenAiConfiguration configuration, IOpenAiUtility utility, DateTime? from) :
             base(client, configuration, () =>
             {
                 return new BillingRequest()
                 {
-                    From = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, 0),
+                    From = from ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, 0),
                     To = new DateTime(DateTime.UtcNow.AddMonths(1).Year, DateTime.UtcNow.AddMonths(1).Month, 1, 0, 0, 0, 0).AddDays(-1)
                 };
             }, utility)
         {
 
-        }
-        public BillingBuilder From(DateTime from)
-        {
-            Request.From = from;
-            return this;
         }
         public BillingBuilder To(DateTime to)
         {
@@ -31,7 +26,8 @@ namespace Rystem.OpenAi.Management
         }
         public ValueTask<BillingResult> GetUsageAsync(CancellationToken cancellationToken = default)
         {
-#warning it doesn't with Azure
+            if (Configuration.WithAzure)
+                throw new NotImplementedException("It's not yet implemented for Azure integration.");
             var uri = $"{Configuration.GetUri(OpenAiType.Billing, string.Empty, false, string.Empty)}?end_date={Request.To:yyyy-MM-dd}&start_date={Request.From:yyyy-MM-dd}";
             return Client.GetAsync<BillingResult>(uri, Configuration, cancellationToken);
         }

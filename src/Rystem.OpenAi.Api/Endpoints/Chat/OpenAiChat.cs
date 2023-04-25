@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Chat
 {
-    internal sealed class OpenAiChat : OpenAiBase, IOpenAiChat, IOpenAiChatApi
+    internal sealed class OpenAiChat : OpenAiBase, IOpenAiChat
     {
         public OpenAiChat(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,

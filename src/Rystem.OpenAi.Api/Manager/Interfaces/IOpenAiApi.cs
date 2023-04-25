@@ -26,8 +26,4 @@ namespace Rystem.OpenAi
         IOpenAiAudio Audio { get; }
         IOpenAiManagement Management { get; }
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiApi and we'll use only IOpenAi to retrieve services")]
-    public interface IOpenAiApi : IOpenAi
-    {
-    }
 }

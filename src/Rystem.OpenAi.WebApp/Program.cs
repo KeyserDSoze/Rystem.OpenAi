@@ -31,7 +31,7 @@ builder.Services.AddOpenAi(settings =>
 
 
 var app = builder.Build();
-
+await app.Services.MapDeploymentsAutomaticallyAsync(true, "");
 app.UseExceptionHandler("/Error");
 app.UseHsts();
 

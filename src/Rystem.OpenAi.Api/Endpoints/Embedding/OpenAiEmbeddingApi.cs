@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Embedding
 {
-    internal sealed class OpenAiEmbedding : OpenAiBase, IOpenAiEmbedding, IOpenAiEmbeddingApi
+    internal sealed class OpenAiEmbedding : OpenAiBase, IOpenAiEmbedding
     {
         public OpenAiEmbedding(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)

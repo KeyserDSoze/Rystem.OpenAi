@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Completion
 {
-    internal sealed class OpenAiCompletion : OpenAiBase, IOpenAiCompletion, IOpenAiCompletionApi
+    internal sealed class OpenAiCompletion : OpenAiBase, IOpenAiCompletion
     {
         public OpenAiCompletion(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,

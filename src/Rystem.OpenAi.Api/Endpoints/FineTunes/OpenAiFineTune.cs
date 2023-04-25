@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.FineTune
 {
-    internal sealed class OpenAiFineTune : OpenAiBase, IOpenAiFineTune, IOpenAiFineTuneApi
+    internal sealed class OpenAiFineTune : OpenAiBase, IOpenAiFineTune
     {
         private readonly bool _forced;
         public OpenAiFineTune(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)

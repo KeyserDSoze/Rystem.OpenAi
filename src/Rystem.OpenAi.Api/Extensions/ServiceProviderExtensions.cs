@@ -8,11 +8,11 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceProviderExtensions
     {
-        public static async ValueTask<List<Exception>> MapDeploymentsAutomaticallyAsync(this IServiceProvider serviceProvider,
+        public static async ValueTask<List<AutomaticallyDeploymentResult>> MapDeploymentsAutomaticallyAsync(this IServiceProvider serviceProvider,
             bool forceDeploy = false,
             params string[] integrationNames)
         {
-            var exceptions = new List<Exception>();
+            var events = new List<AutomaticallyDeploymentResult>();
             var services = serviceProvider.CreateScope().ServiceProvider;
             var openAiFactory = services.GetService<IOpenAiFactory>()!;
             var configurations = services.GetService<IEnumerable<OpenAiConfiguration>>()!;
@@ -22,11 +22,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 var configuration = configurations.First(x => x.Name == integrationName);
                 if (configuration.WithAzure)
                 {
-                    var availableDeployments = (await openAi.Deployment().ListAsync()).Succeeded;
+                    var availableDeployments = (await openAi.Deployment.ListAsync()).Succeeded;
                     foreach (var deployment in availableDeployments)
                     {
                         configuration.Settings.Azure
                             .MapDeploymentCustomModel(deployment.Id, deployment.ModelId);
+                        events.Add(new AutomaticallyDeploymentResult()
+                        {
+                            IntegrationName = integrationName,
+                            Description = $"Mapped {deployment.Id} with {deployment.ModelId}"
+                        });
                     }
                     if (forceDeploy)
                         foreach (var deployment in configuration.Settings.Azure.Deployments.Where(x => x.Key != "{0}"))
@@ -35,22 +40,32 @@ namespace Microsoft.Extensions.DependencyInjection
                             {
                                 try
                                 {
-                                    _ = await openAi.Deployment()
+                                    _ = await openAi.Deployment.Create()
                                         .WithCapacity(1)
                                         .WithScaling(Rystem.OpenAi.Management.DeploymentScaleType.Standard)
                                         .WithDeploymentCustomModel(deployment.Key, deployment.Value)
-                                        .CreateAsync();
+                                        .ExecuteAsync();
+                                    events.Add(new AutomaticallyDeploymentResult()
+                                    {
+                                        IntegrationName = integrationName,
+                                        Description = $"Created {deployment.Key} with {deployment.Value}"
+                                    });
                                 }
                                 catch (Exception exception)
                                 {
-                                    exceptions.Add(exception);
+                                    events.Add(new AutomaticallyDeploymentResult()
+                                    {
+                                        IntegrationName = integrationName,
+                                        Description = $"Failed to create {deployment.Key} with {deployment.Value}",
+                                        Exception = exception
+                                    });
                                 }
                             }
                         }
                     configuration.ConfigureEndpoints();
                 }
             }
-            return exceptions;
+            return events;
         }
     }
 }

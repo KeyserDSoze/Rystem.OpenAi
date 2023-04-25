@@ -11,8 +11,4 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         ChatRequestBuilder Request(ChatMessage message);
     }
-    [Obsolete("In version 3.x we'll remove IOpenAiChatApi and we'll use only IOpenAiChat to retrieve services")]
-    public interface IOpenAiChatApi : IOpenAiChat
-    {
-    }
 }

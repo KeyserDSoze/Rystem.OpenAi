@@ -10,6 +10,7 @@ namespace Rystem.OpenAi
         private protected OpenAiConfiguration Configuration;
         private readonly IEnumerable<OpenAiConfiguration> _configurations;
         private protected readonly IOpenAiUtility Utility;
+        private readonly List<OpenAiBase> _openAiBases = new List<OpenAiBase>();
         private protected OpenAiBase(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
             IOpenAiUtility utility)
@@ -19,7 +20,16 @@ namespace Rystem.OpenAi
             _configurations = configurations;
             Utility = utility;
         }
+        private protected void SetAiBase<T>(T entity)
+        {
+            if (entity is OpenAiBase aiBase)
+                _openAiBases.Add(aiBase);
+        }
         public void SetName(string? name)
-          => Configuration = _configurations.FirstOrDefault(x => x.Name == name);
+        {
+            Configuration = _configurations.FirstOrDefault(x => x.Name == name);
+            foreach (var bases in _openAiBases)
+                bases.SetName(name);
+        }
     }
 }
