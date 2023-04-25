@@ -58,7 +58,7 @@ namespace Rystem.OpenAi.Test
                 try
                 {
                     var updateResponse = await openAiApi.Management.Deployment()
-                        .WithCapacity(2)
+                        .WithCapacity(1)
                         .WithDeploymentTextModel("ada", TextModelType.AdaText)
                         .WithScaling(Management.DeploymentScaleType.Standard)
                         .UpdateAsync(createResponse.Id);
@@ -75,6 +75,18 @@ namespace Rystem.OpenAi.Test
 
                 listResponse = await openAiApi.Management.Deployment().ListAsync();
                 Assert.Empty(listResponse.Succeeded);
+            }
+        }
+        [Theory]
+        [InlineData("Azure")]
+        public async ValueTask ListAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+
+            foreach (var deployment in (await openAiApi.Management.Deployment().ListAsync()).Data)
+            {
+                //todo Update AddDeploymentTextModel and others in settings with Create and on startup the entire list
+                Assert.NotNull(deployment);
             }
         }
     }

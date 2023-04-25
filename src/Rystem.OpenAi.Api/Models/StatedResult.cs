@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using Rystem.OpenAi.Extensions;
 
 namespace Rystem.OpenAi
 {
@@ -14,8 +15,7 @@ namespace Rystem.OpenAi
             set
             {
                 _status = value;
-                var enumValue = $"{value[0..1].ToUpper()}{value[1..].ToLower()}";
-                State = (EventState)Enum.Parse(typeof(EventState), enumValue);
+                State = _status.FromString();
             }
         }
         /// <summary>
