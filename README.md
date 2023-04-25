@@ -241,19 +241,19 @@ or get the more specific service
 [📖 Back to summary](#documentation)\
 You may configure in a static constructor or during startup your integration without the dependency injection pattern.
 
-      OpenAiService.Setup(settings =>
+      OpenAiService.Instance.AddOpenAi(settings =>
         {
             settings.ApiKey = apiKey;
         }, "NoDI");
 
 and you can use it with the same static class OpenAiService and the static Create method
 
-    var openAiApi = OpenAiService.Create(name);
+    var openAiApi = OpenAiService.Factory.Create(name);
     openAiApi.Embedding......
 
 or get the more specific service
 
-    var openAiEmbeddingApi = OpenAiService.CreateEmbedding(name);
+    var openAiEmbeddingApi = OpenAiService.Factory.CreateEmbedding(name);
     openAiEmbeddingApi.Request(....);
 
 ## Models
@@ -577,7 +577,7 @@ Here an example from Unit test.
 
 Without DI, you need to setup an OpenAiService [without Dependency Injection](#without-dependency-injection) and after that you can use
 
-    IOpenAiUtility openAiUtility = OpenAiService.Utility();
+    IOpenAiUtility openAiUtility = OpenAiService.Factory.Utility();
 
 ### Tokens
 [📖 Back to summary](#documentation)\
@@ -691,7 +691,13 @@ Only for Azure you have to deploy a model to use model in yout application. You 
 During startup you can configure other deployments on your application or on Azure.
 
     var app = builder.Build();
-    await app.Services.MapDeploymentsAutomaticallyAsync(true, "");
+    await app.Services.MapDeploymentsAutomaticallyAsync(true);
+
+or a specific integration or list of integration that you setup previously.
+
+    await app.Services.MapDeploymentsAutomaticallyAsync(true, "Azure", "Azure2");
+
+You can do this step with No dependency injection integration too.
 
 MapDeploymentsAutomaticallyAsync is a extensions method for IServiceProvider, with true you can automatically install on Azure the deployments you setup on application.
 In the other parameter you can choose which integration runs this automatic update. In the example it's running for the default integration.

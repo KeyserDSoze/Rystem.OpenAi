@@ -52,9 +52,9 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         [InlineData("Azure")]
         [InlineData("NoDI")]
-        public async ValueTask ReturnedUsageAsync(string name)
+        public async ValueTask ReturnedUsageAsync(string integrationName)
         {
-            var openAiApi = name == "NoDI" ? OpenAiService.Factory.Create(name) : _openAiFactory.Create(name);
+            var openAiApi = integrationName == "NoDI" ? OpenAiService.Factory.Create(integrationName) : _openAiFactory.Create(integrationName);
             Assert.NotNull(openAiApi.Embedding);
 
             var results = await openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();

@@ -15,11 +15,15 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    public sealed class OpenAiService : IOpenAiServiceSetupNoDependencyInjection, IOpenAiFactory
+    public interface IOpenAiFactoryNoDependencyInjection : IOpenAiFactory
+    {
+        IOpenAiUtility Utility();
+    }
+    public sealed class OpenAiService : IOpenAiServiceSetupNoDependencyInjection, IOpenAiFactoryNoDependencyInjection, IOpenAiFactory
     {
         private static readonly OpenAiService s_openAiService = new OpenAiService();
         public static IOpenAiServiceSetupNoDependencyInjection Instance => s_openAiService;
-        public static IOpenAiFactory Factory => s_openAiService;
+        public static IOpenAiFactoryNoDependencyInjection Factory => s_openAiService;
         private OpenAiService() { }
         private readonly IServiceCollection _services = new ServiceCollection();
         private IServiceProvider? _serviceProvider;

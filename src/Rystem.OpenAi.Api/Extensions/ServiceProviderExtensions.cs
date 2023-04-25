@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.DependencyInjection
             bool forceDeploy = false,
             params string[] integrationNames)
         {
+            if (integrationNames.Length == 0)
+                integrationNames = new string[1] { string.Empty };
             var events = new List<AutomaticallyDeploymentResult>();
             var services = serviceProvider.CreateScope().ServiceProvider;
             var openAiFactory = services.GetService<IOpenAiFactory>()!;
