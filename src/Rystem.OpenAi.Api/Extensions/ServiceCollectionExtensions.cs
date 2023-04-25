@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3928:Parameter names used into ArgumentException constructors should match an existing one ", Justification = "The parameter is in the root of the setting class.")]
-        public static IServiceCollection AddOpenAi(this IServiceCollection services, Action<OpenAiSettings> settings, string? name = default)
+        public static IServiceCollection AddOpenAi(this IServiceCollection services, Action<OpenAiSettings> settings, string? integrationName = default)
         {
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);
@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddTransient<IOpenAiFactory, OpenAiFactory>();
 
-            services.AddSingleton(new OpenAiConfiguration(openAiSettings, name));
+            services.AddSingleton(new OpenAiConfiguration(openAiSettings, integrationName));
             var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
             {
                 if (openAiSettings.Azure.HasConfiguration)
@@ -55,10 +55,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 httpClientBuilder
                      .AddPolicyHandler(defaultPolicy);
             }
-            if (!OpenAiPriceList.Instance.Prices.ContainsKey(name ?? string.Empty))
-                OpenAiPriceList.Instance.Prices.Add(name ?? string.Empty, openAiSettings.Price);
+            if (!OpenAiPriceList.Instance.Prices.ContainsKey(integrationName ?? string.Empty))
+                OpenAiPriceList.Instance.Prices.Add(integrationName ?? string.Empty, openAiSettings.Price);
             else
-                OpenAiPriceList.Instance.Prices[name ?? string.Empty] = openAiSettings.Price;
+                OpenAiPriceList.Instance.Prices[integrationName ?? string.Empty] = openAiSettings.Price;
             services.TryAddSingleton(OpenAiPriceList.Instance);
             services
                 .TryAddSingleton<IOpenAiUtility, OpenAiUtility>();

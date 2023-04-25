@@ -20,42 +20,42 @@ namespace Rystem.OpenAi
         /// </summary>
         public OpenAiAzureAppRegistrationSettings AppRegistration { get; } = new OpenAiAzureAppRegistrationSettings();
         internal Dictionary<string, string> Deployments { get; } = new Dictionary<string, string>();
-        public OpenAiAzureSettings AddDeploymentTextModel(string name, TextModelType model)
+        public OpenAiAzureSettings MapDeploymentTextModel(string name, TextModelType model)
         {
             Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentEmbeddingModel(string name, EmbeddingModelType model)
+        public OpenAiAzureSettings MapDeploymentEmbeddingModel(string name, EmbeddingModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentAudioModel(string name, AudioModelType model)
+        public OpenAiAzureSettings MapDeploymentAudioModel(string name, AudioModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentChatModel(string name, ChatModelType model)
+        public OpenAiAzureSettings MapDeploymentChatModel(string name, ChatModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentEditModel(string name, EditModelType model)
+        public OpenAiAzureSettings MapDeploymentEditModel(string name, EditModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentModerationModel(string name, ModerationModelType model)
+        public OpenAiAzureSettings MapDeploymentModerationModel(string name, ModerationModelType model)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, model.ToModel().Id!);
             return this;
         }
-        public OpenAiAzureSettings AddDeploymentCustomModel(string name, string customeModelId)
+        public OpenAiAzureSettings MapDeploymentCustomModel(string name, string customeModelId)
         {
             if (!Deployments.ContainsKey(name))
                 Deployments.Add(name, customeModelId);

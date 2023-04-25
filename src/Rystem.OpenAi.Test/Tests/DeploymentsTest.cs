@@ -18,7 +18,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("", null)]
         [InlineData("Azure2", null)]
         [InlineData("Azure2", "test")]
-        public async ValueTask AllFlowAsync(string name, string? deploymentId)
+        public async ValueTask AllFlowAsync(string name, string deploymentId)
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Management);

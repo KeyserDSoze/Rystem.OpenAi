@@ -24,9 +24,9 @@ builder.Services.AddOpenAi(settings =>
     settings.Azure.ManagedIdentity.Id = managedIdentityId;
     //settings.Azure.ManagedIdentity.UseDefault = true;
     settings.Azure
-        .AddDeploymentTextModel("Test", TextModelType.CurieText)
-        .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-        .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+        .MapDeploymentTextModel("Test", TextModelType.CurieText)
+        .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+        .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
 });
 
 

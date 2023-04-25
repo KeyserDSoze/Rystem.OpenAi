@@ -58,6 +58,7 @@ namespace Rystem.OpenAi.Management
         }
         public DeploymentBuilder WithDeploymentCustomModel(string name, string customeModelId)
         {
+            //todo Use name to Create with name the customModelId
             Request.ModelId = customeModelId;
             return this;
         }

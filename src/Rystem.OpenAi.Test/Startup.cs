@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Xunit;
 
 namespace Rystem.OpenAi.Test
 {
@@ -39,10 +40,11 @@ namespace Rystem.OpenAi.Test
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;
                 settings.Azure.AppRegistration.TenantId = tenantId;
                 settings.Azure
-                    .AddDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-                    .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-                    .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-                    .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+                    .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+                    .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+                    .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+                    .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301)
+                    .MapDeploymentCustomModel("ada001", "text-ada-001");
                 settings.Price
                     .SetFineTuneForAda(0.0004M, 0.0016M)
                     .SetAudioForTranslation(0.006M);
@@ -55,10 +57,13 @@ namespace Rystem.OpenAi.Test
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
                 }, "Azure2");
+            var result = services.BuildServiceProvider().MapDeploymentsAutomaticallyAsync(true, "Azure").ConfigureAwait(false).GetAwaiter().GetResult();
+            Assert.True(result);
             OpenAiService.Setup(settings =>
             {
                 settings.ApiKey = apiKey;
             }, "NoDI");
+
         }
     }
 }

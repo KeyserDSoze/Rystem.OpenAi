@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
@@ -17,9 +18,14 @@ namespace Rystem.OpenAi
     {
         private static readonly IServiceCollection s_services = new ServiceCollection();
         private static IServiceProvider? s_serviceProvider;
-        public static void Setup(Action<OpenAiSettings> settings, string? name = default)
+        public static void Setup(Action<OpenAiSettings> settings, string? integrationName = default)
         {
-            s_services.AddOpenAi(settings, name);
+            s_services.AddOpenAi(settings, integrationName);
+        }
+        public static ValueTask<bool> MapDeploymentsAutomaticallyAsync()
+        {
+            s_serviceProvider ??= s_services.BuildServiceProvider();
+            return s_serviceProvider.MapDeploymentsAutomaticallyAsync();
         }
         public static IOpenAi Create(string? name = default)
         {
