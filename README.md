@@ -6,6 +6,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 
 [![MIT License](https://img.shields.io/github/license/dotnet/aspnetcore?color=%230b0&style=flat-square)](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/LICENSE.txt) 
 [![Discord](https://img.shields.io/discord/732297728826277939?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://discord.gg/wUh2fppr)
+[![OpenAi.Nuget](https://github.com/KeyserDSoze/Rystem.OpenAi/actions/workflows/PackageDeploy.OpenAi.yml/badge.svg)](https://github.com/KeyserDSoze/Rystem.OpenAi/actions/workflows/PackageDeploy.OpenAi.yml)
 
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=KeyserDSoze_Rystem.OpenAi)
 
