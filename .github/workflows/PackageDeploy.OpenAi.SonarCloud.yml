@@ -1,4 +1,4 @@
-name: SonarLint.Rystem
+name: SonarLint.Rystem.OpenAi
 on:
   push:
     branches:
