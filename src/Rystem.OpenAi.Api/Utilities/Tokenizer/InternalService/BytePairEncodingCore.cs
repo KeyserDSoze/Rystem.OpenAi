@@ -26,13 +26,13 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             SpecialTokensDecoder =
                 specialTokenEncoder?.ToDictionary(pair => pair.Value, pair => Encoding.UTF8.GetBytes(pair.Key))
                 ?? new Dictionary<int, byte[]>();
-            RegexTls = tokenPatternRegex ?? new Regex("");
+            RegexTls = tokenPatternRegex ?? new Regex(string.Empty, RegexOptions.None, TimeSpan.FromSeconds(1));
 
             var parts = SpecialTokensEncoder.Keys.Select(Regex.Escape).ToArray();
             var joinedParts = string.Join("|", parts);
             try
             {
-                SpecialTokenPatternRegex = new Regex(joinedParts);
+                SpecialTokenPatternRegex = new Regex(joinedParts, RegexOptions.None, TimeSpan.FromSeconds(1));
             }
             catch (ArgumentException e)
             {

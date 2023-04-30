@@ -37,7 +37,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             }
 
             _bytePairEncodingCoreProcessor =
-                new BytePairEncodingCore(bytePairRanks, specialTokenMappings, new Regex(patternString));
+                new BytePairEncodingCore(bytePairRanks, specialTokenMappings, new Regex(patternString, RegexOptions.None, TimeSpan.FromSeconds(1)));
         }
 
         private int MaxTokenValue { get; }
@@ -67,7 +67,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         {
             var specialTokensSet = new HashSet<string>(_specialTokenMappings.Keys);
             var regexPattern = SpecialTokenRegex(specialTokensSet);
-            var match = Regex.Match(lineToEncode, regexPattern);
+            var match = Regex.Match(lineToEncode, regexPattern, RegexOptions.None, TimeSpan.FromSeconds(1));
             if (match.Success)
             {
                 throw new ArgumentException($"Disallowed special token found: {match.Value}");
