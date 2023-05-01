@@ -149,7 +149,6 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             return Decoder.TryGetValue(token, out tokenBytes) ||
                    SpecialTokensDecoder.TryGetValue(token, out tokenBytes);
         }
-
         private static T[] BytePairMerge<T>(
             IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks, Func<Range, T> f)
         {
@@ -157,23 +156,9 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 .Select(i => (Start: i, Rank: int.MaxValue))
                 .ToList();
 
-            int? GetRank(IReadOnlyList<(int Start, int Rank)> partitionsList, int startIndex, int skip)
-            {
-                if (startIndex + skip + 2 >= partitionsList.Count)
-                {
-                    return null;
-                }
-
-                var key = piece.Skip(partitionsList[startIndex].Start)
-                    .Take(partitionsList[startIndex + skip + 2].Start - partitionsList[startIndex].Start)
-                    .ToArray();
-
-                return ranks.TryGetValue(key, out var rank) ? rank : (int?)null;
-            }
-
             for (var i = 0; i < partitions.Count - 2; i++)
             {
-                var rank = GetRank(partitions, i, 0);
+                var rank = GetRank(piece, ranks, partitions, i, 0);
                 if (rank.HasValue)
                 {
                     partitions[i] = (partitions[i].Start, rank.Value);
@@ -197,20 +182,18 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 if (minRank != int.MaxValue)
                 {
                     partitions[minRankIdx] = (partitions[minRankIdx].Start,
-                        GetRank(partitions, minRankIdx, 1) ?? int.MaxValue);
+                        GetRank(piece, ranks, partitions, minRankIdx, 1) ?? int.MaxValue);
 
                     if (minRankIdx > 0)
                     {
                         partitions[minRankIdx - 1] = (partitions[minRankIdx - 1].Start,
-                            GetRank(partitions, minRankIdx - 1, 1) ?? int.MaxValue);
+                            GetRank(piece, ranks, partitions, minRankIdx - 1, 1) ?? int.MaxValue);
                     }
 
                     partitions.RemoveAt(minRankIdx + 1);
                 }
                 else
-                {
                     break;
-                }
             }
 
             var output = new List<T>(partitions.Count - 1);
@@ -221,7 +204,20 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return output.ToArray();
         }
+        private static int? GetRank(IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks,
+            IReadOnlyList<(int Start, int Rank)> partitionsList, int startIndex, int skip)
+        {
+            if (startIndex + skip + 2 >= partitionsList.Count)
+            {
+                return null;
+            }
 
+            var key = piece.Skip(partitionsList[startIndex].Start)
+                .Take(partitionsList[startIndex + skip + 2].Start - partitionsList[startIndex].Start)
+                .ToArray();
+
+            return ranks.TryGetValue(key, out var rank) ? rank : (int?)null;
+        }
         private static IEnumerable<int> BytePairEncode(byte[] inputBytes, Dictionary<byte[], int> bytePairRanks)
         {
             if (inputBytes.Length == 1)

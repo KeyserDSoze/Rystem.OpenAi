@@ -15,17 +15,9 @@
                     return s_textModerationLatest;
             }
         }
-        public static ModelFamilyType ToFamily(this ModerationModelType type)
-        {
-            switch (type)
-            {
-                case ModerationModelType.TextModerationStable:
-                    return ModelFamilyType.Moderation;
-                default:
-                case ModerationModelType.TextModerationLatest:
-                    return ModelFamilyType.Moderation;
-            }
-        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Unused parameter is necessary to work as extension method.")]
+        public static ModelFamilyType ToFamily(this ModerationModelType type) 
+            => ModelFamilyType.Moderation;
         public static string ToModelId(this ModerationModelType type)
             => type.ToModel().Id!;
     }

@@ -15,17 +15,9 @@
                     return s_codeDavinciEdit;
             }
         }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Unused parameter is necessary to work as extension method.")]
         public static ModelFamilyType ToFamily(this EditModelType type)
-        {
-            switch (type)
-            {
-                case EditModelType.TextDavinciEdit:
-                    return ModelFamilyType.Davinci;
-                default:
-                case EditModelType.CodeDavinciEdit:
-                    return ModelFamilyType.Davinci;
-            }
-        }
+            => ModelFamilyType.Davinci;
         public static string ToModelId(this EditModelType type)
             => type.ToModel().Id!;
     }

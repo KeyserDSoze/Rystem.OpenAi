@@ -6,7 +6,7 @@ namespace Rystem.OpenAi.FineTune
 {
     public sealed class FineTuneRequestBuilder : RequestBuilder<FineTuneRequest>
     {
-        public FineTuneRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string trainingFileId, IOpenAiUtility utility)
+        internal FineTuneRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string trainingFileId, IOpenAiUtility utility)
             : base(client, configuration, () =>
             {
                 return new FineTuneRequest

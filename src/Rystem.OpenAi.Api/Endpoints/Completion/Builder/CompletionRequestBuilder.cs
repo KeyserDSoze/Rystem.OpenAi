@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Completion
             {
                 return new CompletionRequest()
                 {
-                    Prompt = prompts.Length > 1 ? (object)prompts : (prompts.Length == 1 ? prompts.First() : string.Empty),
+                    Prompt = prompts.ToCorrectPrompt(),
                     ModelId = TextModelType.DavinciText3.ToModel().Id
                 };
             }, utility)
@@ -81,7 +81,7 @@ namespace Rystem.OpenAi.Completion
                 newArray[^1] = prompt;
                 Request.Prompt = newArray;
             }
-            else if (Request.Prompt is string value)
+            else if (Request.Prompt is string value && !string.IsNullOrWhiteSpace(value))
             {
                 Request.Prompt = new string[2] { value, prompt };
             }

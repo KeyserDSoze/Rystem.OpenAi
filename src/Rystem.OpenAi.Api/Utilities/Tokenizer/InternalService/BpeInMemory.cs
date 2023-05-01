@@ -27,12 +27,13 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         public static BpeEconding GetEncoder(string? modelId)
         {
             if (modelId != null)
-                foreach (var map in from map in Mapping
-                                    where map.StartsWith.Any(x => modelId.StartsWith(x))
-                                    select map)
-                {
-                    return GetRight(map.Type);
-                }
+            {
+                var finalMap = (from map in Mapping
+                                where map.StartsWith.Any(x => modelId.StartsWith(x))
+                                select map).FirstOrDefault();
+                if (finalMap != null)
+                    return GetRight(finalMap.Type);
+            }
             return s_cl100kBaseEncoding;
         }
         public static readonly List<BpeMapper> Mapping = new List<BpeMapper>();

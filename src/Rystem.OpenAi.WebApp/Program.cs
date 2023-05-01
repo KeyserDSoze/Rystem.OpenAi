@@ -1,10 +1,10 @@
-﻿using Polly;
-using Rystem.OpenAi;
+﻿using Rystem.OpenAi;
 using Rystem.OpenAi.WebApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+#pragma warning disable S125 // Sections of code should not be commented out
+#pragma warning disable S1481 // Unused local variables should be removed
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
@@ -29,6 +29,8 @@ builder.Services.AddOpenAi(settings =>
         .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
 });
 
+#pragma warning restore S125 // Sections of code should not be commented out, but it's only a debug purpose of a test application.
+#pragma warning restore S1481 // Unused local variables should be removed, but it's only a debug purpose of a test application.
 
 var app = builder.Build();
 await app.Services.MapDeploymentsAutomaticallyAsync(true, "");

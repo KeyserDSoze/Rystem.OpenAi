@@ -43,17 +43,38 @@ namespace Rystem.OpenAi
             IOpenAiEdit editApi,
             IOpenAiManagement managementApi) : base(httpClientFactory, configurations, utility)
         {
-            SetAiBase(Completion = completionApi);
-            SetAiBase(Embedding = embeddingApi);
-            SetAiBase(Model = modelApi);
-            SetAiBase(File = fileApi);
-            SetAiBase(Image = imageApi);
-            SetAiBase(Moderation = moderationApi);
-            SetAiBase(Audio = audioApi);
-            SetAiBase(FineTune = fineTuneApi);
-            SetAiBase(Chat = chatApi);
-            SetAiBase(Edit = editApi);
-            SetAiBase(Management = managementApi);
+            Completion = completionApi;
+            SetAiBase(Completion);
+
+            Embedding = embeddingApi;
+            SetAiBase(Embedding);
+
+            Model = modelApi;
+            SetAiBase(Model);
+
+            File = fileApi;
+            SetAiBase(File);
+
+            Image = imageApi;
+            SetAiBase(Image);
+
+            Moderation = moderationApi;
+            SetAiBase(Moderation);
+
+            Audio = audioApi;
+            SetAiBase(Audio);
+
+            FineTune = fineTuneApi;
+            SetAiBase(FineTune);
+
+            Chat = chatApi;
+            SetAiBase(Chat);
+
+            Edit = editApi;
+            SetAiBase(Edit);
+
+            Management = managementApi;
+            SetAiBase(Management);
         }
     }
 }
