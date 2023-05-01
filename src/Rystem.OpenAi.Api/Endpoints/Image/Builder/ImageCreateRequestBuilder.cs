@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
+﻿using System.IO;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Image
 {
@@ -20,51 +14,14 @@ namespace Rystem.OpenAi.Image
                     Prompt = prompt,
                     NumberOfResults = 1,
                     Size = ImageSize.Large.AsString(),
-                    ResponseFormat = ResponseFormatUrl,
+                    ResponseFormat = FormatResultImage.Url.AsString(),
                 };
             })
         {
         }
-        /// <summary>
-        /// Creates an image given a prompt.
-        /// </summary>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of generated texture urls to download.</returns>
-        /// <exception cref="HttpRequestException"></exception>
-        public override ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
-        {
-            Request.ResponseFormat = ResponseFormatUrl;
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/generations");
-            return Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
-        }
-        /// <summary>
-        /// Creates an image given a prompt.
-        /// </summary>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of generated texture urls to download.</returns>
-        /// <exception cref="HttpRequestException"></exception>
-        public override async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var responses = await ExecuteAsync(cancellationToken);
-            if (responses.Data != null)
-            {
-                using var client = new HttpClient();
-                foreach (var image in responses.Data)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var response = await client.GetAsync(image.Url);
-                    response.EnsureSuccessStatusCode();
-                    if (response != null && response.StatusCode == HttpStatusCode.OK)
-                    {
-                        using var stream = await response.Content.ReadAsStreamAsync();
-                        var memoryStream = new MemoryStream();
-                        await stream.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0;
-                        yield return memoryStream;
-                    }
-                }
-            }
-        }
+        private protected override object CreateRequest() => Request;
+        private const string Generations = "/generations";
+        private protected override string Endpoint => Generations;
         /// <summary>
         /// The image to use as the basis for the edit(s). Must be a valid PNG file, less than 4MB, and square.
         /// </summary>

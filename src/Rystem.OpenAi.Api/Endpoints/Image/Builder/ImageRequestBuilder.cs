@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,10 +23,48 @@ namespace Rystem.OpenAi.Image
             _familyType = ModelFamilyType.Image;
             _size = ImageSize.Large;
         }
-        internal const string ResponseFormatUrl = "url";
-        internal const string ResponseFormatB64Json = "b64_json";
-        public abstract ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default);
-        public abstract IAsyncEnumerable<Stream> DownloadAsync(CancellationToken cancellationToken = default);
+        private protected abstract object CreateRequest();
+        private protected abstract string Endpoint { get; }
+        /// <summary>
+        /// Create, Variate or Edit an image given a prompt.
+        /// </summary>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>A list of generated texture urls to download.</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        {
+            Request.ResponseFormat = FormatResultImage.Url.AsString();
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, Endpoint);
+            return Client.PostAsync<ImageResult>(uri, CreateRequest(), Configuration, cancellationToken);
+        }
+        /// <summary>
+        /// Download N images as Stream after you create, variate or edit by a given prompt.
+        /// </summary>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>A list of generated texture urls to download.</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var responses = await ExecuteAsync(cancellationToken);
+            if (responses.Data != null)
+            {
+                using var client = new HttpClient();
+                foreach (var image in responses.Data)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var response = await client.GetAsync(image.Url);
+                    response.EnsureSuccessStatusCode();
+                    if (response != null && response.StatusCode == HttpStatusCode.OK)
+                    {
+                        using var stream = await response.Content.ReadAsStreamAsync();
+                        var memoryStream = new MemoryStream();
+                        await stream.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+                        yield return memoryStream;
+                    }
+                }
+            }
+        }
         /// <summary>
         /// The number of images to generate. Must be between 1 and 10.
         /// </summary>

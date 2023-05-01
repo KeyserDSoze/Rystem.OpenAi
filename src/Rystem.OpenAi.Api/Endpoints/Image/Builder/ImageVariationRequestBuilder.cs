@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Image
 {
@@ -47,16 +41,9 @@ namespace Rystem.OpenAi.Image
         {
 
         }
-        /// <summary>
-        /// Variate an image given a prompt.
-        /// </summary>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of generated texture urls to download.</returns>
-        /// <exception cref="HttpRequestException"></exception>
-        public override async ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        private protected override object CreateRequest()
         {
-            Request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
-            using var content = new MultipartFormDataContent();
+            var content = new MultipartFormDataContent();
             if (Request.Image != null)
                 content.Add(new ByteArrayContent(Request.Image.ToArray()), "image", Request.ImageName);
             content.Add(new StringContent(Request.NumberOfResults.ToString()), "n");
@@ -66,38 +53,9 @@ namespace Rystem.OpenAi.Image
             if (!string.IsNullOrWhiteSpace(Request.User))
                 content.Add(new StringContent(Request.User), "user");
             Request.Dispose();
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/variations");
-            var response = await Client.PostAsync<ImageResult>(uri, content, Configuration, cancellationToken);
-            return response;
+            return content;
         }
-        /// <summary>
-        /// Variate an image given a prompt.
-        /// </summary>
-        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
-        /// <returns>A list of generated texture urls to download.</returns>
-        /// <exception cref="HttpRequestException"></exception>
-        public override async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/variations");
-            var responses = await Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
-            if (responses.Data != null)
-            {
-                using var client = new HttpClient();
-                foreach (var image in responses.Data)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    var response = await client.GetAsync(image.Url);
-                    response.EnsureSuccessStatusCode();
-                    if (response != null && response.StatusCode == HttpStatusCode.OK)
-                    {
-                        using var stream = await response.Content.ReadAsStreamAsync();
-                        var memoryStream = new MemoryStream();
-                        await stream.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0;
-                        yield return memoryStream;
-                    }
-                }
-            }
-        }
+        private const string Variations = "/variations";
+        private protected override string Endpoint => Variations;
     }
 }
