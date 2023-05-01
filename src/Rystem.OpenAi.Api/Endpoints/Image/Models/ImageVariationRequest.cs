@@ -7,7 +7,7 @@ namespace Rystem.OpenAi.Image
     {
         public MemoryStream? Image { get; set; }
         public string? ImageName { get; set; }
-        private protected virtual void InternalDispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -17,7 +17,7 @@ namespace Rystem.OpenAi.Image
         }
         public void Dispose()
         {
-            InternalDispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

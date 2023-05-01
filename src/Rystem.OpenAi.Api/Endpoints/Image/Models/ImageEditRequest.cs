@@ -7,14 +7,14 @@ namespace Rystem.OpenAi.Image
     {
         public MemoryStream? Mask { get; set; }
         public string? MaskName { get; set; }
-        private protected override void InternalDispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 Mask?.Close();
                 Mask?.Dispose();
             }
-            base.InternalDispose(disposing);
+            base.Dispose(disposing);
         }
     }
 }
