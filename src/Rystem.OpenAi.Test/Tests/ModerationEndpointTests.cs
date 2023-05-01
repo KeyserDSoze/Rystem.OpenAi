@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Moderation);
 
             var results = await openAiApi.Moderation
-                .Create("I want to kill them.")
+                .Create("I want to kill them and everyone else.")
                 .WithModel(ModerationModelType.TextModerationStable)
                 .ExecuteAsync();
 

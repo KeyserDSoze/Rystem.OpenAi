@@ -47,5 +47,12 @@ jobs:
             .\.sonar\scanner\dotnet-sonarscanner begin /k:"KeyserDSoze_Rystem.OpenAi" /o:"keyserdsoze" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
             dotnet build "src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj" -c Debug
             SET OpenAiApiKey= ${{ secrets.OpenAi_ApiKey }}
+            SET AzureApiKey= ${{ secrets.Azure_ApiKey }}
+            SET AzureResourceName= ${{ secrets.Azure_ResourceName }}
+            SET Azure2ApiKey= ${{ secrets.Azure2_ApiKey }}
+            SET Azure2ResourceName= ${{ secrets.Azure2_ResourceName }}
+            SET AzureADClientId= ${{ secrets.Azure_AD_ClientId }}
+            SET AzureADClientSecret= ${{ secrets.Azure_AD_ClientSecret }}
+            SET AzureADTenantId= ${{ secrets.Azure_AD_TenantId }}
             dotnet test "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" -c Debug --no-build /p:CollectCoverage=true /p:CoverletOutput=$root\coverage /p:CoverletOutputFormat=opencover
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"

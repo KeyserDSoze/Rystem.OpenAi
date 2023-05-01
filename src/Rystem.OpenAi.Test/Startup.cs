@@ -30,16 +30,18 @@ namespace Rystem.OpenAi.Test
         public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
         {
             var apiKey = Environment.GetEnvironmentVariable("OpenAi_ApiKey") ?? context.Configuration["OpenAi:ApiKey"];
+            var azureApiKey = Environment.GetEnvironmentVariable("AzureApiKey") ?? context.Configuration["Azure:ApiKey"];
+            var resourceName = Environment.GetEnvironmentVariable("AzureResourceName") ?? context.Configuration["Azure:ResourceName"];
+            var clientId = Environment.GetEnvironmentVariable("AzureADClientId") ?? context.Configuration["AzureAd:ClientId"];
+            var clientSecret = Environment.GetEnvironmentVariable("AzureADClientSecret") ?? context.Configuration["AzureAd:ClientSecret"];
+            var tenantId = Environment.GetEnvironmentVariable("AzureADTenantId") ?? context.Configuration["AzureAd:TenantId"];
+            var azureApiKey2 = Environment.GetEnvironmentVariable("Azure2ApiKey") ?? context.Configuration["Azure2:ApiKey"];
+            var resourceName2 = Environment.GetEnvironmentVariable("Azure2ResourceName") ?? context.Configuration["Azure2:ResourceName"];
             services
                 .AddOpenAi(settings =>
                 {
                     settings.ApiKey = apiKey;
                 });
-            var azureApiKey = context.Configuration["Azure:ApiKey"];
-            var resourceName = context.Configuration["Azure:ResourceName"];
-            var clientId = context.Configuration["AzureAd:ClientId"];
-            var clientSecret = context.Configuration["AzureAd:ClientSecret"];
-            var tenantId = context.Configuration["AzureAd:TenantId"];
             services.AddOpenAi(settings =>
             {
                 settings.ApiKey = azureApiKey;
@@ -59,8 +61,6 @@ namespace Rystem.OpenAi.Test
                     .SetFineTuneForAda(0.0004M, 0.0016M)
                     .SetAudioForTranslation(0.006M);
             }, "Azure");
-            var azureApiKey2 = context.Configuration["Azure2:ApiKey"];
-            var resourceName2 = context.Configuration["Azure2:ResourceName"];
             services
                 .AddOpenAi(settings =>
                 {
