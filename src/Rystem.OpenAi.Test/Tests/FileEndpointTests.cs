@@ -62,10 +62,9 @@ namespace Rystem.OpenAi.Test
             if (name != "Azure")
                 Assert.True(deleteResult.Deleted);
 
-            results = await openAiApi.File
-                .AllAsync();
+            await Task.Delay(5_000);
+            results = await openAiApi.File.AllAsync();
             Assert.Empty(results);
         }
-
     }
 }

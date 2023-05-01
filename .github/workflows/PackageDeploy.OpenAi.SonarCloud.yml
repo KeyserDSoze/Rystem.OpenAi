@@ -54,5 +54,6 @@ jobs:
             SET AzureADClientId= ${{ secrets.Azure_AD_ClientId }}
             SET AzureADClientSecret= ${{ secrets.Azure_AD_ClientSecret }}
             SET AzureADTenantId= ${{ secrets.Azure_AD_TenantId }}
+            dotnet build "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" -c Debug
             dotnet test "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" -c Debug --no-build /p:CollectCoverage=true /p:CoverletOutput=$root\coverage /p:CoverletOutputFormat=opencover
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
