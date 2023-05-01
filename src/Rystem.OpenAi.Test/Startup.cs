@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -21,13 +22,14 @@ namespace Rystem.OpenAi.Test
             .ConfigureAppConfiguration((context, builder) =>
             {
                 builder.AddJsonFile("appsettings.test.json")
-               .AddUserSecrets<ForUserSecrets>();
+               .AddUserSecrets<ForUserSecrets>()
+               .AddEnvironmentVariables();
             });
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "It's necessary to have this method as a non-static method because the dependency injection package needs a non-static method.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "Test purposes.")]
         public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
         {
-            var apiKey = context.Configuration["OpenAi:ApiKey"];
+            var apiKey = Environment.GetEnvironmentVariable("OpenAi_ApiKey") ?? context.Configuration["OpenAi:ApiKey"];
             services
                 .AddOpenAi(settings =>
                 {
