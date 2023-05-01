@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Image
 {
-    public sealed class ImageVariationRequestBuilder : RequestBuilder<ImageVariationRequest>
+    public class ImageVariationRequestBuilder : ImageRequestBuilder<ImageVariationRequestBuilder, ImageVariationRequest>
     {
-        private ImageSize _size;
         internal ImageVariationRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
             Stream image, string imageName, bool transform, IOpenAiUtility utility)
-            : base(client, configuration, () =>
+            : base(client, configuration, utility, () =>
             {
                 var request = new ImageVariationRequest
                 {
@@ -44,10 +43,9 @@ namespace Rystem.OpenAi.Image
                 }
                 request.Image.Position = 0;
                 return request;
-            }, utility)
+            })
         {
-            _familyType = ModelFamilyType.Image;
-            _size = ImageSize.Large;
+
         }
         /// <summary>
         /// Variate an image given a prompt.
@@ -55,7 +53,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A list of generated texture urls to download.</returns>
         /// <exception cref="HttpRequestException"></exception>
-        public async ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ImageCreateRequestBuilder.ResponseFormatUrl;
             using var content = new MultipartFormDataContent();
@@ -78,7 +76,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
         /// <returns>A list of generated texture urls to download.</returns>
         /// <exception cref="HttpRequestException"></exception>
-        public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, "/variations");
             var responses = await Client.PostAsync<ImageResult>(uri, Request, Configuration, cancellationToken);
@@ -100,59 +98,6 @@ namespace Rystem.OpenAi.Image
                     }
                 }
             }
-        }
-        /// <summary>
-        /// The number of images to generate. Must be between 1 and 10.
-        /// </summary>
-        /// <param name="numberOfResults"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public ImageVariationRequestBuilder WithNumberOfResults(int numberOfResults)
-        {
-            if (numberOfResults > 10 || numberOfResults < 1)
-                throw new ArgumentOutOfRangeException(nameof(numberOfResults), "The number of results must be between 1 and 10");
-            Request.NumberOfResults = numberOfResults;
-            return this;
-        }
-        /// <summary>
-        /// The size of the generated images. Must be one of 256x256, 512x512, or 1024x1024.
-        /// </summary>
-        /// <param name="size"></param>
-        /// <returns></returns>
-        public ImageVariationRequestBuilder WithSize(ImageSize size)
-        {
-            _size = size;
-            Request.Size = size.AsString();
-            return this;
-        }
-        /// <summary>
-        /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
-        /// <see href="https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids"></see>
-        /// </summary>
-        /// <param name="user">Unique identifier</param>
-        /// <returns>Builder</returns>
-        public ImageVariationRequestBuilder WithUser(string user)
-        {
-            Request.User = user;
-            return this;
-        }
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
-        public decimal CalculateCost()
-        {
-            var cost = Utility.Cost;
-            return cost.Configure(settings =>
-            {
-                settings
-                    .WithFamily(_familyType)
-                    .WithType(OpenAiType.Image);
-            }, Configuration.Name).Invoke(new OpenAiUsage
-            {
-                ImageSize = _size,
-                Units = Request.NumberOfResults
-            });
         }
     }
 }

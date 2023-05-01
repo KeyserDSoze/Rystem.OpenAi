@@ -22,16 +22,12 @@
         private const string LargeSize = "1024x1024";
         public static string AsString(this ImageSize size)
         {
-            switch (size)
+            return size switch
             {
-                case ImageSize.Small:
-                    return SmallSize;
-                case ImageSize.Medium:
-                    return MediumSize;
-                default:
-                case ImageSize.Large:
-                    return LargeSize;
-            }
+                ImageSize.Small => SmallSize,
+                ImageSize.Medium => MediumSize,
+                _ => LargeSize,
+            };
         }
     }
 }
