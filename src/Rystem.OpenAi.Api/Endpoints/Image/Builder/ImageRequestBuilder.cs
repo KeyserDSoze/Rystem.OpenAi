@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -38,6 +37,18 @@ namespace Rystem.OpenAi.Image
             return Client.PostAsync<ImageResult>(uri, CreateRequest(), Configuration, cancellationToken);
         }
         /// <summary>
+        /// Create, Variate or Edit an image given a prompt.
+        /// </summary>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
+        /// <returns>A list of base64 images.</returns>
+        /// <exception cref="HttpRequestException"></exception>
+        public ValueTask<ImageResultForBase64> ExecuteWithBase64Async(CancellationToken cancellationToken = default)
+        {
+            Request.ResponseFormat = FormatResultImage.B64Json.AsString();
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, Endpoint);
+            return Client.PostAsync<ImageResultForBase64>(uri, CreateRequest(), Configuration, cancellationToken);
+        }
+        /// <summary>
         /// Download N images as Stream after you create, variate or edit by a given prompt.
         /// </summary>
         /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/>.</param>
@@ -45,23 +56,15 @@ namespace Rystem.OpenAi.Image
         /// <exception cref="HttpRequestException"></exception>
         public async IAsyncEnumerable<Stream> DownloadAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var responses = await ExecuteAsync(cancellationToken);
+            var responses = await ExecuteWithBase64Async(cancellationToken);
             if (responses.Data != null)
             {
-                using var client = new HttpClient();
                 foreach (var image in responses.Data)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var response = await client.GetAsync(image.Url);
-                    response.EnsureSuccessStatusCode();
-                    if (response != null && response.StatusCode == HttpStatusCode.OK)
-                    {
-                        using var stream = await response.Content.ReadAsStreamAsync();
-                        var memoryStream = new MemoryStream();
-                        await stream.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0;
-                        yield return memoryStream;
-                    }
+                    var stream = image.ConvertToStream();
+                    if (stream != null)
+                        yield return stream;
                 }
             }
         }

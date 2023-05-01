@@ -33,6 +33,25 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        public async ValueTask CreateWithBase64Async(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Image);
+
+            var response = await openAiApi.Image
+                .Generate("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.")
+                .WithSize(ImageSize.Large)
+                .ExecuteWithBase64Async();
+
+            var image = response.Data.FirstOrDefault();
+            Assert.NotNull(image);
+            var imageAsImage = image.ConvertToImage();
+            Assert.NotNull(imageAsImage);
+            var imageAsStream = image.ConvertToStream();
+            Assert.NotNull(imageAsStream);
+        }
+        [Theory]
+        [InlineData("")]
         public async ValueTask CreateAndDownloadAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
