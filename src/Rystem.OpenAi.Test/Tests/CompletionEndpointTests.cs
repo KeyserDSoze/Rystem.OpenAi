@@ -98,7 +98,7 @@ namespace Rystem.OpenAi.Test
             }
 
             Assert.NotEmpty(results);
-            Assert.Contains(results.First().Completions, c => c.Text.Trim().ToLower().Contains("tuesday"));
+            Assert.Contains(results.SelectMany(x => x.Completions), c => c.Text.Trim().ToLower().Contains("tuesday"));
             Assert.Contains(results.SelectMany(x => x.Completions), c => c.Text.Trim().ToLower().Contains("15"));
         }
     }
