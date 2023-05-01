@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Test
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "Test purposes.")]
         public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
         {
-            var apiKey = Environment.GetEnvironmentVariable("OpenAi_ApiKey") ?? context.Configuration["OpenAi:ApiKey"];
+            var apiKey = Environment.GetEnvironmentVariable("OpenAiApiKey") ?? context.Configuration["OpenAi:ApiKey"];
             var azureApiKey = Environment.GetEnvironmentVariable("AzureApiKey") ?? context.Configuration["Azure:ApiKey"];
             var resourceName = Environment.GetEnvironmentVariable("AzureResourceName") ?? context.Configuration["Azure:ResourceName"];
             var clientId = Environment.GetEnvironmentVariable("AzureADClientId") ?? context.Configuration["AzureAd:ClientId"];
