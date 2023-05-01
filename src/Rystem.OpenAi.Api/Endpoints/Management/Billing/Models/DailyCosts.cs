@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.Management
         public float Timestamp { get; set; }
         public DateTime Day => new DateTime((long)Timestamp);
         [JsonPropertyName("line_items")]
-        public List<CostItems> Items { get; set; }
+        public List<CostItems>? Items { get; set; }
     }
 
 }

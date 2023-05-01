@@ -13,6 +13,12 @@ namespace Rystem.OpenAi.Management
         /// Defines how scaling operations will be executed.
         /// </summary>
         [JsonPropertyName("scale_type")]
-        public string ScaleType { get; set; }
+        public string? ScaleType { get; set; }
+        public static DeploymentScaleSettings GetDefault()
+            => new DeploymentScaleSettings
+            {
+                Capacity = 1,
+                ScaleType = "manual"
+            };
     }
 }
