@@ -87,7 +87,6 @@ namespace Rystem.OpenAi.Test
 
             foreach (var deployment in (await openAiApi.Management.Deployment.ListAsync()).Data)
             {
-                //todo Update AddDeploymentTextModel and others in settings with Create and on startup the entire list
                 Assert.NotNull(deployment);
             }
         }

@@ -162,6 +162,5 @@ namespace Rystem.OpenAi
                 PerMinute = perMinute
             });
         }
-        //todo Add price from Azure https://prices.azure.com/api/retail/prices?api-version=2023-01-01-preview&meterRegion=%27primary%27
     }
 }
