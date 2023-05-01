@@ -18,8 +18,8 @@ namespace Rystem.OpenAi.Test
             var management = _openAiFactory.CreateManagement(integrationName);
             var usages = await management
                 .Billing
-                .From(new DateTime(2023, 4, 1))
-                .To(new DateTime(2023, 4, 30))
+                .From(new DateTime(2023, 5, 1))
+                .To(new DateTime(2023, 5, 31))
                 .GetUsageAsync();
             Assert.NotEmpty(usages.DailyCosts);
         }

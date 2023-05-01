@@ -13,6 +13,6 @@ namespace Rystem.OpenAi.Management
         {
         }
         public BillingBuilder From(DateTime? from = null)
-            => new BillingBuilder(Client, Configuration, Utility, from);
+            => new BillingBuilder(Client, _configuration, Utility, from);
     }
 }

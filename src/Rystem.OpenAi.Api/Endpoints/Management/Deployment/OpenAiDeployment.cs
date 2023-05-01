@@ -14,17 +14,17 @@ namespace Rystem.OpenAi.Management
         {
         }
         public DeploymentBuilder Create(string? deploymentId = null)
-            => new DeploymentBuilder(Client, Configuration, Utility, deploymentId, false);
+            => new DeploymentBuilder(Client, _configuration, Utility, deploymentId, false);
         public DeploymentBuilder Update(string deploymentId)
-            => new DeploymentBuilder(Client, Configuration, Utility, deploymentId, true);
+            => new DeploymentBuilder(Client, _configuration, Utility, deploymentId, true);
         public ValueTask<DeploymentResults> ListAsync(CancellationToken cancellationToken = default)
-            => Client.GetAsync<DeploymentResults>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, false, string.Empty), Configuration, cancellationToken);
+            => Client.GetAsync<DeploymentResults>(_configuration.GetUri(OpenAiType.Deployment, string.Empty, false, string.Empty), _configuration, cancellationToken);
 
         public ValueTask<DeploymentResult> RetrieveAsync(string deploymentId, CancellationToken cancellationToken = default)
-            => Client.GetAsync<DeploymentResult>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, false, $"/{deploymentId}"), Configuration, cancellationToken);
+            => Client.GetAsync<DeploymentResult>(_configuration.GetUri(OpenAiType.Deployment, string.Empty, false, $"/{deploymentId}"), _configuration, cancellationToken);
         public async ValueTask<bool> DeleteAsync(string deploymentId, CancellationToken cancellationToken = default)
         {
-            _ = await Client.DeleteAsync<bool>(Configuration.GetUri(OpenAiType.Deployment, string.Empty, false, $"/{deploymentId}"), Configuration, cancellationToken);
+            _ = await Client.DeleteAsync<bool>(_configuration.GetUri(OpenAiType.Deployment, string.Empty, false, $"/{deploymentId}"), _configuration, cancellationToken);
             return true;
         }
     }

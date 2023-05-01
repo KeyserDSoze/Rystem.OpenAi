@@ -2,7 +2,7 @@
 {
     public class Something
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
     public class WeatherForecastService
     {

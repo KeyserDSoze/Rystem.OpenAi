@@ -10,6 +10,6 @@ namespace Rystem.OpenAi.Edit
         {
         }
         public EditRequestBuilder Request(string instruction)
-            => new EditRequestBuilder(Client, Configuration, instruction, Utility);
+            => new EditRequestBuilder(Client, _configuration, instruction, Utility);
     }
 }

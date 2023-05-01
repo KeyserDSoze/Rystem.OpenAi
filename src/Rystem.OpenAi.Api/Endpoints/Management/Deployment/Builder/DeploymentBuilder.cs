@@ -66,8 +66,7 @@ namespace Rystem.OpenAi.Management
         /// <returns></returns>
         public DeploymentBuilder WithCapacity(int capacity)
         {
-            if (Request.ScaleSettings == null)
-                Request.ScaleSettings = DeploymentScaleSettings.GetDefault();
+            Request.ScaleSettings ??= DeploymentScaleSettings.GetDefault();
             Request.ScaleSettings.Capacity = capacity;
             return this;
         }
@@ -78,8 +77,7 @@ namespace Rystem.OpenAi.Management
         /// <returns></returns>
         public DeploymentBuilder WithScaling(DeploymentScaleType type)
         {
-            if (Request.ScaleSettings == null)
-                Request.ScaleSettings = DeploymentScaleSettings.GetDefault();
+            Request.ScaleSettings ??= DeploymentScaleSettings.GetDefault();
             Request.ScaleSettings.ScaleType = type.ToString().ToLower();
             return this;
         }

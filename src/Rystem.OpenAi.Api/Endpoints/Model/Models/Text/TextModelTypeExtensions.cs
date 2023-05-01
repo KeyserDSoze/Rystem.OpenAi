@@ -14,57 +14,35 @@
         private static readonly Model s_gpt_3_5_turbo = new Model("gpt-3.5-turbo");
         public static Model ToModel(this TextModelType type)
         {
-            switch (type)
+            return type switch
             {
-                case TextModelType.BabbageText:
-                    return s_babbageText;
-                case TextModelType.CurieText:
-                    return s_curieText;
-                case TextModelType.DavinciText3:
-                    return s_davinciText3;
-                case TextModelType.DavinciText2:
-                    return s_davinciText2;
-                case TextModelType.DavinciCode:
-                    return s_davinciCode;
-                case TextModelType.CushmanCode:
-                    return s_cushmanCode;
-                case TextModelType.Gpt35Turbo:
-                    return s_gpt_3_5_turbo;
-                case TextModelType.Gpt4:
-                    return s_gpt4;
-                case TextModelType.Gpt4_32K:
-                    return s_gpt4_32k;
-                default:
-                case TextModelType.AdaText:
-                    return s_adaText;
-            }
+                TextModelType.BabbageText => s_babbageText,
+                TextModelType.CurieText => s_curieText,
+                TextModelType.DavinciText3 => s_davinciText3,
+                TextModelType.DavinciText2 => s_davinciText2,
+                TextModelType.DavinciCode => s_davinciCode,
+                TextModelType.CushmanCode => s_cushmanCode,
+                TextModelType.Gpt35Turbo => s_gpt_3_5_turbo,
+                TextModelType.Gpt4 => s_gpt4,
+                TextModelType.Gpt4_32K => s_gpt4_32k,
+                _ => s_adaText,
+            };
         }
         public static ModelFamilyType ToFamily(this TextModelType type)
         {
-            switch (type)
+            return type switch
             {
-                case TextModelType.BabbageText:
-                    return ModelFamilyType.Babbage;
-                case TextModelType.CurieText:
-                    return ModelFamilyType.Curie;
-                case TextModelType.DavinciText3:
-                    return ModelFamilyType.Davinci;
-                case TextModelType.DavinciText2:
-                    return ModelFamilyType.Davinci;
-                case TextModelType.DavinciCode:
-                    return ModelFamilyType.Davinci;
-                case TextModelType.CushmanCode:
-                    return ModelFamilyType.Ada;
-                case TextModelType.Gpt35Turbo:
-                    return ModelFamilyType.Gpt3_5;
-                case TextModelType.Gpt4:
-                    return ModelFamilyType.Gpt4_8K;
-                case TextModelType.Gpt4_32K:
-                    return ModelFamilyType.Gpt4_32K;
-                default:
-                case TextModelType.AdaText:
-                    return ModelFamilyType.Ada;
-            }
+                TextModelType.BabbageText => ModelFamilyType.Babbage,
+                TextModelType.CurieText => ModelFamilyType.Curie,
+                TextModelType.DavinciText3 => ModelFamilyType.Davinci,
+                TextModelType.DavinciText2 => ModelFamilyType.Davinci,
+                TextModelType.DavinciCode => ModelFamilyType.Davinci,
+                TextModelType.CushmanCode => ModelFamilyType.Ada,
+                TextModelType.Gpt35Turbo => ModelFamilyType.Gpt3_5,
+                TextModelType.Gpt4 => ModelFamilyType.Gpt4_8K,
+                TextModelType.Gpt4_32K => ModelFamilyType.Gpt4_32K,
+                _ => ModelFamilyType.Ada,
+            };
         }
         public static string ToModelId(this TextModelType type)
             => type.ToModel().Id!;

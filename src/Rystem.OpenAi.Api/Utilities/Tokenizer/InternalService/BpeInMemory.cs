@@ -11,18 +11,13 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         private static readonly BpeEconding s_cl100kBaseEncoding = BpeEconding.GetEncoding("cl100k_base");
         public static BpeEconding GetRight(BytePairEncodingType type)
         {
-            switch (type)
+            return type switch
             {
-                case BytePairEncodingType.R50k:
-                    return s_r50kBaseEncoding;
-                case BytePairEncodingType.P50k:
-                    return s_p50kBaseEncoding;
-                case BytePairEncodingType.P50k_Edit:
-                    return s_p50kEditEncoding;
-                default:
-                case BytePairEncodingType.Cl100k:
-                    return s_cl100kBaseEncoding;
-            }
+                BytePairEncodingType.R50k => s_r50kBaseEncoding,
+                BytePairEncodingType.P50k => s_p50kBaseEncoding,
+                BytePairEncodingType.P50k_Edit => s_p50kEditEncoding,
+                _ => s_cl100kBaseEncoding,
+            };
         }
         public static BpeEconding GetEncoder(string? modelId)
         {

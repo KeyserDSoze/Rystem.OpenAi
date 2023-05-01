@@ -13,7 +13,7 @@ namespace Rystem.OpenAi
     public sealed class OpenAiConfiguration
     {
         private const string Forced = nameof(Forced);
-        internal OpenaiUriMaker GetUri { get; private set; }
+        internal OpenaiUriMaker GetUri { get; private set; } = null!;
         public Func<HttpClient, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }
@@ -80,34 +80,21 @@ namespace Rystem.OpenAi
            string appendBeforeQueryString,
            UriHelperConfigurator uriHelper)
         {
-            switch (type)
+            return type switch
             {
-                case OpenAiType.AudioTranscription:
-                    return string.Format(uriHelper.AudioTranscriptionUri, appendBeforeQueryString);
-                case OpenAiType.AudioTranslation:
-                    return string.Format(uriHelper.AudioTranslationUri, appendBeforeQueryString);
-                case OpenAiType.Completion:
-                    return string.Format(uriHelper.CompletionUri, appendBeforeQueryString);
-                case OpenAiType.Edit:
-                    return string.Format(uriHelper.EditUri, appendBeforeQueryString);
-                case OpenAiType.Moderation:
-                    return string.Format(uriHelper.ModerationUri, appendBeforeQueryString);
-                case OpenAiType.Image:
-                    return string.Format(uriHelper.ImageUri, appendBeforeQueryString);
-                case OpenAiType.Embedding:
-                    return string.Format(uriHelper.EmbeddingUri, appendBeforeQueryString);
-                case OpenAiType.Chat:
-                    return string.Format(uriHelper.ChatUri, appendBeforeQueryString);
-                case OpenAiType.File:
-                    return string.Format(uriHelper.FileUri, appendBeforeQueryString);
-                case OpenAiType.FineTune:
-                    return string.Format(uriHelper.FineTuneUri, appendBeforeQueryString);
-                case OpenAiType.Billing:
-                    return string.Format(uriHelper.BillingUri, appendBeforeQueryString);
-                default:
-                case OpenAiType.Model:
-                    return string.Format(uriHelper.ModelUri, appendBeforeQueryString);
-            }
+                OpenAiType.AudioTranscription => string.Format(uriHelper.AudioTranscriptionUri, appendBeforeQueryString),
+                OpenAiType.AudioTranslation => string.Format(uriHelper.AudioTranslationUri, appendBeforeQueryString),
+                OpenAiType.Completion => string.Format(uriHelper.CompletionUri, appendBeforeQueryString),
+                OpenAiType.Edit => string.Format(uriHelper.EditUri, appendBeforeQueryString),
+                OpenAiType.Moderation => string.Format(uriHelper.ModerationUri, appendBeforeQueryString),
+                OpenAiType.Image => string.Format(uriHelper.ImageUri, appendBeforeQueryString),
+                OpenAiType.Embedding => string.Format(uriHelper.EmbeddingUri, appendBeforeQueryString),
+                OpenAiType.Chat => string.Format(uriHelper.ChatUri, appendBeforeQueryString),
+                OpenAiType.File => string.Format(uriHelper.FileUri, appendBeforeQueryString),
+                OpenAiType.FineTune => string.Format(uriHelper.FineTuneUri, appendBeforeQueryString),
+                OpenAiType.Billing => string.Format(uriHelper.BillingUri, appendBeforeQueryString),
+                _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
+            };
         }
         private void ConfigureEndpointsForAzure()
         {

@@ -10,6 +10,6 @@ namespace Rystem.OpenAi.Moderation
         {
         }
         public ModerationRequestBuilder Create(string input)
-            => new ModerationRequestBuilder(Client, Configuration, input, Utility);
+            => new ModerationRequestBuilder(Client, _configuration, input, Utility);
     }
 }

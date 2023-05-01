@@ -12,6 +12,6 @@ namespace Rystem.OpenAi.Completion
         {
         }
         public CompletionRequestBuilder Request(params string[] prompts)
-            => new CompletionRequestBuilder(Client, Configuration, prompts, Utility);
+            => new CompletionRequestBuilder(Client, _configuration, prompts, Utility);
     }
 }

@@ -6,14 +6,11 @@
         private static readonly Model s_codeDavinciEdit = new Model("code-davinci-edit-001");
         public static Model ToModel(this EditModelType type)
         {
-            switch (type)
+            return type switch
             {
-                case EditModelType.TextDavinciEdit:
-                    return s_textDavinciEdit;
-                default:
-                case EditModelType.CodeDavinciEdit:
-                    return s_codeDavinciEdit;
-            }
+                EditModelType.TextDavinciEdit => s_textDavinciEdit,
+                _ => s_codeDavinciEdit,
+            };
         }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Unused parameter is necessary to work as extension method.")]
         public static ModelFamilyType ToFamily(this EditModelType type)

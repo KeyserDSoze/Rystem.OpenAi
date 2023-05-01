@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 foreach (var deployment in availableDeployments)
                 {
                     configuration.Settings.Azure
-                        .MapDeploymentCustomModel(deployment.Id, deployment.ModelId);
+                        .MapDeploymentCustomModel(deployment.Id!, deployment.ModelId!);
                     events.Add(new AutomaticallyDeploymentResult()
                     {
                         IntegrationName = integrationName,

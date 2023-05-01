@@ -6,8 +6,6 @@ namespace Rystem.OpenAi.Management
     {
         [JsonPropertyName("scale_settings")]
         public DeploymentScaleSettings? ScaleSettings { get; set; }
-        [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
         [JsonPropertyName("owner")]
         public string? Owner { get; set; }
         [JsonPropertyName("id")]
@@ -16,7 +14,5 @@ namespace Rystem.OpenAi.Management
         public int CreatedAt { get; set; }
         [JsonPropertyName("updated_at")]
         public int UpdatedAt { get; set; }
-        [JsonPropertyName("object")]
-        public string? Object { get; set; }
     }
 }

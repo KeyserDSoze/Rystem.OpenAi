@@ -13,6 +13,6 @@ namespace Rystem.OpenAi.Audio
         {
         }
         public AudioRequestBuilder Request(Stream file, string fileName = "default")
-            => new AudioRequestBuilder(Client, Configuration, file, fileName, Utility);
+            => new AudioRequestBuilder(Client, _configuration, file, fileName, Utility);
     }
 }

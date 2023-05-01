@@ -11,6 +11,6 @@ namespace Rystem.OpenAi.Embedding
         {
         }
         public EmbeddingRequestBuilder Request(params string[] inputs)
-            => new EmbeddingRequestBuilder(Client, Configuration, inputs, Utility);
+            => new EmbeddingRequestBuilder(Client, _configuration, inputs, Utility);
     }
 }

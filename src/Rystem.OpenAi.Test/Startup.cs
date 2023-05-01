@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -7,8 +10,11 @@ namespace Rystem.OpenAi.Test
 {
     public class Startup
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2094:Classes should not be empty", Justification = "It's necessary to inject secrets in Dependency injection settings.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "Test purposes.")]
         private sealed class ForUserSecrets { }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "It's necessary to have this method as a non-static method because the dependency injection package needs a non-static method.")]
         public void ConfigureHost(IHostBuilder hostBuilder) =>
         hostBuilder
             .ConfigureHostConfiguration(builder => { })
@@ -17,6 +23,8 @@ namespace Rystem.OpenAi.Test
                 builder.AddJsonFile("appsettings.test.json")
                .AddUserSecrets<ForUserSecrets>();
             });
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "It's necessary to have this method as a non-static method because the dependency injection package needs a non-static method.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "Test purposes.")]
         public void ConfigureServices(IServiceCollection services, HostBuilderContext context)
         {
             var apiKey = context.Configuration["OpenAi:ApiKey"];
@@ -57,12 +65,13 @@ namespace Rystem.OpenAi.Test
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
                 }, "Azure2");
-            var result = services.BuildServiceProvider().MapDeploymentsAutomaticallyAsync(true, "Azure").ConfigureAwait(false).GetAwaiter().GetResult();
-            Assert.NotEmpty(result);
-            _ = OpenAiService.Instance.AddOpenAi(settings =>
+            var tasks = new List<ValueTask<List<AutomaticallyDeploymentResult>>>
             {
-                settings.ApiKey = apiKey;
-            }, "NoDI")
+                services.BuildServiceProvider().MapDeploymentsAutomaticallyAsync(true, "Azure"),
+                OpenAiService.Instance.AddOpenAi(settings =>
+                {
+                    settings.ApiKey = apiKey;
+                }, "NoDI")
                 .AddOpenAi(settings =>
                 {
                     settings.ApiKey = azureApiKey;
@@ -82,8 +91,10 @@ namespace Rystem.OpenAi.Test
                         .SetFineTuneForAda(0.0004M, 0.0016M)
                         .SetAudioForTranslation(0.006M);
                 }, "Azure")
-                .MapDeploymentsAutomaticallyAsync(true, "Azure").ConfigureAwait(false).GetAwaiter().GetResult();
-
+                .MapDeploymentsAutomaticallyAsync(true, "Azure")
+            };
+            var results = Task.WhenAll(tasks.Select(x => x.AsTask())).ConfigureAwait(false).GetAwaiter().GetResult();
+            Assert.NotEmpty(results);
         }
     }
 }

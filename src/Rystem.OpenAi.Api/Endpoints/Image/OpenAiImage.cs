@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Image
         {
             if (prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
-            return new ImageCreateRequestBuilder(Client, Configuration, prompt, Utility);
+            return new ImageCreateRequestBuilder(Client, _configuration, prompt, Utility);
         }
         /// <summary>
         /// Creates a variation of a given image.
@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder Variate(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(Client, Configuration, image, imageName, false, Utility);
+            => new ImageVariationRequestBuilder(Client, _configuration, image, imageName, false, Utility);
         /// <summary>
         /// Creates a variation of a given image. Take the streamed image and transform it before sending in a correct png.
         /// </summary>
@@ -38,6 +38,6 @@ namespace Rystem.OpenAi.Image
         /// <param name="imageName"></param>
         /// <returns>Variation Builder</returns>
         public ImageVariationRequestBuilder VariateAndTransformInPng(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(Client, Configuration, image, imageName, true, Utility);
+            => new ImageVariationRequestBuilder(Client, _configuration, image, imageName, true, Utility);
     }
 }

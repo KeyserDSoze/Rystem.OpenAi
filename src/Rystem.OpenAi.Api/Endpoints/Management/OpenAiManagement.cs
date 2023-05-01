@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Management
         {
             get
             {
-                if (!Configuration.WithAzure)
+                if (!_configuration.WithAzure)
                     throw new NotImplementedException("This method is valid only for Azure integration. Only Azure OpenAi has Deployment logic.");
                 return _deployment;
             }

@@ -12,6 +12,6 @@ namespace Rystem.OpenAi.Chat
         {
         }
         public ChatRequestBuilder Request(ChatMessage message)
-            => new ChatRequestBuilder(Client, Configuration, message, Utility);
+            => new ChatRequestBuilder(Client, _configuration, message, Utility);
     }
 }

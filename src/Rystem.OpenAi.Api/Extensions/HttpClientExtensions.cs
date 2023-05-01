@@ -100,7 +100,7 @@ namespace Rystem.OpenAi
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync();
-            return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default(TResponse)!;
+            return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
         private const string StartingWith = "data: ";
         private const string Done = "[DONE]";
