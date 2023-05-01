@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -62,10 +63,10 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 var endIndex = nextSpecialStartIndex ?? text.Length;
                 var textSegment = text[startIndex..endIndex];
 
-                foreach (var match in RegexTls.Matches(textSegment).Cast<Match>())
+                foreach (var matchedValue in RegexTls.Matches(textSegment).Select(x => x.Value))
                 {
-                    allTokens.Add(match.Value);
-                    var encodedPiece = Encoding.UTF8.GetBytes(match.Value);
+                    allTokens.Add(matchedValue);
+                    var encodedPiece = Encoding.UTF8.GetBytes(matchedValue);
                     if (Encoder.TryGetValue(encodedPiece, out var token))
                     {
                         lastTokenLength = 1;
@@ -165,6 +166,20 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 }
             }
 
+            CheckAllPartitions(piece, ranks, partitions);
+
+            var output = new List<T>(partitions.Count - 1);
+            for (var i = 0; i < partitions.Count - 1; i++)
+            {
+                output.Add(f(new Range(partitions[i].Start, partitions[i + 1].Start)));
+            }
+
+            return output.ToArray();
+        }
+        private static void CheckAllPartitions(IReadOnlyCollection<byte> piece,
+            IReadOnlyDictionary<byte[], int> ranks,
+            List<(int Start, int Rank)> partitions)
+        {
             while (partitions.Count > 1)
             {
                 var minRank = int.MaxValue;
@@ -195,14 +210,6 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 else
                     break;
             }
-
-            var output = new List<T>(partitions.Count - 1);
-            for (var i = 0; i < partitions.Count - 1; i++)
-            {
-                output.Add(f(new Range(partitions[i].Start, partitions[i + 1].Start)));
-            }
-
-            return output.ToArray();
         }
         private static int? GetRank(IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks,
             IReadOnlyList<(int Start, int Rank)> partitionsList, int startIndex, int skip)
