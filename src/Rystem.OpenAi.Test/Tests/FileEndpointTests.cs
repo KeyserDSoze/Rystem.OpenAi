@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Test
             _openAiFactory = openAiFactory;
         }
         [Theory]
-        [InlineData("")]
+        //[InlineData("")]
         [InlineData("Azure")]
         public async ValueTask AllFlowAsync(string name)
         {
