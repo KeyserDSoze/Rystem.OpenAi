@@ -19,6 +19,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Edit
                 .Request("Fix the spelling mistakes")
+                .WithModel("testModel", ModelFamilyType.Davinci)
                 .WithModel(EditModelType.TextDavinciEdit)
                 .SetInput("What day of the wek is it?")
                 .WithTemperature(0.5)

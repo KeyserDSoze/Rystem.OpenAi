@@ -20,6 +20,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Moderation
                 .Create("I want to kill them and everyone else.")
+                .WithModel("testModel", ModelFamilyType.Moderation)
                 .WithModel(ModerationModelType.TextModerationStable)
                 .ExecuteAsync();
 

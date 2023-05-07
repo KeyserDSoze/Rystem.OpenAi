@@ -23,6 +23,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Completion
                 .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
+                .WithModel("testModel", ModelFamilyType.Curie)
                 .WithModel(TextModelType.CurieText)
                 .WithTemperature(0.1)
                 .SetMaxTokens(5)

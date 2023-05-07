@@ -61,6 +61,7 @@ namespace Rystem.OpenAi.Test
                 .Request("A test text for embedding")
                 .AddPrompt("with message")
                 .WithUser("KeyserDSoze")
+                .WithModel("testModel", ModelFamilyType.Ada)
                 .WithModel(EmbeddingModelType.AdaTextEmbedding)
                 .ExecuteAsync();
             Assert.NotNull(results);

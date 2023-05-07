@@ -38,6 +38,18 @@ namespace Rystem.OpenAi.Test
             Assert.Equal(times * numberOfTokens * currentPrice / 1_000, manualCalculatedPrice);
         }
         [Theory]
+        [InlineData("", 0)]
+        public void CalculateModeration(string integrationName, decimal currentPrice)
+        {
+            var openAiApi = _openAiFactory.Create(integrationName);
+            var price = openAiApi.Moderation
+                .Create("i want to kill everyone.")
+                .WithModel("moderationTestModel", ModelFamilyType.Moderation)
+                .WithModel(ModerationModelType.TextModerationLatest)
+                .CalculateCost();
+            Assert.Equal(currentPrice, price);
+        }
+        [Theory]
         [InlineData("", ModelFamilyType.Ada, true, 40, 0.0004)]
         [InlineData("", ModelFamilyType.Ada, false, 40, 0.0016)]
         public void CalculateCostForFineTune(string integrationName, ModelFamilyType familyType, bool forTraining, int promptTokens, decimal price)
