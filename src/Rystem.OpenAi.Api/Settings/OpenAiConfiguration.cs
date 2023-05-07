@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Identity.Client;
 
+[assembly: InternalsVisibleTo("Rystem.OpenAi.Test")]
 namespace Rystem.OpenAi
 {
     internal delegate string OpenaiUriMaker(OpenAiType type, string modelId, bool forced, string appendBeforeQueryString);
