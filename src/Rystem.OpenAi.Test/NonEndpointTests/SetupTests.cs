@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -10,7 +7,7 @@ namespace Rystem.OpenAi.Test
     {
         [Theory]
         [InlineData(OpenAiType.AudioTranscription, null, false, null, "https://api.openai.com/v2/audio/transcriptions")]
-        public async ValueTask SetupOpenAi(OpenAiType type, string? modelId, bool forced, string? appendBeforeQuery, string uri)
+        public void SetupOpenAi(OpenAiType type, string modelId, bool forced, string appendBeforeQuery, string uri)
         {
             var settings = new OpenAiSettings()
             {
