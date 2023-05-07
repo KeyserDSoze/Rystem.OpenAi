@@ -8,11 +8,6 @@ namespace Rystem.OpenAi.Test
 {
     public class SetupTests
     {
-        private readonly IOpenAiFactory _openAiFactory;
-        public SetupTests(IOpenAiFactory openAiFactory)
-        {
-            _openAiFactory = openAiFactory;
-        }
         [Theory]
         [InlineData(OpenAiType.AudioTranscription, null, false, null, "https://api.openai.com/v2/audio/transcriptions")]
         public async ValueTask SetupOpenAi(OpenAiType type, string? modelId, bool forced, string? appendBeforeQuery, string uri)
@@ -35,7 +30,7 @@ namespace Rystem.OpenAi.Test
                 .UseVersionForAudioTranslation("v2");
             var oac = new OpenAiConfiguration(settings, string.Empty);
             oac.ConfigureEndpoints();
-            var apiUri = oac.GetUri(type, null, forced, appendBeforeQuery);
+            var apiUri = oac.GetUri(type, modelId, forced, appendBeforeQuery);
             Assert.Equal(uri, apiUri);
         }
     }
