@@ -9,6 +9,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 [![OpenAi.Nuget](https://github.com/KeyserDSoze/Rystem.OpenAi/actions/workflows/PackageDeploy.OpenAi.yml/badge.svg)](https://github.com/KeyserDSoze/Rystem.OpenAi/actions/workflows/PackageDeploy.OpenAi.yml)
 
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=KeyserDSoze_Rystem.OpenAi)
+![image](https://user-images.githubusercontent.com/40713438/236708265-6e53c2f4-f8fd-47d4-ad68-ed92ee31024b.png)
 
 ## Help the project
 
