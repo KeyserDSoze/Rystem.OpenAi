@@ -74,6 +74,8 @@ namespace Rystem.OpenAi.Completion
         /// <returns>Builder</returns>
         public CompletionRequestBuilder AddPrompt(string prompt)
         {
+            if (string.IsNullOrWhiteSpace(prompt))
+                return this;
             if (Request.Prompt is string[] array)
             {
                 var newArray = new string[array.Length + 1];

@@ -50,6 +50,9 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Audio
                 .Request(editableFile, "default.mp3")
+                .WithTemperature(1)
+                .WithLanguage(Language.Italian)
+                .WithPrompt("Incidente")
                 .TranscriptAsync();
 
             Assert.NotNull(results);

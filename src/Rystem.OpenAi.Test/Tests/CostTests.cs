@@ -87,6 +87,7 @@ namespace Rystem.OpenAi.Test
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Completion, "", 1, "one two three four five six seven", 7, 0.02, 0, 0, "DavinciText3", false)]
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 2, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
         [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 1, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
+        [InlineData(ModelFamilyType.Ada, OpenAiType.Embedding, "", 1, "Fix the spelling mistakes", 4, 0.0004, 0, 0, "AdaTextEmbedding", true)]
         public async Task CalculateCosts(ModelFamilyType model, OpenAiType type, string integrationName, int times, string content, int numberOfTokens, decimal currentPrice, int startingAndEndingTokens, int fixedTokens, string modelType, bool imNotAbleToUnderstandHowToCalculateCompletionTokens)
         {
             var promptedTokens = times * numberOfTokens + (times * fixedTokens) + startingAndEndingTokens;
@@ -117,11 +118,12 @@ namespace Rystem.OpenAi.Test
                 PromptTokens = promptedTokens,
                 CompletionTokens = tokenForResponse
             });
-            Assert.True(finalPriceForEntireOperation > price);
+            Assert.True(finalPriceForEntireOperation >= price);
             if (!imNotAbleToUnderstandHowToCalculateCompletionTokens)
                 Assert.Equal(finalPriceForEntireOperation, manualFinalCalculatedPrice);
         }
-        private async Task<(Func<decimal> CostCalculatedBySystem, Func<decimal> CostCalculation, List<string> Contents, int PromptTokens, int CompletionTokens, IOpenAiTokenizer Tokenizer)> ExecuteRequestWithCostAsync(IOpenAi openAiApi, OpenAiType type, string content, int times, string modelType)
+        private async Task<(Func<decimal> CostCalculatedBySystem, Func<decimal> CostCalculation, List<string> Contents, int PromptTokens, int CompletionTokens, IOpenAiTokenizer Tokenizer)> 
+            ExecuteRequestWithCostAsync(IOpenAi openAiApi, OpenAiType type, string content, int times, string modelType)
         {
             switch (type)
             {
@@ -176,6 +178,19 @@ namespace Rystem.OpenAi.Test
                             responseForEditWithCost.Result.Usage.PromptTokens.Value,
                             responseForEditWithCost.Result.Usage.CompletionTokens.Value,
                             editTokenizer);
+                case OpenAiType.Embedding:
+                    var embeddingModel = (EmbeddingModelType)Enum.Parse(typeof(EmbeddingModelType), modelType);
+                    var embedding = openAiApi.Embedding
+                     .Request(content)
+                     .WithModel(embeddingModel);
+                    var responseForEmbeddingWithCost = await embedding.ExecuteAndCalculateCostAsync();
+                    var embeddingTokenizer = _utility.Tokenizer.WithEmbeddingModel(embeddingModel);
+                    return (() => embedding.CalculateCost(),
+                            () => responseForEmbeddingWithCost.CalculateCost(),
+                            new List<string>(),
+                            responseForEmbeddingWithCost.Result.Usage.PromptTokens.Value,
+                            0,
+                            embeddingTokenizer);
             }
             return default;
         }

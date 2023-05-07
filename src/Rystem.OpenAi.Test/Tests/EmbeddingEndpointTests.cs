@@ -57,7 +57,12 @@ namespace Rystem.OpenAi.Test
             var openAiApi = integrationName == "NoDI" ? OpenAiService.Factory.Create(integrationName) : _openAiFactory.Create(integrationName);
             Assert.NotNull(openAiApi.Embedding);
 
-            var results = await openAiApi.Embedding.Request("A test text for embedding").ExecuteAsync();
+            var results = await openAiApi.Embedding
+                .Request("A test text for embedding")
+                .AddPrompt("with message")
+                .WithUser("KeyserDSoze")
+                .WithModel(EmbeddingModelType.AdaTextEmbedding)
+                .ExecuteAsync();
             Assert.NotNull(results);
 
             Assert.NotNull(results.Usage);

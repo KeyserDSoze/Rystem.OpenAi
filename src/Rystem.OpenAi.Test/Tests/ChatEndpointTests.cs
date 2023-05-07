@@ -45,12 +45,27 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Chat);
-
+            var biasDictionary = new Dictionary<string, int>
+            {
+                { "Keystone", 1 },
+                { "Keystone3", 4 }
+            };
             var results = new List<ChatResult>();
             await foreach (var x in openAiApi.Chat
-                .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
+                .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
+                .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelType.Gpt35Turbo0301)
                 .WithTemperature(1)
+                .WithStopSequence("alekud")
+                .AddStopSequence("coltello")
+                .WithNumberOfChoicesPerPrompt(1)
+                .WithFrequencyPenalty(0)
+                .WithNucleusSampling(1)
+                .SetMaxTokens(1200)
+                   .WithBias("Keystone", 4)
+                   .WithBias("Keystone2", 4)
+                   .WithBias(biasDictionary)
+                   .WithUser("KeyserDSoze")
                 .ExecuteAsStreamAsync())
                 results.Add(x);
 

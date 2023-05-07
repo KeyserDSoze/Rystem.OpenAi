@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi
 {
@@ -22,7 +21,7 @@ namespace Rystem.OpenAi
             Utility = utility;
             Request = requestCreator.Invoke();
         }
-        private protected decimal CalculateCost(OpenAiType type, CompletionUsage? usage)
+        private protected decimal CalculateCost(OpenAiType type, Usage? usage)
         {
             var cost = Utility.Cost;
             return cost.Configure(settings =>
@@ -33,7 +32,7 @@ namespace Rystem.OpenAi
             }, Configuration.Name).Invoke(new OpenAiUsage
             {
                 PromptTokens = usage?.PromptTokens ?? 0,
-                CompletionTokens = usage?.CompletionTokens ?? 0
+                CompletionTokens = (usage as CompletionUsage)?.CompletionTokens ?? 0
             });
         }
     }

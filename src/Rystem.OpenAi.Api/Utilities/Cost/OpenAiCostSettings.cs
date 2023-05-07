@@ -71,7 +71,8 @@ namespace Rystem.OpenAi
             };
             return
                 Set($"{OpenAiType.Edit}_{ModelFamilyType.Ada}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula);
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula)
+                .Set($"{OpenAiType.Embedding}_{ModelFamilyType.Ada}", formula);
         }
         public OpenAiPriceSettings SetBabbage(decimal usage = 0.0005M)
         {

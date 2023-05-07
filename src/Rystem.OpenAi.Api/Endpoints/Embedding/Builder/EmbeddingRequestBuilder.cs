@@ -30,6 +30,15 @@ namespace Rystem.OpenAi.Embedding
         public ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
             => Client.PostAsync<EmbeddingResult>(Configuration.GetUri(OpenAiType.Embedding, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
         /// <summary>
+        /// Execute operation.
+        /// </summary>
+        /// <returns>CostResult<EmbeddingResult></returns>
+        public async ValueTask<CostResult<EmbeddingResult>> ExecuteAndCalculateCostAsync(CancellationToken cancellationToken = default)
+        {
+            var response = await ExecuteAsync(cancellationToken);
+            return new CostResult<EmbeddingResult>(response, () => CalculateCost(OpenAiType.Embedding, response?.Usage));
+        }
+        /// <summary>
         /// Add further input to the request.
         /// </summary>
         /// <param name="input">Input</param>

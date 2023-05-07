@@ -64,13 +64,33 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Completion);
-
-            var results = await openAiApi.Completion
-               .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
+            var biasDictionary = new Dictionary<string, int>
+            {
+                { "Keystone", 1 },
+                { "Keystone3", 4 }
+            };
+            var response = await openAiApi.Completion
+               .Request("One Two Three Four Five Six Seven Eight Nine One Two Three")
                .WithModel(TextModelType.CurieText)
                .WithTemperature(0.1)
+               .AddPrompt("")
+               .AddPrompt("Four Five Six Seven Eight")
+               .WithSuffix("ale")
+               .WithNucleusSampling(1)
+               .WithNumberOfChoicesPerPrompt(1)
+               .WithLogProbs(1)
+               .WithEcho()
+               .WithStopSequence("alessandro")
+               .WithFrequencyPenalty(0)
+               .WithPresencePenalty(0)
+               .BestOf(1)
+               .WithBias("Keystone", 4)
+               .WithBias("Keystone2", 4)
+               .WithBias(biasDictionary)
+               .WithUser("KeyserDSoze")
                .SetMaxTokens(5)
-               .ExecuteAsync();
+               .ExecuteAndCalculateCostAsync();
+            var results = response.Result;
             Assert.NotNull(results);
             Assert.NotNull(results.Usage);
             Assert.True(results.Usage.PromptTokens > 15);
