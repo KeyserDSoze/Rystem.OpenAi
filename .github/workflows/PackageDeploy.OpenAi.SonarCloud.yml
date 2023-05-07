@@ -44,9 +44,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-            .\.sonar\scanner\dotnet-sonarscanner begin /k:"KeyserDSoze_Rystem.OpenAi" /o:"keyserdsoze" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-            dotnet build "src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj" -c Debug
-            dotnet build "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" -c Debug
+            .\.sonar\scanner\dotnet-sonarscanner begin /k:"KeyserDSoze_Rystem.OpenAi" /o:"keyserdsoze" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html
+            dotnet build "src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj" –no-incremental -c Debug
+            dotnet build "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" –no-incremental -c Debug
             $Env:OpenAiApiKey='${{ secrets.OpenAi_ApiKey }}'
             $Env:AzureApiKey='${{ secrets.Azure_ApiKey }}'
             $Env:AzureResourceName='${{ secrets.Azure_ResourceName }}'
@@ -55,5 +55,5 @@ jobs:
             $Env:AzureADClientId='${{ secrets.Azure_AD_ClientId }}'
             $Env:AzureADClientSecret='${{ secrets.Azure_AD_ClientSecret }}'
             $Env:AzureADTenantId='${{ secrets.Azure_AD_TenantId }}'
-            dotnet test "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" -c Debug --no-build /p:CollectCoverage=true /p:CoverletOutput=$root\coverage /p:CoverletOutputFormat=opencover
+            dotnet dotcover test "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" --dcReportType=HTML
             .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
