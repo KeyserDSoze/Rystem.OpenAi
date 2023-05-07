@@ -11,33 +11,29 @@ namespace Rystem.OpenAi.Image
             : base(httpClientFactory, configurations, utility)
         {
         }
-        /// <summary>
-        /// Creates an image given a prompt.
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <returns>Generation Builder</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public ImageCreateRequestBuilder Generate(string prompt)
+        private void CheckPromptLenght(string prompt)
         {
             if (prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
+        }
+        public ImageCreateRequestBuilder Generate(string prompt)
+        {
+            CheckPromptLenght(prompt);
             return new ImageCreateRequestBuilder(Client, _configuration, prompt, Utility);
         }
-        /// <summary>
-        /// Creates a variation of a given image.
-        /// </summary>
-        /// <param name="image">The image to use as the basis for the variation(s). Must be a valid PNG file, less than 4MB, and square.</param>
-        /// <param name="imageName"></param>
-        /// <returns>Variation Builder</returns>
+        public ImageEditRequestBuilder Edit(string prompt, Stream image, string imageName = "image.png")
+        {
+            CheckPromptLenght(prompt);
+            return new ImageEditRequestBuilder(Client, _configuration, prompt, image, imageName, false, ImageSize.Large, Utility);
+        }
+        public ImageEditRequestBuilder EditAndTrasformInPng(string prompt, Stream image, string imageName = "image.png")
+        {
+            CheckPromptLenght(prompt);
+            return new ImageEditRequestBuilder(Client, _configuration, prompt, image, imageName, true, ImageSize.Large, Utility);
+        }
         public ImageVariationRequestBuilder Variate(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(Client, _configuration, image, imageName, false, Utility);
-        /// <summary>
-        /// Creates a variation of a given image. Take the streamed image and transform it before sending in a correct png.
-        /// </summary>
-        /// <param name="image">The image to use as the basis for the variation(s). Must be a valid PNG file, less than 4MB, and square.</param>
-        /// <param name="imageName"></param>
-        /// <returns>Variation Builder</returns>
+            => new ImageVariationRequestBuilder(Client, _configuration, null, image, imageName, false, ImageSize.Large, Utility);
         public ImageVariationRequestBuilder VariateAndTransformInPng(Stream image, string imageName = "image.png")
-            => new ImageVariationRequestBuilder(Client, _configuration, image, imageName, true, Utility);
+            => new ImageVariationRequestBuilder(Client, _configuration, null, image, imageName, true, ImageSize.Large, Utility);
     }
 }

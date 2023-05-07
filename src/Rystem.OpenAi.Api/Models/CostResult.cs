@@ -13,7 +13,7 @@ namespace Rystem.OpenAi
             Result = result;
             Calculations.Add(calculate);
         }
-        public decimal CalculateCost() 
+        public decimal CalculateCost()
             => Calculations.Sum(x => x.Invoke());
     }
 }

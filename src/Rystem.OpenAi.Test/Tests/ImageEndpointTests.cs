@@ -90,6 +90,7 @@ namespace Rystem.OpenAi.Test
             var response = await openAiApi.Image
                 .Generate("A cute baby sea otter wearing a beret")
                 .EditAndTrasformInPng(editableFile, "otter.png")
+                .WithMask(new ImageRange(new System.Range(1, 3), new System.Range(4, 6)))
                 .WithSize(ImageSize.Small)
                 .WithNumberOfResults(2)
                 .ExecuteAsync();

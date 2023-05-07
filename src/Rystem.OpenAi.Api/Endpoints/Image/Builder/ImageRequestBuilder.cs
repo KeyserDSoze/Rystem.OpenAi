@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Image
 {
-    public abstract class ImageRequestBuilder<TBuilder, T> : RequestBuilder<T>, IImageRequestBuilder
+    public abstract class ImageRequestBuilder<TBuilder> : RequestBuilder<ImageRequest>, IImageRequestBuilder
         where TBuilder : IImageRequestBuilder
-        where T : ImageRequest
     {
         private protected ImageSize _size;
         private protected ImageRequestBuilder(HttpClient client,
             OpenAiConfiguration configuration,
             IOpenAiUtility utility,
-            Func<T> defaultRequestCreator)
+            Func<ImageRequest> defaultRequestCreator)
             : base(client, configuration, () => defaultRequestCreator(), utility)
         {
             _familyType = ModelFamilyType.Image;
             _size = ImageSize.Large;
+            Request.Size = _size.AsString();
         }
         private protected abstract object CreateRequest();
         private protected abstract string Endpoint { get; }

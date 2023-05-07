@@ -77,6 +77,7 @@ namespace Rystem.OpenAi.Test
                 {
                     var deleteResultForFineTune = await openAiApi.FineTune.DeleteAsync(fineTuneId);
                     Assert.NotNull(deleteResultForFineTune);
+                    Assert.NotNull(deleteResultForFineTune.Id);
                 }
                 catch (Exception ex)
                 {

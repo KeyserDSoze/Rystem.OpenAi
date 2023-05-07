@@ -34,6 +34,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(results.Created);
             Assert.NotNull(results.Completions);
             Assert.True(results.Completions.Count != 0);
+            Assert.Contains(results.Completions.Select(x => x.Logprobs), x => x == null);
             Assert.Contains(results.Completions, c => c.Text.Trim().ToLower().StartsWith("nine"));
         }
 
@@ -81,6 +82,7 @@ namespace Rystem.OpenAi.Test
                .WithLogProbs(1)
                .WithEcho()
                .WithStopSequence("alessandro")
+               .AddStopSequence("alessandro2")
                .WithFrequencyPenalty(0)
                .WithPresencePenalty(0)
                .BestOf(1)

@@ -60,6 +60,7 @@ namespace Rystem.OpenAi.Test
                 .AddStopSequence("coltello")
                 .WithNumberOfChoicesPerPrompt(1)
                 .WithFrequencyPenalty(0)
+                .WithPresencePenalty(0)
                 .WithNucleusSampling(1)
                 .SetMaxTokens(1200)
                    .WithBias("Keystone", 4)

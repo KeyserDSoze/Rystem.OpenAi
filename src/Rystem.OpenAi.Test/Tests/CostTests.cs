@@ -122,8 +122,7 @@ namespace Rystem.OpenAi.Test
             if (!imNotAbleToUnderstandHowToCalculateCompletionTokens)
                 Assert.Equal(finalPriceForEntireOperation, manualFinalCalculatedPrice);
         }
-        private async Task<(Func<decimal> CostCalculatedBySystem, Func<decimal> CostCalculation, List<string> Contents, int PromptTokens, int CompletionTokens, IOpenAiTokenizer Tokenizer)> 
-            ExecuteRequestWithCostAsync(IOpenAi openAiApi, OpenAiType type, string content, int times, string modelType)
+        private async Task<(Func<decimal> CostCalculatedBySystem, Func<decimal> CostCalculation, List<string> Contents, int PromptTokens, int CompletionTokens, IOpenAiTokenizer Tokenizer)> ExecuteRequestWithCostAsync(IOpenAi openAiApi, OpenAiType type, string content, int times, string modelType)
         {
             switch (type)
             {

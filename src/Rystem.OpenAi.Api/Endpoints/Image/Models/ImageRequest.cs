@@ -2,7 +2,7 @@
 
 namespace Rystem.OpenAi.Image
 {
-    public class ImageRequest : IOpenAiRequest
+    public sealed class ImageRequest : IOpenAiRequest
     {
         [JsonPropertyName("prompt")]
         public string? Prompt { get; set; }

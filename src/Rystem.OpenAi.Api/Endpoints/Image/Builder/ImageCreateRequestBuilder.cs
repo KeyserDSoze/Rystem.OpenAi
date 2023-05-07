@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace Rystem.OpenAi.Image
 {
-    public sealed class ImageCreateRequestBuilder : ImageRequestBuilder<ImageCreateRequestBuilder, ImageRequest>
+    public sealed class ImageCreateRequestBuilder : ImageRequestBuilder<ImageCreateRequestBuilder>
     {
         internal ImageCreateRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
             string prompt, IOpenAiUtility utility)
