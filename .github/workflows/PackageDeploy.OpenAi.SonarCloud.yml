@@ -45,8 +45,8 @@ jobs:
         shell: powershell
         run: |
             .\.sonar\scanner\dotnet-sonarscanner begin /k:"KeyserDSoze_Rystem.OpenAi" /o:"keyserdsoze" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html
-            dotnet build "src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj" –no-incremental -c Debug
-            dotnet build "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" –no-incremental -c Debug
+            dotnet build "src/Rystem.OpenAi.Api/Rystem.OpenAi.Api.csproj" --no-incremental -c Debug
+            dotnet build "src/Rystem.OpenAi.Test/Rystem.OpenAi.Test.csproj" --no-incremental -c Debug
             $Env:OpenAiApiKey='${{ secrets.OpenAi_ApiKey }}'
             $Env:AzureApiKey='${{ secrets.Azure_ApiKey }}'
             $Env:AzureResourceName='${{ secrets.Azure_ResourceName }}'
