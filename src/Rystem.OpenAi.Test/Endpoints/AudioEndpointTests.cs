@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -12,6 +13,31 @@ namespace Rystem.OpenAi.Test
         public AudioEndpointTests(IOpenAiFactory openAiFactory)
         {
             _openAiFactory = openAiFactory;
+        }
+        [Fact]
+        public void SetupError()
+        {
+            var openAiApi = _openAiFactory.Create("");
+            var request = openAiApi.Audio
+                .Request(new MemoryStream(), "default.mp3");
+            try
+            {
+                request
+                    .WithTemperature(-5);
+            }
+            catch (Exception ex)
+            {
+                Assert.Equal("Temperature with a value lesser than 0", ex.Message);
+            }
+            try
+            {
+                request
+                    .WithTemperature(1.1);
+            }
+            catch (Exception ex)
+            {
+                Assert.Equal("Temperature with a value greater than 1", ex.Message);
+            }
         }
         [Theory]
         [InlineData("")]
@@ -29,6 +55,8 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Audio
                 .Request(editableFile, "default.mp3")
+                .WithTemperature(1)
+                .WithPrompt("sample")
                 .TranslateAsync();
 
             Assert.NotNull(results);

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -6,7 +8,7 @@ namespace Rystem.OpenAi.Test
     public class SetupTests
     {
         [Theory]
-        [InlineData(OpenAiType.AudioTranscription, null, false, null, "https://api.openai.com/v2/audio/transcriptions")]
+        [InlineData(OpenAiType.AudioTranscription, null, false, null, "https://api.openai.com/v3/audio/transcriptions")]
         public void SetupOpenAi(OpenAiType type, string modelId, bool forced, string appendBeforeQuery, string uri)
         {
             var settings = new OpenAiSettings()
@@ -15,6 +17,7 @@ namespace Rystem.OpenAi.Test
             };
             settings
                 .UseVersionForAudioTranscription("v2")
+                .UseVersionForAudioTranscription("v3")
                 .UseVersionForChat("v2")
                 .UseVersionForCompletion("v2")
                 .UseVersionForEdit("v2")
@@ -29,6 +32,22 @@ namespace Rystem.OpenAi.Test
             oac.ConfigureEndpoints();
             var apiUri = oac.GetUri(type, modelId, forced, appendBeforeQuery);
             Assert.Equal(uri, apiUri);
+        }
+        [Fact]
+        public void AddApiKeyNull()
+        {
+            var serviceCollection = new ServiceCollection();
+            try
+            {
+                serviceCollection.AddOpenAi(x =>
+                {
+                    x.ApiKey = null;
+                });
+            }
+            catch (Exception ex)
+            {
+                Assert.Equal("Value cannot be null. (Parameter 'ApiKey is empty.')", ex.Message);
+            }
         }
     }
 }

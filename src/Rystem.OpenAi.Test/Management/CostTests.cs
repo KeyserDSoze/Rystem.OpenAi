@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Image;
@@ -52,14 +53,22 @@ namespace Rystem.OpenAi.Test
         [Theory]
         [InlineData("", ModelFamilyType.Ada, true, 40, 0.0004)]
         [InlineData("", ModelFamilyType.Ada, false, 40, 0.0016)]
+        [InlineData("Azure", ModelFamilyType.Ada, false, 40, 0.0016)]
         public void CalculateCostForFineTune(string integrationName, ModelFamilyType familyType, bool forTraining, int promptTokens, decimal price)
         {
             var openAiApi = _openAiFactory.Create(integrationName);
-            var fineTuneCost = openAiApi.FineTune
-                .Create(integrationName)
-                .WithModel("test", familyType)
-                .CalculateCost(forTraining, promptTokens);
-            Assert.Equal(price * promptTokens / 1000, fineTuneCost);
+            try
+            {
+                var fineTuneCost = openAiApi.FineTune
+                    .Create(integrationName)
+                    .WithModel("test", familyType)
+                    .CalculateCost(forTraining, promptTokens);
+                Assert.Equal(price * promptTokens / 1000, fineTuneCost);
+            }
+            catch (Exception ex)
+            {
+                Assert.Equal("It's not yet implemented for Azure integration.", ex.Message);
+            }
         }
         [Theory]
         [InlineData("", ImageSize.Large, 9, 0.02)]
