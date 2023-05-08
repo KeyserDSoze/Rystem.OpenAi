@@ -23,15 +23,5 @@ namespace Rystem.OpenAi.Completion
         /// </summary>
         [JsonPropertyName("usage")]
         public CompletionUsage? Usage { get; set; }
-        /// <summary>
-        /// Gets the text of the first completion, representing the main result
-        /// </summary>
-        public override string? ToString()
-        {
-            if (Completions != null && Completions.Count > 0)
-                return Completions[0].ToString();
-            else
-                return $"CompletionResult {Id} has no valid output";
-        }
     }
 }
