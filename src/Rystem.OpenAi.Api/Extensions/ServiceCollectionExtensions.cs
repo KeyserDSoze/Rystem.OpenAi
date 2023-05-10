@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -51,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var defaultPolicy = openAiSettings.CustomRetryPolicy ?? Policy<HttpResponseMessage>
                    .Handle<HttpRequestException>()
                    .OrTransientHttpError()
-                   .AdvancedCircuitBreakerAsync(0.5, TimeSpan.FromSeconds(10), 10, TimeSpan.FromSeconds(15));
+                   .WaitAndRetryAsync(3, x => TimeSpan.FromSeconds(0.5));
                 httpClientBuilder
                      .AddPolicyHandler(defaultPolicy);
             }
