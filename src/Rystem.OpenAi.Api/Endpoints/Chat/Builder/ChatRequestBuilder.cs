@@ -84,6 +84,27 @@ namespace Rystem.OpenAi.Chat
         public ChatRequestBuilder AddMessage(string content, ChatRole role = ChatRole.User)
             => AddMessage(new ChatMessage { Content = content, Role = role });
         /// <summary>
+        /// User message is a message used to send information.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddUserMessage(string content)
+            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.User });
+        /// <summary>
+        /// System message is a message used to improve the response from chat api.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddSystemMessage(string content)
+            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.System });
+        /// <summary>
+        /// Assistant message is the response from chat api, usually you don't need to set this message.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddAssistantMessage(string content)
+            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.Assistant });
+        /// <summary>
         /// ID of the model to use.
         /// </summary>
         /// <param name="model">Model</param>

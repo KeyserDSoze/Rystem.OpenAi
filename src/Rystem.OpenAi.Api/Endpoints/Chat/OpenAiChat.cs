@@ -13,5 +13,23 @@ namespace Rystem.OpenAi.Chat
         }
         public ChatRequestBuilder Request(ChatMessage message)
             => new ChatRequestBuilder(Client, _configuration, message, Utility);
+        public ChatRequestBuilder RequestWithUserMessage(string message)
+            => new ChatRequestBuilder(Client, _configuration, new ChatMessage
+            {
+                Content = message,
+                Role = ChatRole.User
+            }, Utility);
+        public ChatRequestBuilder RequestWithSystemMessage(string message)
+            => new ChatRequestBuilder(Client, _configuration, new ChatMessage
+            {
+                Content = message,
+                Role = ChatRole.System
+            }, Utility);
+        public ChatRequestBuilder RequestWithAssistantMessage(string message)
+            => new ChatRequestBuilder(Client, _configuration, new ChatMessage
+            {
+                Content = message,
+                Role = ChatRole.Assistant
+            }, Utility);
     }
 }
