@@ -16,6 +16,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 ### Contribute: https://www.buymeacoffee.com/keyserdsoze
 ### Contribute: https://patreon.com/Rystem
 
+## [Stars](https://github.com/KeyserDSoze/Rystem.OpenAi/stargazers)
 
 ## Requirements
 
