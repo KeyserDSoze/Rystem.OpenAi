@@ -75,5 +75,33 @@ namespace Rystem.OpenAi.Test
             Assert.True(results.Last().Choices.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices), c => c.Message == null || c.Message?.Role == ChatRole.Assistant);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithStreamAndCalculateCostAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var biasDictionary = new Dictionary<string, int>
+            {
+                { "Keystone", 1 },
+                { "Keystone3", 4 }
+            };
+            var results = new List<ChatResult>();
+            await foreach (var x in openAiApi.Chat
+                .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
+                .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
+                .WithModel(ChatModelType.Gpt35Turbo0301)
+                .WithTemperature(1)
+                .ExecuteAsStreamAndCalculateCostAsync())
+            {
+                results.Add(x.Result);
+            }
+
+            Assert.NotEmpty(results);
+            Assert.True(results.Last().Choices.Count != 0);
+            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Message == null || c.Message?.Role == ChatRole.Assistant);
+        }
     }
 }
