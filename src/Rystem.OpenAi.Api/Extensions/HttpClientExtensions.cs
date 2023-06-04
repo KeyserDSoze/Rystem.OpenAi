@@ -118,6 +118,7 @@ namespace Rystem.OpenAi
             using var reader = new StreamReader(stream);
             string line;
             var buffer = new StringBuilder();
+            var curlyCounter = 0;
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (line.StartsWith(StartingWith))
@@ -132,7 +133,11 @@ namespace Rystem.OpenAi
                     buffer.AppendLine(line);
                     try
                     {
-                        if (line.EndsWith('}') || line.EndsWith(']'))
+                        if (line.Equals("{"))
+                            curlyCounter++;
+                        if (line.Equals("}"))
+                            curlyCounter--;
+                        if (curlyCounter == 0)
                         {
                             var bufferAsString = buffer.ToString();
                             chunkResponse = JsonSerializer.Deserialize<TResponse>(bufferAsString);

@@ -117,5 +117,28 @@ namespace Rystem.OpenAi.Test
                 }
             }
         }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure2")]
+        public async ValueTask GetTunesAsStreamAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            var allFineTunes = await openAiApi.FineTune.ListAsync();
+            var inExecutionOrExecuted = allFineTunes.Runnings.ToList();
+            inExecutionOrExecuted.AddRange(allFineTunes.Succeeded);
+            inExecutionOrExecuted.AddRange(allFineTunes.Pendings);
+            Assert.NotEmpty(inExecutionOrExecuted);
+
+            foreach (var fineTune in inExecutionOrExecuted)
+            {
+                var fineTuneId = fineTune.Id;
+
+                var theEvents = new List<FineTuneEventsResult>();
+                await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
+                {
+                    theEvents.Add(theEvent);
+                }
+            }
+        }
     }
 }
