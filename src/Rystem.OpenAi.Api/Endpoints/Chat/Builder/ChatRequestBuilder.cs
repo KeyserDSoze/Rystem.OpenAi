@@ -67,7 +67,7 @@ namespace Rystem.OpenAi.Chat
             };
             var chatRole = ChatRole.Assistant;
             var index = -1;
-            await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, cancellationToken))
+            await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
             {
                 if (result?.Choices != null && result.Choices.Count > 0 && result.Choices[0].Delta != null)
                 {

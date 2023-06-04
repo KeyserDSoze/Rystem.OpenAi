@@ -72,7 +72,7 @@ namespace Rystem.OpenAi.Test
                 var events = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
                 Assert.NotNull(events);
 
-                var theEvents = new List<FineTuneEventsResult>();
+                var theEvents = new List<FineTuneEvent>();
                 await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
                 {
                     theEvents.Add(theEvent);
@@ -129,15 +129,23 @@ namespace Rystem.OpenAi.Test
             inExecutionOrExecuted.AddRange(allFineTunes.Pendings);
             Assert.NotEmpty(inExecutionOrExecuted);
 
-            foreach (var fineTune in inExecutionOrExecuted)
+            var fineTunes = new List<FineTuneResult>();
+            await foreach (var theEvent in openAiApi.FineTune.ListAsStreamAsync())
+            {
+                fineTunes.Add(theEvent);
+            }
+
+            foreach (var fineTune in fineTunes)
             {
                 var fineTuneId = fineTune.Id;
 
-                var theEvents = new List<FineTuneEventsResult>();
+                var actualEvents = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
+                var theEvents = new List<FineTuneEvent>();
                 await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
                 {
                     theEvents.Add(theEvent);
                 }
+                Assert.Equal(actualEvents.Data.Count, theEvents.Count);
             }
         }
     }

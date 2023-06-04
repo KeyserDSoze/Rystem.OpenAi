@@ -85,7 +85,7 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Chat);
             var results = new List<ChatResult>();
-            ChatResult? check = null;
+            ChatResult check = null;
             var cost = 0M;
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })

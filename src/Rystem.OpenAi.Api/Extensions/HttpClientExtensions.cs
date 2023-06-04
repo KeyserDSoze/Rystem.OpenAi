@@ -102,61 +102,46 @@ namespace Rystem.OpenAi
             var responseAsString = await response.Content.ReadAsStringAsync();
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
-        private const string StartingWith = "data: ";
-        private const string Done = "[DONE]";
         internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClient client,
             string url,
             object? message,
             HttpMethod httpMethod,
             OpenAiConfiguration configuration,
+            Func<Stream, HttpResponseMessage, CancellationToken, IAsyncEnumerable<TResponse>>? streamReader,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync();
+            var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
+            await foreach (var item in items)
+                yield return item!;
+        }
+        private static async IAsyncEnumerable<TResponse> DefaultStreamReader<TResponse>(Stream stream, HttpResponseMessage response, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
             using var reader = new StreamReader(stream);
             string line;
-            var buffer = new StringBuilder();
-            var curlyCounter = 0;
             while ((line = await reader.ReadLineAsync()) != null)
             {
-                if (line.StartsWith(StartingWith))
-                    line = line[StartingWith.Length..];
-                if (line == Done)
+                cancellationToken
+                    .ThrowIfCancellationRequested();
+                if (line.StartsWith(Constants.StartingWith))
+                    line = line[Constants.StartingWith.Length..];
+                if (line == Constants.Done)
                 {
                     yield break;
                 }
                 else if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var chunkResponse = default(TResponse);
-                    buffer.AppendLine(line);
-                    try
-                    {
-                        if (line.Equals("{"))
-                            curlyCounter++;
-                        if (line.Equals("}"))
-                            curlyCounter--;
-                        if (curlyCounter == 0)
-                        {
-                            var bufferAsString = buffer.ToString();
-                            chunkResponse = JsonSerializer.Deserialize<TResponse>(bufferAsString);
-                            if (chunkResponse is ApiBaseResponse apiResult)
-                                apiResult.SetHeaders(response);
-                            buffer.Clear();
-                        }
-                    }
-                    catch
-                    {
-                        //not useful 
-                    }
-                    if (chunkResponse != null)
-                        yield return chunkResponse!;
-
+                    var res = JsonSerializer.Deserialize<TResponse>(line);
+                    if (res is ApiBaseResponse apiResult)
+                        apiResult.SetHeaders(response);
+                    yield return res!;
                 }
             }
         }
-        private static void SetHeaders<TResponse>(this TResponse result, HttpResponseMessage response)
+        internal static void SetHeaders<TResponse>(this TResponse result, HttpResponseMessage response)
             where TResponse : ApiBaseResponse
         {
             try

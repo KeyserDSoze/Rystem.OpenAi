@@ -19,10 +19,11 @@ namespace Rystem.OpenAi.FineTune
         /// <returns>Builder</returns>
         FineTuneRequestBuilder Create(string trainingFileId);
         ValueTask<FineTuneResults> ListAsync(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(CancellationToken cancellationToken = default);
         ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default);
         ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default);
         ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, CancellationToken cancellationToken = default);
-        IAsyncEnumerable<FineTuneEventsResult> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default);
         ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
 }
