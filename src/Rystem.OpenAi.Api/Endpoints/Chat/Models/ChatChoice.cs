@@ -13,6 +13,11 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("message")]
         public ChatMessage? Message { get; set; }
         /// <summary>
+        /// A part of a message.
+        /// </summary>
+        [JsonPropertyName("delta")]
+        public ChatMessage? Delta { get; set; }
+        /// <summary>
         /// If multiple completion choices we returned, this is the index withing the various choices
         /// </summary>
         [JsonPropertyName("index")]
