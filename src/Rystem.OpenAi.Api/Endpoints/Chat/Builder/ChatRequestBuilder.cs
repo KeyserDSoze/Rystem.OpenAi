@@ -63,7 +63,7 @@ namespace Rystem.OpenAi.Chat
                         PromptTokens = 0
                     }
                 },
-                Current = null!,
+                Chunk = null!,
             };
             var chatRole = ChatRole.Assistant;
             var index = -1;
@@ -80,7 +80,7 @@ namespace Rystem.OpenAi.Chat
                     }
                     else
                         result.Choices[0].Delta!.Role = chatRole;
-                    results.Current = result;
+                    results.Chunk = result;
                     results.Composed.Choices.Last().Message ??= new ChatMessage { Role = chatRole, Content = string.Empty };
                     if (result.Choices[0].Delta?.Content != null)
                     {

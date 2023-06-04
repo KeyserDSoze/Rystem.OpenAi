@@ -4,8 +4,8 @@ namespace Rystem.OpenAi.Chat
 {
     public sealed class StreamingChatResult
     {
-        [JsonPropertyName("current")]
-        public ChatResult Current { get; set; } = null!;
+        [JsonPropertyName("chunk")]
+        public ChatResult Chunk { get; set; } = null!;
         [JsonPropertyName("composed")]
         public ChatResult Composed { get; set; } = null!;
     }

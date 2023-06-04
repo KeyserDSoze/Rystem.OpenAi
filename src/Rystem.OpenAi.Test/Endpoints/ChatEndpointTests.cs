@@ -70,7 +70,7 @@ namespace Rystem.OpenAi.Test
                    .WithBias(biasDictionary)
                    .WithUser("KeyserDSoze")
                 .ExecuteAsStreamAsync())
-                results.Add(x.Current);
+                results.Add(x.Chunk);
 
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
@@ -94,7 +94,7 @@ namespace Rystem.OpenAi.Test
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAndCalculateCostAsync())
             {
-                results.Add(x.Result.Current);
+                results.Add(x.Result.Chunk);
                 check = x.Result.Composed;
                 var cost = x.CalculateCost();
             }
