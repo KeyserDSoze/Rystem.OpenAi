@@ -14,7 +14,7 @@ namespace Rystem.OpenAi.FineTune
         public string? Message { get; set; }
     }
 
-    {
+    //{
 //  "data": [
 //    {
 //      "hyperparams": {
