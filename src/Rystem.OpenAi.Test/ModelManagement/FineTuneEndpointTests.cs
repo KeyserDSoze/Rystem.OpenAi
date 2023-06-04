@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Rystem.OpenAi.FineTune;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -69,6 +71,12 @@ namespace Rystem.OpenAi.Test
 
                 var events = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
                 Assert.NotNull(events);
+
+                var theEvents = new List<FineTuneEventsResult>();
+                await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
+                {
+                    theEvents.Add(theEvent);
+                }
 
                 var cancelResult = await openAiApi.FineTune.CancelAsync(fineTuneId);
                 Assert.NotNull(cancelResult);

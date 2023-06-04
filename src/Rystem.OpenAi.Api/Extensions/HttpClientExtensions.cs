@@ -139,11 +139,21 @@ namespace Rystem.OpenAi
         {
             try
             {
-                result.Organization = response.Headers.GetValues("Openai-Organization").FirstOrDefault();
-                result.RequestId = response.Headers.GetValues("X-Request-ID").FirstOrDefault();
-                result.ProcessingTime = TimeSpan.FromMilliseconds(int.Parse(response.Headers.GetValues("Openai-Processing-Ms").First()));
-                result.OpenaiVersion = response.Headers.GetValues("Openai-Version").FirstOrDefault();
-                result.ModelId = response.Headers.GetValues("Openai-Model").FirstOrDefault();
+                response.Headers.TryGetValues("Openai-Organization", out var organizations);
+                if (organizations?.Any() == true)
+                    result.Organization = organizations.First();
+                response.Headers.TryGetValues("X-Request-ID", out var requestIds);
+                if (requestIds?.Any() == true)
+                    result.RequestId = requestIds.First();
+                response.Headers.TryGetValues("Openai-Processing-Ms", out var processings);
+                if (processings?.Any() == true)
+                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processings.First()));
+                response.Headers.TryGetValues("Openai-Version", out var versions);
+                if (versions?.Any() == true)
+                    result.OpenaiVersion = versions.First();
+                response.Headers.TryGetValues("Openai-Model", out var models);
+                if (models?.Any() == true)
+                    result.ModelId = models.First();
             }
             catch (Exception e)
             {
