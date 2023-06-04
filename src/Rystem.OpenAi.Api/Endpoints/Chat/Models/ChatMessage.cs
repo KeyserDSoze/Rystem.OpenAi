@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
@@ -15,5 +16,15 @@ namespace Rystem.OpenAi.Chat
         }
         [JsonPropertyName("content")]
         public string? Content { get; set; }
+        private StringBuilder? _content;
+        internal void AddContent(string? content)
+        {
+            if (content == null)
+                return;
+            _content ??= new StringBuilder();
+            _content.Append(content);
+        }
+        internal void BuildContent()
+            => Content = _content?.ToString() ?? string.Empty;
     }
 }

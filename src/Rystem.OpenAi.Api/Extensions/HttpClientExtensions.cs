@@ -117,6 +117,7 @@ namespace Rystem.OpenAi
             using var stream = await response.Content.ReadAsStreamAsync();
             using var reader = new StreamReader(stream);
             string line;
+            var buffer = new StringBuilder();
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (line.StartsWith(StartingWith))
@@ -127,10 +128,26 @@ namespace Rystem.OpenAi
                 }
                 else if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var res = JsonSerializer.Deserialize<TResponse>(line);
-                    if (res is ApiBaseResponse apiResult)
-                        apiResult.SetHeaders(response);
-                    yield return res!;
+                    var chunkResponse = default(TResponse);
+                    buffer.AppendLine(line);
+                    try
+                    {
+                        if (line.EndsWith('}') || line.EndsWith(']'))
+                        {
+                            var bufferAsString = buffer.ToString();
+                            chunkResponse = JsonSerializer.Deserialize<TResponse>(bufferAsString);
+                            if (chunkResponse is ApiBaseResponse apiResult)
+                                apiResult.SetHeaders(response);
+                            buffer.Clear();
+                        }
+                    }
+                    catch
+                    {
+                        //not useful 
+                    }
+                    if (chunkResponse != null)
+                        yield return chunkResponse!;
+
                 }
             }
         }

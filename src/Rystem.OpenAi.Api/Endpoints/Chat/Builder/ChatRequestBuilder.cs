@@ -48,7 +48,7 @@ namespace Rystem.OpenAi.Chat
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
         /// <returns>ChatResult</returns>
-        public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
             var results = new StreamingChatResult
@@ -63,7 +63,7 @@ namespace Rystem.OpenAi.Chat
                         PromptTokens = 0
                     }
                 },
-                Chunk = null!,
+                Chunks = new List<ChatResult>()
             };
             var chatRole = ChatRole.Assistant;
             var index = -1;
@@ -76,20 +76,30 @@ namespace Rystem.OpenAi.Chat
                     {
                         chatRole = result.Choices[0].Delta!.Role;
                         index = currentIndex;
+                        BuildLastMessage();
                         results.Composed.Choices.Add(result.Choices[0]);
                     }
                     else
                         result.Choices[0].Delta!.Role = chatRole;
-                    results.Chunk = result;
+                    results.Chunks.Add(result);
                     results.Composed.Choices.Last().Message ??= new ChatMessage { Role = chatRole, Content = string.Empty };
                     if (result.Choices[0].Delta?.Content != null)
                     {
-                        results!.Composed!.Choices!.Last().Message!.Content += result.Choices[0].Delta!.Content;
+                        var lastMessage = results!.Composed!.Choices!.Last().Message!;
+                        lastMessage
+                            .AddContent(result.Choices[0].Delta!.Content);
                         results.Composed.Usage.TotalTokens += 1;
                         results.Composed.Usage.CompletionTokens += 1;
                     }
                     yield return results;
                 }
+            }
+            BuildLastMessage();
+
+            void BuildLastMessage()
+            {
+                var lastMessage = results?.Composed?.Choices?.LastOrDefault()?.Message;
+                lastMessage?.BuildContent();
             }
         }
         /// <summary>

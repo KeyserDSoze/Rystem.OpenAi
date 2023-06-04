@@ -70,7 +70,7 @@ namespace Rystem.OpenAi.Test
                    .WithBias(biasDictionary)
                    .WithUser("KeyserDSoze")
                 .ExecuteAsStreamAsync())
-                results.Add(x.Chunk);
+                results.Add(x.LastChunk);
 
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
@@ -86,6 +86,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = new List<ChatResult>();
             ChatResult? check = null;
+            var cost = 0M;
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
@@ -94,11 +95,12 @@ namespace Rystem.OpenAi.Test
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAndCalculateCostAsync())
             {
-                results.Add(x.Result.Chunk);
+                results.Add(x.Result.LastChunk);
                 check = x.Result.Composed;
-                var cost = x.CalculateCost();
+                cost += x.CalculateCost();
             }
-
+            Assert.True(cost > 0);
+            Assert.NotNull(check.Choices.Last().Message.Content);
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
