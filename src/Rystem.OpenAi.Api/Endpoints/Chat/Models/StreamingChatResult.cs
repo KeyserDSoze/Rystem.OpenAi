@@ -1,11 +1,15 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
 {
     public sealed class StreamingChatResult
     {
-        [JsonPropertyName("chunk")]
-        public ChatResult Chunk { get; set; } = null!;
+        [JsonPropertyName("chunks")]
+        public List<ChatResult> Chunks { get; set; } = null!;
+        [JsonPropertyName("lastChunk")]
+        public ChatResult LastChunk => Chunks.LastOrDefault();
         [JsonPropertyName("composed")]
         public ChatResult Composed { get; set; } = null!;
     }

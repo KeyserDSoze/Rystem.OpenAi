@@ -13,5 +13,4 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("message")]
         public string? Message { get; set; }
     }
-
 }

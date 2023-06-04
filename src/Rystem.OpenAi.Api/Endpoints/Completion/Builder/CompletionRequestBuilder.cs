@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Rystem.OpenAi.Completion
 {
@@ -53,7 +56,10 @@ namespace Rystem.OpenAi.Completion
         {
             Request.Stream = true;
             Request.BestOf = null;
-            return Client.StreamAsync<CompletionResult>(Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, cancellationToken);
+            return Client.StreamAsync<CompletionResult>(
+                Configuration.GetUri(OpenAiType.Completion, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration,
+                null,
+                cancellationToken);
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
