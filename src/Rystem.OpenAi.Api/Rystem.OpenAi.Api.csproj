@@ -18,7 +18,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/KeyserDSoze/Rystem.OpenAi</RepositoryUrl>
 		<PackageId>Rystem.OpenAi</PackageId>
-		<Version>3.0.7</Version>
+		<Version>3.1.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<UserSecretsId>f8af9352-bb0e-40fc-a4e9-9b584f95729f</UserSecretsId>
