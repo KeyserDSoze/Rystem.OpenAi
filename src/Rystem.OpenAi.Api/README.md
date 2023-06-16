@@ -107,14 +107,14 @@ You may install with Dependency Injection one or more than on integrations at th
 
 ### Add to service collection the OpenAi service in your DI with Azure integration
 When you want to use the integration with Azure, you need to specify all the models you're going to use. In the example you may find the model name for DavinciText3.
-You still may add a custom model, with AddDeploymentCustomModel.
+You still may add a custom model, with MapDeploymentCustomModel.
 
     builder.Services.AddOpenAi(settings =>
     {
         settings.ApiKey = apiKey;
         settings.Azure.ResourceName = "AzureResourceName (Name of your deployed service on Azure)";
         settings.Azure
-            .AddDeploymentTextModel("Test (The name from column 'Model deployment name' in Model deployments blade in your Azure service)", TextModelType.DavinciText3);
+            .MapDeploymentTextModel("Test (The name from column 'Model deployment name' in Model deployments blade in your Azure service)", TextModelType.DavinciText3);
     });
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and app registration
@@ -131,9 +131,9 @@ See how to create an app registration [here](https://learn.microsoft.com/en-us/a
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
         settings.Azure
-            .AddDeploymentTextModel("Test", TextModelType.CurieText)
-            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+            .MapDeploymentTextModel("Test", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and system assigned managed identity
@@ -146,9 +146,9 @@ See how to create a managed identity [here](https://learn.microsoft.com/en-us/az
         settings.Azure.ResourceName = resourceName;
         settings.Azure.ManagedIdentity.UseDefault = true;
         settings.Azure
-            .AddDeploymentTextModel("Test", TextModelType.CurieText)
-            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+            .MapDeploymentTextModel("Test", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and user assigned managed identity
@@ -162,9 +162,9 @@ See how to create a managed identity [here](https://learn.microsoft.com/en-us/az
         settings.Azure.ResourceName = resourceName;
         settings.Azure.ManagedIdentity.Id = managedIdentityId;
         settings.Azure
-            .AddDeploymentTextModel("Test", TextModelType.CurieText)
-            .AddDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .AddDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
+            .MapDeploymentTextModel("Test", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
+            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
 
 ## Use different version
@@ -206,10 +206,10 @@ In the next example we have two different configurations, one with OpenAi and a 
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
         settings.Azure
-            .AddDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-            .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-            .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-            .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
     }, "Azure");
 
 I can retrieve the integration with IOpenAiFactory interface and the name of the integration.
@@ -643,10 +643,10 @@ During setup of your OpenAi service you may add your custom price table with set
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
         settings.Azure
-            .AddDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-            .AddDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-            .AddDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-            .AddDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
+            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
+            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
+            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
         settings.Price
             .SetFineTuneForAda(0.2M, 0.2M)
             .SetAudioForTranslation(0.2M);
