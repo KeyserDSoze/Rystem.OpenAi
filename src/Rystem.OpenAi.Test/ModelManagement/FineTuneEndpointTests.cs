@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Rystem.OpenAi.FineTune;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -16,7 +18,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        //[InlineData("Azure2")]
+        [InlineData("Azure2")]
         public async ValueTask AllFlowAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
@@ -70,6 +72,12 @@ namespace Rystem.OpenAi.Test
                 var events = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
                 Assert.NotNull(events);
 
+                var theEvents = new List<FineTuneEvent>();
+                await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
+                {
+                    theEvents.Add(theEvent);
+                }
+
                 var cancelResult = await openAiApi.FineTune.CancelAsync(fineTuneId);
                 Assert.NotNull(cancelResult);
 
@@ -107,6 +115,37 @@ namespace Rystem.OpenAi.Test
                     if (name == "")
                         Assert.StartsWith("No such File object:", ex.Message);
                 }
+            }
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure2")]
+        public async ValueTask GetTunesAsStreamAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            var allFineTunes = await openAiApi.FineTune.ListAsync();
+            var inExecutionOrExecuted = allFineTunes.Runnings.ToList();
+            inExecutionOrExecuted.AddRange(allFineTunes.Succeeded);
+            inExecutionOrExecuted.AddRange(allFineTunes.Pendings);
+            Assert.NotEmpty(inExecutionOrExecuted);
+
+            var fineTunes = new List<FineTuneResult>();
+            await foreach (var theEvent in openAiApi.FineTune.ListAsStreamAsync())
+            {
+                fineTunes.Add(theEvent);
+            }
+
+            foreach (var fineTune in fineTunes)
+            {
+                var fineTuneId = fineTune.Id;
+
+                var actualEvents = await openAiApi.FineTune.ListEventsAsync(fineTuneId);
+                var theEvents = new List<FineTuneEvent>();
+                await foreach (var theEvent in openAiApi.FineTune.ListEventsAsStreamAsync(fineTuneId))
+                {
+                    theEvents.Add(theEvent);
+                }
+                Assert.Equal(actualEvents.Data.Count, theEvents.Count);
             }
         }
     }

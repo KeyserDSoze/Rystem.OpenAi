@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
 using Xunit;
@@ -69,7 +70,7 @@ namespace Rystem.OpenAi.Test
                    .WithBias(biasDictionary)
                    .WithUser("KeyserDSoze")
                 .ExecuteAsStreamAsync())
-                results.Add(x);
+                results.Add(x.LastChunk);
 
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
@@ -83,25 +84,26 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Chat);
-            var biasDictionary = new Dictionary<string, int>
-            {
-                { "Keystone", 1 },
-                { "Keystone3", 4 }
-            };
             var results = new List<ChatResult>();
+            ChatResult check = null;
+            var cost = 0M;
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelType.Gpt35Turbo0301)
                 .WithTemperature(1)
+                .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAndCalculateCostAsync())
             {
-                results.Add(x.Result);
+                results.Add(x.Result.LastChunk);
+                check = x.Result.Composed;
+                cost += x.CalculateCost();
             }
-
+            Assert.True(cost > 0);
+            Assert.NotNull(check.Choices.Last().Message.Content);
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
-            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Message == null || c.Message?.Role == ChatRole.Assistant);
+            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
         }
     }
 }

@@ -11,6 +11,6 @@ namespace Rystem.OpenAi
         /// How many tokens are in the completion(s)
         /// </summary>
         [JsonPropertyName("completion_tokens")]
-        public short? CompletionTokens { get; set; }
+        public int? CompletionTokens { get; set; }
     }
 }

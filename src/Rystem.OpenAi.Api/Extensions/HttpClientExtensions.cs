@@ -102,26 +102,33 @@ namespace Rystem.OpenAi
             var responseAsString = await response.Content.ReadAsStringAsync();
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
-        private const string StartingWith = "data: ";
-        private const string Done = "[DONE]";
         internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClient client,
             string url,
             object? message,
             HttpMethod httpMethod,
             OpenAiConfiguration configuration,
+            Func<Stream, HttpResponseMessage, CancellationToken, IAsyncEnumerable<TResponse>>? streamReader,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync();
+            var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
+            await foreach (var item in items)
+                yield return item!;
+        }
+        private static async IAsyncEnumerable<TResponse> DefaultStreamReader<TResponse>(Stream stream, HttpResponseMessage response, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
             using var reader = new StreamReader(stream);
             string line;
             while ((line = await reader.ReadLineAsync()) != null)
             {
-                if (line.StartsWith(StartingWith))
-                    line = line[StartingWith.Length..];
-                if (line == Done)
+                cancellationToken
+                    .ThrowIfCancellationRequested();
+                if (line.StartsWith(Constants.StartingWith))
+                    line = line[Constants.StartingWith.Length..];
+                if (line == Constants.Done)
                 {
                     yield break;
                 }
@@ -134,16 +141,26 @@ namespace Rystem.OpenAi
                 }
             }
         }
-        private static void SetHeaders<TResponse>(this TResponse result, HttpResponseMessage response)
+        internal static void SetHeaders<TResponse>(this TResponse result, HttpResponseMessage response)
             where TResponse : ApiBaseResponse
         {
             try
             {
-                result.Organization = response.Headers.GetValues("Openai-Organization").FirstOrDefault();
-                result.RequestId = response.Headers.GetValues("X-Request-ID").FirstOrDefault();
-                result.ProcessingTime = TimeSpan.FromMilliseconds(int.Parse(response.Headers.GetValues("Openai-Processing-Ms").First()));
-                result.OpenaiVersion = response.Headers.GetValues("Openai-Version").FirstOrDefault();
-                result.ModelId = response.Headers.GetValues("Openai-Model").FirstOrDefault();
+                response.Headers.TryGetValues("Openai-Organization", out var organizations);
+                if (organizations?.Any() == true)
+                    result.Organization = organizations.First();
+                response.Headers.TryGetValues("X-Request-ID", out var requestIds);
+                if (requestIds?.Any() == true)
+                    result.RequestId = requestIds.First();
+                response.Headers.TryGetValues("Openai-Processing-Ms", out var processings);
+                if (processings?.Any() == true)
+                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processings.First()));
+                response.Headers.TryGetValues("Openai-Version", out var versions);
+                if (versions?.Any() == true)
+                    result.OpenaiVersion = versions.First();
+                response.Headers.TryGetValues("Openai-Model", out var models);
+                if (models?.Any() == true)
+                    result.ModelId = models.First();
             }
             catch (Exception e)
             {

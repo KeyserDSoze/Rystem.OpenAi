@@ -8,5 +8,4 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("data")]
         public List<FineTuneEvent>? Data { get; set; }
     }
-
 }

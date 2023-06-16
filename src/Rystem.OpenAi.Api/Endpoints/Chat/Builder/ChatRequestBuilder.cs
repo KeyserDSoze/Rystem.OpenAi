@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -47,21 +48,70 @@ namespace Rystem.OpenAi.Chat
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
         /// <returns>ChatResult</returns>
-        public IAsyncEnumerable<ChatResult> ExecuteAsStreamAsync(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
-            return Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, cancellationToken);
+            var results = new StreamingChatResult
+            {
+                Composed = new ChatResult
+                {
+                    Choices = new List<ChatChoice>(),
+                    Usage = new CompletionUsage()
+                    {
+                        CompletionTokens = 0,
+                        TotalTokens = 0,
+                        PromptTokens = 0
+                    }
+                },
+                Chunks = new List<ChatResult>()
+            };
+            var chatRole = ChatRole.Assistant;
+            var index = -1;
+            await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
+            {
+                if (result?.Choices != null && result.Choices.Count > 0 && result.Choices[0].Delta != null)
+                {
+                    var currentIndex = result.Choices[0].Index;
+                    if (index != currentIndex)
+                    {
+                        chatRole = result.Choices[0].Delta!.Role;
+                        index = currentIndex;
+                        BuildLastMessage();
+                        results.Composed.Choices.Add(result.Choices[0]);
+                    }
+                    else
+                        result.Choices[0].Delta!.Role = chatRole;
+                    results.Chunks.Add(result);
+                    results.Composed.Choices.Last().Message ??= new ChatMessage { Role = chatRole, Content = string.Empty };
+                    if (result.Choices[0].Delta?.Content != null)
+                    {
+                        var lastMessage = results!.Composed!.Choices!.Last().Message!;
+                        lastMessage
+                            .AddContent(result.Choices[0].Delta!.Content);
+                        results.Composed.Usage.TotalTokens += 1;
+                        results.Composed.Usage.CompletionTokens += 1;
+                    }
+                    yield return results;
+                }
+            }
+            BuildLastMessage();
+
+            void BuildLastMessage()
+            {
+                var lastMessage = results?.Composed?.Choices?.LastOrDefault()?.Message;
+                lastMessage?.BuildContent();
+            }
         }
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
         /// <returns>CostResult<ChatResult></returns>
-        public async IAsyncEnumerable<CostResult<ChatResult>> ExecuteAsStreamAndCalculateCostAsync(
+        public async IAsyncEnumerable<CostResult<StreamingChatResult>> ExecuteAsStreamAndCalculateCostAsync(
            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (var response in ExecuteAsStreamAsync(cancellationToken))
             {
-                yield return new CostResult<ChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.Usage));
+                yield return new CostResult<StreamingChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.Composed?.Usage));
             }
         }
         /// <summary>
