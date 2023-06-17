@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Rystem.OpenAi;
@@ -104,6 +106,71 @@ namespace Rystem.OpenAi.Test
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithFunctionsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithFunction(new ChatFunction
+                {
+                    Name = functionName,
+                    Description = "Get the current weather in a given location",
+                    Parameters = new ChatFunctionParameters
+                    {
+                        Type = "object",
+                        Properties = new Dictionary<string, ChatFunctionProperty>
+                        {
+                            {
+                                "location",
+                                new ChatFunctionProperty
+                                {
+                                    Type= "string",
+                                    Description = "The city and state, e.g. San Francisco, CA"
+                                }
+                            },
+                            {
+                                "unit",
+                                new ChatFunctionProperty
+                                {
+                                    Type= "string",
+                                    Enums = new List<string>{ "celsius", "fahrenheit" }
+                                }
+                            }
+                        },
+                        Required = new List<string> { "location" }
+                    }
+                });
+            var response = await request
+                .ExecuteAndCalculateCostAsync();
+
+            var function = response.Result.Choices[0].Message.Function;
+            Assert.NotNull(function);
+            Assert.Equal(function.Name, functionName);
+            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+            Assert.NotNull(weatherRequest?.Location);
+
+            request
+                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            response = await request
+                .ExecuteAndCalculateCostAsync();
+
+            var content = response.Result.Choices[0].Message.Content;
+            Assert.NotNull(content);
+
+        }
+        private sealed class WeatherRequest
+        {
+            [JsonPropertyName("location")]
+            public string Location { get; set; }
+            [JsonPropertyName("unit")]
+            public string Unit { get; set; }
         }
     }
 }

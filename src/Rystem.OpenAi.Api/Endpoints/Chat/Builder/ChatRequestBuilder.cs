@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -154,6 +156,13 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder AddAssistantMessage(string content)
             => AddMessage(new ChatMessage { Content = content, Role = ChatRole.Assistant });
+        /// <summary>
+        /// Function message is the response from external api, you need to set this message after a function is requested to call by Open Ai.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddFunctionMessage(string name, string content)
+            => AddMessage(new ChatMessage { Name = name, Content = content, Role = ChatRole.Function });
         /// <summary>
         /// ID of the model to use.
         /// </summary>
@@ -347,6 +356,18 @@ namespace Rystem.OpenAi.Chat
             {
                 PromptTokens = promptTokens
             });
+        }
+        /// <summary>
+        /// Developers can describe functions to gpt-4-snapshot and gpt-3.5-turbo-snapshot, and have the model intelligently choose to output a JSON object containing arguments to call those functions. This is a new way to more reliably connect GPT's capabilities with external tools and APIs.
+        /// These models have been fine-tuned to both detect when a function needs to be called(depending on the user’s input) and to respond with JSON that adheres to the function signature.Function calling allows developers to more reliably get structured data back from the model.
+        /// </summary>
+        /// <param name="chatFunction"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder WithFunction(ChatFunction chatFunction)
+        {
+            Request.Functions ??= new List<ChatFunction>();
+            Request.Functions.Add(chatFunction);
+            return this;
         }
     }
 }
