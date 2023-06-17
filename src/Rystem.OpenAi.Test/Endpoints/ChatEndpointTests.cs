@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo0301)
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithTemperature(1)
                 .ExecuteAsync();
 
@@ -56,7 +56,7 @@ namespace Rystem.OpenAi.Test
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel("testModel", ModelFamilyType.Gpt3_5)
-                .WithModel(ChatModelType.Gpt35Turbo0301)
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithTemperature(1)
                 .WithStopSequence("alekud")
                 .AddStopSequence("coltello")
@@ -90,7 +90,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo0301)
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithTemperature(1)
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAndCalculateCostAsync())

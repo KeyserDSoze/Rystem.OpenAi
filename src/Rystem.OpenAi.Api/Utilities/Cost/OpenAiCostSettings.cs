@@ -11,7 +11,9 @@ namespace Rystem.OpenAi
             SetGpt4With8KPrice();
             SetGpt4With32KPrice();
             SetGpt3_5();
+            SetGpt3_5_16K();
             SetAda();
+            SetAdaEmbeddings();
             SetBabbage();
             SetCurie();
             SetDavinci();
@@ -56,11 +58,20 @@ namespace Rystem.OpenAi
                     CompletionUsage = completion,
                 });
         }
-        public OpenAiPriceSettings SetGpt3_5(decimal usage = 0.002M)
+        public OpenAiPriceSettings SetGpt3_5(decimal usage = 0.0015M, decimal completion = 0.002M)
         {
             return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt3_5}", new CostFormula
             {
-                Usage = usage
+                Usage = usage,
+                CompletionUsage = completion
+            });
+        }
+        public OpenAiPriceSettings SetGpt3_5_16K(decimal usage = 0.003M, decimal completion = 0.004M)
+        {
+            return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt3_5_16K}", new CostFormula
+            {
+                Usage = usage,
+                CompletionUsage = completion
             });
         }
         public OpenAiPriceSettings SetAda(decimal usage = 0.0004M)
@@ -71,8 +82,15 @@ namespace Rystem.OpenAi
             };
             return
                 Set($"{OpenAiType.Edit}_{ModelFamilyType.Ada}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula)
-                .Set($"{OpenAiType.Embedding}_{ModelFamilyType.Ada}", formula);
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula);
+        }
+        public OpenAiPriceSettings SetAdaEmbeddings(decimal usage = 0.0001M)
+        {
+            var formula = new CostFormula
+            {
+                Usage = usage
+            };
+            return Set($"{OpenAiType.Embedding}_{ModelFamilyType.Ada}", formula);
         }
         public OpenAiPriceSettings SetBabbage(decimal usage = 0.0005M)
         {

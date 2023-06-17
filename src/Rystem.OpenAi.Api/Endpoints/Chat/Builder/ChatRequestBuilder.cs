@@ -19,12 +19,12 @@ namespace Rystem.OpenAi.Chat
                 return new ChatRequest()
                 {
                     Messages = new List<ChatMessage>() { message },
-                    ModelId = ChatModelType.Gpt35Turbo0301.ToModel().Id
+                    ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel().Id
                 };
             }, utility)
         {
             _familyType = ModelFamilyType.Gpt3_5;
-            _modelType = ChatModelType.Gpt35Turbo0301;
+            _modelType = ChatModelType.Gpt35Turbo_Snapshot;
         }
         /// <summary>
         /// Execute operation.
