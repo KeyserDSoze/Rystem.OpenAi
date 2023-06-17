@@ -47,7 +47,7 @@
                 TextModelType.DavinciText3 => ModelFamilyType.Davinci,
                 TextModelType.DavinciText2 => ModelFamilyType.Davinci,
                 TextModelType.DavinciCode => ModelFamilyType.Davinci,
-                TextModelType.CushmanCode => ModelFamilyType.Ada,
+                TextModelType.CushmanCode => ModelFamilyType.Cushman,
                 TextModelType.Gpt35Turbo => ModelFamilyType.Gpt3_5,
                 TextModelType.Gpt35Turbo_16K => ModelFamilyType.Gpt3_5_16K,
                 TextModelType.Gpt35Turbo_Snapshot => ModelFamilyType.Gpt3_5,

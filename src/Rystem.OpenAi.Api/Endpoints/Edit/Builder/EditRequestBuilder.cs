@@ -45,6 +45,7 @@ namespace Rystem.OpenAi.Edit
         public EditRequestBuilder WithModel(EditModelType model)
         {
             Request.ModelId = model.ToModel().Id;
+            _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
             return this;

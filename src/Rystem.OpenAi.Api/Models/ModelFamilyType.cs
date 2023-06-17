@@ -9,6 +9,7 @@
         Ada,
         Babbage,
         Curie,
+        Cushman,
         Davinci,
         Moderation,
         Image,
