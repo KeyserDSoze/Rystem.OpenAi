@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -19,12 +21,12 @@ namespace Rystem.OpenAi.Chat
                 return new ChatRequest()
                 {
                     Messages = new List<ChatMessage>() { message },
-                    ModelId = ChatModelType.Gpt35Turbo0301.ToModel().Id
+                    ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel().Id
                 };
             }, utility)
         {
             _familyType = ModelFamilyType.Gpt3_5;
-            _modelType = ChatModelType.Gpt35Turbo0301;
+            _modelType = ChatModelType.Gpt35Turbo_Snapshot;
         }
         /// <summary>
         /// Execute operation.
@@ -155,6 +157,13 @@ namespace Rystem.OpenAi.Chat
         public ChatRequestBuilder AddAssistantMessage(string content)
             => AddMessage(new ChatMessage { Content = content, Role = ChatRole.Assistant });
         /// <summary>
+        /// Function message is the response from external api, you need to set this message after a function is requested to call by Open Ai.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddFunctionMessage(string name, string content)
+            => AddMessage(new ChatMessage { Name = name, Content = content, Role = ChatRole.Function });
+        /// <summary>
         /// ID of the model to use.
         /// </summary>
         /// <param name="model">Model</param>
@@ -162,6 +171,7 @@ namespace Rystem.OpenAi.Chat
         public ChatRequestBuilder WithModel(ChatModelType model)
         {
             Request.ModelId = model.ToModel().Id;
+            _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
             return this;
@@ -300,6 +310,10 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithBias(string key, int value)
         {
+            if (value > 100)
+                throw new ArgumentException("Value of bias is greater than 100. Accepted values have range [-100, 100].");
+            if (value < -100)
+                throw new ArgumentException("Value of bias is lesser than -100. Accepted values have range [-100, 100].");
             Request.Bias ??= new Dictionary<string, int>();
             if (!Request.Bias.ContainsKey(key))
                 Request.Bias.Add(key, value);
@@ -347,6 +361,18 @@ namespace Rystem.OpenAi.Chat
             {
                 PromptTokens = promptTokens
             });
+        }
+        /// <summary>
+        /// Developers can describe functions to gpt-4-snapshot and gpt-3.5-turbo-snapshot, and have the model intelligently choose to output a JSON object containing arguments to call those functions. This is a new way to more reliably connect GPT's capabilities with external tools and APIs.
+        /// These models have been fine-tuned to both detect when a function needs to be called(depending on the user’s input) and to respond with JSON that adheres to the function signature.Function calling allows developers to more reliably get structured data back from the model.
+        /// </summary>
+        /// <param name="chatFunction"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder WithFunction(ChatFunction chatFunction)
+        {
+            Request.Functions ??= new List<ChatFunction>();
+            Request.Functions.Add(chatFunction);
+            return this;
         }
     }
 }

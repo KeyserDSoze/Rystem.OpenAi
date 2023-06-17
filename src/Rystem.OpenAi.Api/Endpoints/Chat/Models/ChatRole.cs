@@ -4,25 +4,24 @@
     {
         User,
         System,
-        Assistant
+        Assistant,
+        Function
     }
     public static class ChatRoleExtensions
     {
         private const string UserLabel = "user";
         private const string SystemLabel = "system";
         private const string AssistantLabel = "assistant";
+        private const string FunctionLabel = "function";
         public static string AsString(this ChatRole chatRole)
         {
-            switch (chatRole)
+            return chatRole switch
             {
-                case ChatRole.User:
-                    return UserLabel;
-                case ChatRole.Assistant:
-                    return AssistantLabel;
-                default:
-                case ChatRole.System:
-                    return SystemLabel;
-            }
+                ChatRole.User => UserLabel,
+                ChatRole.Assistant => AssistantLabel,
+                ChatRole.Function => FunctionLabel,
+                _ => SystemLabel,
+            };
         }
     }
 }

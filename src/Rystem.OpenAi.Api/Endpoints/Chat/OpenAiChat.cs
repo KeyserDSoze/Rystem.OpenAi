@@ -31,5 +31,12 @@ namespace Rystem.OpenAi.Chat
                 Content = message,
                 Role = ChatRole.Assistant
             }, Utility);
+        public ChatRequestBuilder RequestWithFunctionMessage(string name, string message)
+            => new ChatRequestBuilder(Client, _configuration, new ChatMessage
+            {
+                Name = name,
+                Content = message,
+                Role = ChatRole.Function
+            }, Utility);
     }
 }

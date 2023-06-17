@@ -11,7 +11,8 @@ namespace Rystem.OpenAi
         public string? ApiKey { get; set; }
         public string? OrganizationName { get; set; }
         public string? Version { get; set; }
-        public OpenAiAzureSettings Azure { get; } = new OpenAiAzureSettings();
+        private OpenAiAzureSettings? _azureSettings;
+        public OpenAiAzureSettings Azure => _azureSettings ??= new OpenAiAzureSettings(this);
         public OpenAiPriceSettings Price { get; } = new OpenAiPriceSettings();
         /// <summary>
         /// If you not set a retry policy, the dafault value is 3 retries every 0.5 seconds.

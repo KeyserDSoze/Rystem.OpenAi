@@ -4,6 +4,10 @@ namespace Rystem.OpenAi
 {
     public sealed class OpenAiAzureSettings
     {
+        internal OpenAiAzureSettings(OpenAiSettings openAiSettings)
+        {
+            openAiSettings.Price.SetAzureDefault();
+        }
         internal bool HasConfiguration => ResourceName != null;
         public string? ResourceName { get; set; }
         internal bool HasAnotherKindOfAuthentication => HasManagedIdentity || HasAppRegistration;

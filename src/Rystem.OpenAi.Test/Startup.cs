@@ -55,8 +55,8 @@ namespace Rystem.OpenAi.Test
                     .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
                     .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
                     .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-                    .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301)
-                    .MapDeploymentCustomModel("ada001", "text-ada-001");
+                    .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo)
+                    .MapDeploymentCustomModel("deployment-a074644e38f642658a73a3189f64bc1b", "text-ada-001");
                 settings.Price
                     .SetFineTuneForAda(0.0004M, 0.0016M)
                     .SetAudioForTranslation(0.006M);
@@ -87,7 +87,7 @@ namespace Rystem.OpenAi.Test
                         .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
                         .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
                         .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-                        .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301)
+                        .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo)
                         .MapDeploymentCustomModel("ada001", "text-ada-001");
                     settings.Price
                         .SetFineTuneForAda(0.0004M, 0.0016M)

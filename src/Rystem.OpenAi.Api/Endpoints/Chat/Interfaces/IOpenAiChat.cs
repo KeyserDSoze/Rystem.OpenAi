@@ -26,5 +26,12 @@
         /// <param name="message">The messages to generate chat completions for, in the chat format.</param>
         /// <returns>Builder</returns>
         ChatRequestBuilder RequestWithAssistantMessage(string message);
+        /// <summary>
+        /// Start chat builder with a function message. Function message is the response from external api, you need to set this message after a function is requested to call by Open Ai.
+        /// </summary>
+        /// <param name="name">The function name.</param>
+        /// <param name="message">The messages to generate chat completions for, in the chat format.</param>
+        /// <returns>Builder</returns>
+        ChatRequestBuilder RequestWithFunctionMessage(string name, string message);
     }
 }

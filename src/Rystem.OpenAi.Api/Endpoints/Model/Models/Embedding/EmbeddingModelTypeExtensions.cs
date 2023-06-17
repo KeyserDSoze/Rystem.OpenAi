@@ -5,21 +5,17 @@
         private static readonly Model s_adaTextEmbedding = new Model("text-embedding-ada-002");
         public static Model ToModel(this EmbeddingModelType type)
         {
-            switch (type)
+            return type switch
             {
-                default:
-                case EmbeddingModelType.AdaTextEmbedding:
-                    return s_adaTextEmbedding;
-            }
+                _ => s_adaTextEmbedding,
+            };
         }
         public static ModelFamilyType ToFamily(this EmbeddingModelType type)
         {
-            switch (type)
+            return type switch
             {
-                default:
-                case EmbeddingModelType.AdaTextEmbedding:
-                    return ModelFamilyType.Ada;
-            }
+                _ => ModelFamilyType.Ada,
+            };
         }
         public static string ToModelId(this EmbeddingModelType type)
             => type.ToModel().Id!;
