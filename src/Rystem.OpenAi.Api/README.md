@@ -332,6 +332,63 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
                 results.Add(x);
             }
 
+### Chat functions
+You may find the update [here](https://openai.com/blog/function-calling-and-other-api-updates)
+Here an example based on the link, you may find it in unit test.
+
+    var openAiApi = _openAiFactory.Create(name);
+    Assert.NotNull(openAiApi.Chat);
+    var functionName = "get_current_weather";
+    var request = openAiApi.Chat
+        .RequestWithUserMessage("What is the weather like in Boston?")
+        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+        .WithFunction(new ChatFunction
+        {
+            Name = functionName,
+            Description = "Get the current weather in a given location",
+            Parameters = new ChatFunctionParameters
+            {
+                Type = "object",
+                Properties = new Dictionary<string, ChatFunctionProperty>
+                {
+                    {
+                        "location",
+                        new ChatFunctionProperty
+                        {
+                            Type= "string",
+                            Description = "The city and state, e.g. San Francisco, CA"
+                        }
+                    },
+                    {
+                        "unit",
+                        new ChatFunctionProperty
+                        {
+                            Type= "string",
+                            Enums = new List<string>{ "celsius", "fahrenheit" }
+                        }
+                    }
+                },
+                Required = new List<string> { "location" }
+            }
+        });
+    var response = await request
+        .ExecuteAndCalculateCostAsync();
+
+    var function = response.Result.Choices[0].Message.Function;
+    Assert.NotNull(function);
+    Assert.Equal(function.Name, functionName);
+    var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+    Assert.NotNull(weatherRequest?.Location);
+
+    request
+        .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+    response = await request
+        .ExecuteAndCalculateCostAsync();
+
+    var content = response.Result.Choices[0].Message.Content;
+    Assert.NotNull(content);
+
+
 ## Edits
 [📖 Back to summary](#documentation)\
 Given a prompt and an instruction, the model will return an edited version of the prompt.

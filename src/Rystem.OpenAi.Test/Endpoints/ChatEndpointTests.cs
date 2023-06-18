@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithModel(ChatModelType.Gpt35Turbo)
                 .WithTemperature(1)
                 .ExecuteAsync();
 
@@ -50,17 +50,17 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Chat);
-            var biasDictionary = new Dictionary<string, int>
-            {
-                { "Keystone", 1 },
-                { "Keystone3", 4 }
-            };
+            //var biasDictionary = new Dictionary<string, int>
+            //{
+            //    { "Keystone", -100 },
+            //    { "Keystone3", 4 }
+            //};
             var results = new List<ChatResult>();
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel("testModel", ModelFamilyType.Gpt3_5)
-                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithModel(ChatModelType.Gpt35Turbo)
                 .WithTemperature(1)
                 .WithStopSequence("alekud")
                 .AddStopSequence("coltello")
@@ -69,9 +69,9 @@ namespace Rystem.OpenAi.Test
                 .WithPresencePenalty(0)
                 .WithNucleusSampling(1)
                 .SetMaxTokens(1200)
-                   .WithBias("Keystone", 4)
-                   .WithBias("Keystone2", 4)
-                   .WithBias(biasDictionary)
+                   //.WithBias("Keystone", 4)
+                   //.WithBias("Keystone2", 4)
+                   //.WithBias(biasDictionary)
                    .WithUser("KeyserDSoze")
                 .ExecuteAsStreamAsync())
                 results.Add(x.LastChunk);
@@ -94,7 +94,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in openAiApi.Chat
                 .Request(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithModel(ChatModelType.Gpt35Turbo)
                 .WithTemperature(1)
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAndCalculateCostAsync())
@@ -119,7 +119,7 @@ namespace Rystem.OpenAi.Test
             var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .RequestWithUserMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithModel(ChatModelType.Gpt35Turbo)
                 .WithFunction(new ChatFunction
                 {
                     Name = functionName,

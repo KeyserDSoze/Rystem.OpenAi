@@ -34,6 +34,7 @@ namespace Rystem.OpenAi.Moderation
         public ModerationRequestBuilder WithModel(ModerationModelType model)
         {
             Request.ModelId = model.ToModel().Id;
+            _forced = false;
             _modelType = model;
             return this;
         }

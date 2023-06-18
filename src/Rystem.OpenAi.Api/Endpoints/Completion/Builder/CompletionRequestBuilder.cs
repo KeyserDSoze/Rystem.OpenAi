@@ -107,6 +107,7 @@ namespace Rystem.OpenAi.Completion
         public CompletionRequestBuilder WithModel(TextModelType model)
         {
             Request.ModelId = model.ToModel().Id;
+            _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
             return this;

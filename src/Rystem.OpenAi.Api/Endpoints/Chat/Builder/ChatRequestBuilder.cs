@@ -177,6 +177,7 @@ namespace Rystem.OpenAi.Chat
         public ChatRequestBuilder WithModel(ChatModelType model)
         {
             Request.ModelId = model.ToModel().Id;
+            _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
             return this;
@@ -315,6 +316,10 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithBias(string key, int value)
         {
+            if (value > 100)
+                throw new ArgumentException("Value of bias is greater than 100. Accepted values have range [-100, 100].");
+            if (value < -100)
+                throw new ArgumentException("Value of bias is lesser than -100. Accepted values have range [-100, 100].");
             Request.Bias ??= new Dictionary<string, int>();
             if (!Request.Bias.ContainsKey(key))
                 Request.Bias.Add(key, value);

@@ -16,6 +16,7 @@ namespace Rystem.OpenAi
             SetAdaEmbeddings();
             SetBabbage();
             SetCurie();
+            SetCushman();
             SetDavinci();
             SetFineTuneForAda();
             SetFineTuneForBabbage();
@@ -34,6 +35,30 @@ namespace Rystem.OpenAi
                 Settings.Add(key, formula);
             else
                 Settings[key] = formula;
+            return this;
+        }
+        internal OpenAiPriceSettings SetAzureDefault()
+        {
+            SetGpt4With8KPrice();
+            SetGpt4With32KPrice();
+            SetGpt3_5(0.002M, 0.002M);
+            SetGpt3_5_16K();
+            SetAda();
+            SetAdaEmbeddings(0.0004M);
+            SetBabbage();
+            SetCurie();
+            SetCushman();
+            SetDavinci();
+            SetFineTuneForAda();
+            SetFineTuneForBabbage();
+            SetFineTuneForCurie();
+            SetFineTuneForDavinci();
+            SetImage(ImageSize.Large, 0.02M);
+            SetImage(ImageSize.Medium, 0.02M);
+            SetImage(ImageSize.Small, 0.02M);
+            SetAudioForTranslation();
+            SetAudioForTranscription();
+            SetModeration();
             return this;
         }
         public OpenAiPriceSettings SetGpt4With8KPrice(decimal prompt = 0.03M, decimal completion = 0.06M)
@@ -121,6 +146,15 @@ namespace Rystem.OpenAi
             return
                 Set($"{OpenAiType.Edit}_{ModelFamilyType.Davinci}", formula)
                 .Set($"{OpenAiType.Completion}_{ModelFamilyType.Davinci}", formula);
+        }
+        public OpenAiPriceSettings SetCushman(decimal usage = 0.024M)
+        {
+            var formula = new CostFormula
+            {
+                Usage = usage
+            };
+            return
+                Set($"{OpenAiType.Completion}_{ModelFamilyType.Cushman}", formula);
         }
         public OpenAiPriceSettings SetFineTuneForAda(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
