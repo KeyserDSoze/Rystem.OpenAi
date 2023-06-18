@@ -165,7 +165,6 @@ namespace Rystem.OpenAi.Test
 
             var content = response.Result.Choices[0].Message.Content;
             Assert.NotNull(content);
-
         }
         [Theory]
         [InlineData("")]
@@ -208,6 +207,22 @@ namespace Rystem.OpenAi.Test
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndEnumAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("Where is my car DDM3YAA?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
         }
     }
 }

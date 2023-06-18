@@ -97,7 +97,8 @@ namespace Rystem.OpenAi.Test
                 .MapDeploymentsAutomaticallyAsync(true, "Azure")
             };
             services
-                .AddOpenAiChatFunction<WeatherFunction>();
+                .AddOpenAiChatFunction<WeatherFunction>()
+                .AddOpenAiChatFunction<MapFunction>();
             var results = Task.WhenAll(tasks.Select(x => x.AsTask())).ConfigureAwait(false).GetAwaiter().GetResult();
             Assert.NotEmpty(results);
         }

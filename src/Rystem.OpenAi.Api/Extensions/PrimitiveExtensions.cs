@@ -15,7 +15,7 @@ namespace System.Reflection
         public static bool IsPrimitive<T>(this T entity)
             => entity?.GetType().IsPrimitive() ?? typeof(T).IsPrimitive();
         public static bool IsPrimitive(this Type type)
-            => type.IsPrimitive || s_primitiveTypes.Contains(type) || type.IsEnum || Convert.GetTypeCode(type) != TypeCode.Object ||
+            => type.IsPrimitive || s_primitiveTypes.Contains(type) || Convert.GetTypeCode(type) != TypeCode.Object ||
             (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && IsPrimitive(type.GetGenericArguments()[0]));
         public static bool IsNumeric<T>(this T entity)
             => entity?.GetType().IsNumeric() ?? typeof(T).IsNumeric();
