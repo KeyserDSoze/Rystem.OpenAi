@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
+using Rystem.OpenAi.Test.Functions;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -165,12 +167,34 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(content);
 
         }
-        private sealed class WeatherRequest
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAsync(string name)
         {
-            [JsonPropertyName("location")]
-            public string Location { get; set; }
-            [JsonPropertyName("unit")]
-            public string Unit { get; set; }
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithFunction("get_current_weather");
+            var response = await request
+                .ExecuteAndCalculateCostAsync();
+
+            var function = response.Result.Choices[0].Message.Function;
+            Assert.NotNull(function);
+            Assert.Equal(function.Name, functionName);
+            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+            Assert.NotNull(weatherRequest?.Location);
+
+            request
+                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            response = await request
+                .ExecuteAndCalculateCostAsync();
+
+            var content = response.Result.Choices[0].Message.Content;
+            Assert.NotNull(content);
         }
     }
 }

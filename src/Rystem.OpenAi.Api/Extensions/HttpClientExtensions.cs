@@ -16,7 +16,8 @@ namespace Rystem.OpenAi
     {
         private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            WriteIndented = true,
         };
         private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
             string url,

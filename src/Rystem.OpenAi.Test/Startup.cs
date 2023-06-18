@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rystem.OpenAi.Test.Functions;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -95,6 +96,8 @@ namespace Rystem.OpenAi.Test
                 }, "Azure")
                 .MapDeploymentsAutomaticallyAsync(true, "Azure")
             };
+            services
+                .AddOpenAiChatFunction<WeatherFunction>();
             var results = Task.WhenAll(tasks.Select(x => x.AsTask())).ConfigureAwait(false).GetAwaiter().GetResult();
             Assert.NotEmpty(results);
         }

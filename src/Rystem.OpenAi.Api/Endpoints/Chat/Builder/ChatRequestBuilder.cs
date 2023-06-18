@@ -1,20 +1,25 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 
 namespace Rystem.OpenAi.Chat
 {
     public sealed class ChatRequestBuilder : RequestBuilder<ChatRequest>
     {
         private ChatModelType _modelType;
+        private readonly IEnumerable<IOpenAiChatFunction> _functions;
+
         internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            ChatMessage message, IOpenAiUtility utility) : base(client,
+            ChatMessage message, IOpenAiUtility utility,
+            IEnumerable<IOpenAiChatFunction> functions) : base(client,
             configuration,
             () =>
             {
@@ -27,6 +32,7 @@ namespace Rystem.OpenAi.Chat
         {
             _familyType = ModelFamilyType.Gpt3_5;
             _modelType = ChatModelType.Gpt35Turbo_Snapshot;
+            _functions = functions;
         }
         /// <summary>
         /// Execute operation.
@@ -368,6 +374,60 @@ namespace Rystem.OpenAi.Chat
             Request.Functions ??= new List<ChatFunction>();
             Request.Functions.Add(chatFunction);
             return this;
+        }
+        /// <summary>
+        /// Developers can describe functions to gpt-4-snapshot and gpt-3.5-turbo-snapshot, and have the model intelligently choose to output a JSON object containing arguments to call those functions. This is a new way to more reliably connect GPT's capabilities with external tools and APIs.
+        /// These models have been fine-tuned to both detect when a function needs to be called(depending on the user’s input) and to respond with JSON that adheres to the function signature.Function calling allows developers to more reliably get structured data back from the model.
+        /// </summary>
+        /// <param name="chatFunction"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder WithFunction(string name)
+        {
+            Request.Functions ??= new List<ChatFunction>();
+            var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
+            Request.Functions.Add(FunctionContainer.Instance.GetFunction(function));
+            return this;
+        }
+        private sealed class FunctionContainer
+        {
+            private readonly ConcurrentDictionary<string, ChatFunction> _functions = new ConcurrentDictionary<string, ChatFunction>();
+            public static FunctionContainer Instance { get; } = new FunctionContainer();
+            private FunctionContainer() { }
+            public ChatFunction GetFunction(IOpenAiChatFunction function)
+            {
+                if (!_functions.ContainsKey(function.Name))
+                {
+                    var chatFunction = new ChatFunction()
+                    {
+                        Name = function.Name,
+                        Description = function.Description,
+                        Parameters = new ChatFunctionParameters()
+                        {
+                            Properties = new Dictionary<string, ChatFunctionProperty>(),
+                            Required = new List<string>()
+                        },
+                    };
+                    foreach (var property in function.Input.GetProperties())
+                    {
+                        var name = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
+                        var value = property.PropertyType.Name.ToLower();
+                        var isRequired = property.GetCustomAttribute<JsonRequiredAttribute>() != null;
+                        var description = property.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name;
+                        chatFunction.Parameters.Properties.Add(name, new ChatFunctionProperty
+                        {
+                            Description = description,
+                            Type = value
+                        });
+                        if (isRequired)
+                            chatFunction.Parameters.Required.Add(name);
+                    }
+                    if (!_functions.ContainsKey(function.Name))
+                    {
+                        _functions.TryAdd(function.Name, chatFunction);
+                    }
+                }
+                return _functions[function.Name];
+            }
         }
     }
 }
