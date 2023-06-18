@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Test.Functions
     }
     internal sealed class WeatherFunction : IOpenAiChatFunction
     {
-        private const string NameLabel = "get_current_weather";
+        public const string NameLabel = "get_current_weather";
         public string Name => NameLabel;
         private const string DescriptionLabel = "Get the current weather in a given location";
         public string Description => DescriptionLabel;

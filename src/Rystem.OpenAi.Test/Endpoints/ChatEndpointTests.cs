@@ -139,7 +139,7 @@ namespace Rystem.OpenAi.Test
                             },
                             {
                                 "unit",
-                                new ChatFunctionProperty
+                                new ChatFunctionEnumProperty
                                 {
                                     Type= "string",
                                     Enums = new List<string>{ "celsius", "fahrenheit" }
@@ -174,27 +174,40 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Chat);
-            var functionName = "get_current_weather";
-            var request = openAiApi.Chat
+            var response = await openAiApi.Chat
                 .RequestWithUserMessage("What is the weather like in Boston?")
                 .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
-                .WithFunction("get_current_weather");
-            var response = await request
-                .ExecuteAndCalculateCostAsync();
-
-            var function = response.Result.Choices[0].Message.Function;
-            Assert.NotNull(function);
-            Assert.Equal(function.Name, functionName);
-            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
-            Assert.NotNull(weatherRequest?.Location);
-
-            request
-                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
-            response = await request
-                .ExecuteAndCalculateCostAsync();
+                .WithFunction(WeatherFunction.NameLabel)
+                .ExecuteAndCalculateCostAsync(true);
 
             var content = response.Result.Choices[0].Message.Content;
             Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithStreamAndCalculateCostAndComplexFunctionAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var results = new List<ChatResult>();
+            ChatResult check = null;
+            var cost = 0M;
+            await foreach (var x in openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsStreamAndCalculateCostAsync(true))
+            {
+                results.Add(x.Result.LastChunk);
+                check = x.Result.Composed;
+                cost += x.CalculateCost();
+            }
+            Assert.True(cost > 0);
+            Assert.NotNull(check.Choices.Last().Message.Content);
+            Assert.NotEmpty(results);
+            Assert.True(results.Last().Choices.Count != 0);
+            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
         }
     }
 }
