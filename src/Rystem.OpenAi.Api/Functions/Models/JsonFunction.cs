@@ -1,14 +1,12 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Rystem.OpenAi.Chat
+﻿namespace System.Text.Json.Serialization
 {
-    public sealed class ChatFunction
+    public sealed class JsonFunction
     {
         [JsonPropertyName("name")]
         public string Name { get; set; } = null!;
         [JsonPropertyName("description")]
         public string Description { get; set; } = null!;
         [JsonPropertyName("parameters")]
-        public ChatFunctionParameters Parameters { get; set; } = null!;
+        public JsonFunctionNonPrimitiveProperty Parameters { get; set; } = null!;
     }
 }

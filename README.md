@@ -52,6 +52,7 @@ Install-Package Rystem.OpenAi
   - [Streaming](#streaming)
 - [Chat](#chat)
   - [Streaming](#chat-streaming)
+  - [Functions](#chat-functions)
 - [Edits](#edits)
 - [Images](#images)
   - [Create Image](#create-image)
@@ -334,60 +335,138 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
 
 ### Chat functions
 You may find the update [here](https://openai.com/blog/function-calling-and-other-api-updates)
+
+#### Simple function configuration
 Here an example based on the link, you may find it in unit test.
 
-    var openAiApi = _openAiFactory.Create(name);
-    Assert.NotNull(openAiApi.Chat);
-    var functionName = "get_current_weather";
     var request = openAiApi.Chat
-        .RequestWithUserMessage("What is the weather like in Boston?")
-        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
-        .WithFunction(new ChatFunction
-        {
-            Name = functionName,
-            Description = "Get the current weather in a given location",
-            Parameters = new ChatFunctionParameters
-            {
-                Type = "object",
-                Properties = new Dictionary<string, ChatFunctionProperty>
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo)
+                .WithFunction(new JsonFunction
                 {
-                    {
-                        "location",
-                        new ChatFunctionProperty
+                    Name = functionName,
+                    Description = "Get the current weather in a given location",
+                    Parameters = new JsonFunctionNonPrimitiveProperty()
+                        .AddPrimitive("location", new JsonFunctionProperty
                         {
-                            Type= "string",
+                            Type = "string",
                             Description = "The city and state, e.g. San Francisco, CA"
-                        }
-                    },
-                    {
-                        "unit",
-                        new ChatFunctionProperty
+                        })
+                        .AddEnum("unit", new JsonFunctionEnumProperty
                         {
-                            Type= "string",
-                            Enums = new List<string>{ "celsius", "fahrenheit" }
-                        }
-                    }
-                },
-                Required = new List<string> { "location" }
-            }
-        });
+                            Type = "string",
+                            Enums = new List<string> { "celsius", "fahrenheit" }
+                        })
+                        .AddRequired("location")
+                });
     var response = await request
         .ExecuteAndCalculateCostAsync();
-
     var function = response.Result.Choices[0].Message.Function;
-    Assert.NotNull(function);
-    Assert.Equal(function.Name, functionName);
     var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
-    Assert.NotNull(weatherRequest?.Location);
-
     request
         .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
     response = await request
         .ExecuteAndCalculateCostAsync();
+    var content = response.Result.Choices[0].Message.Content;    
+
+#### Function with framework
+You can create your function using the interface IOpenAiChatFunction
+
+    internal sealed class WeatherFunction : IOpenAiChatFunction
+    {
+        private static readonly JsonSerializerOptions s_options = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            WriteIndented = true,
+        };
+        static WeatherFunction()
+        {
+            var converter = new JsonStringEnumConverter();
+            s_options.Converters.Add(converter);
+        }
+        public const string NameLabel = "get_current_weather";
+        public string Name => NameLabel;
+        private const string DescriptionLabel = "Get the current weather in a given location";
+        public string Description => DescriptionLabel;
+        public Type Input => typeof(WeatherRequest);
+        public async Task<object> WrapAsync(string message)
+        {
+            var request = System.Text.Json.JsonSerializer.Deserialize<WeatherRequest>(message, s_options);
+            if (request == null)
+                await Task.Delay(0);
+            return new WeatherResponseModel
+            {
+                Description = "Sunny",
+                Temperature = 22,
+                Unit = "Celsius"
+            };
+        }
+    }
+
+> :warning: Pay attention when you use "enum", in .Net you have to use the JsonStringEnumConverter like in the example.
+
+You have to setup it in dependency injection
+    
+    services
+        .AddOpenAiChatFunction<WeatherFunction>();
+
+You have to create the Request model for your json:
+
+    internal sealed class WeatherRequest
+    {
+        [JsonPropertyName("location")]
+        [JsonRequired]
+        [JsonPropertyDescription("The city and state, e.g. San Francisco, CA")]
+        public string Location { get; set; }
+        [JsonPropertyName("unit")]
+        [JsonPropertyDescription("Unit Measure of temperature. e.g. Celsius or Fahrenheit")]
+        public string Unit { get; set; }
+    }
+
+You can use some JsonProperty attribute like:
+    
+- JsonPropertyName: name of the property
+- JsonPropertyDescription: description of what the property is.
+- JsonRequired: to set as Required for OpenAi
+- JsonPropertyAllowedValues: to have only a range of possible values for the property.
+- JsonPropertyRange: to have a range of values
+- JsonPropertyMaximum: to have a maximum value for the property
+- JsonPropertyMinimum: to have a minimum value for the property
+- JsonPropertyMultipleOf: to have only a multiple of a value for the property
+
+After the configuration you can use this function framework in this way:
+
+    var openAiApi = _openAiFactory.Create(name);
+    var response = await openAiApi.Chat
+        .RequestWithUserMessage("What is the weather like in Boston?")
+        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+        .WithFunction(WeatherFunction.NameLabel)
+        .ExecuteAndCalculateCostAsync(true);
 
     var content = response.Result.Choices[0].Message.Content;
-    Assert.NotNull(content);
 
+With true in method ExecuteAsync or ExecuteAndCalculateCostAsync you ask the api to call automatically your function when a function is requested by OpenAi.
+You, also, can add all the functions you injected in one go.
+
+    services
+        .AddOpenAiChatFunction<WeatherFunction>()
+        .AddOpenAiChatFunction<AirplaneFunction>()
+        .AddOpenAiChatFunction<GroceryFunction>()
+        .AddOpenAiChatFunction<MapFunction>();
+
+and use WithAllFunctions method
+
+    await foreach (var x in openAiApi.Chat
+        .RequestWithUserMessage("What is the weather like in Boston?")
+        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+        .WithAllFunctions()
+        .ExecuteAsStreamAndCalculateCostAsync(true))
+
+With true, automatically the framework understands the request from OpenAi and will use the right function to submit a new request.
+
+    Task<object> WrapAsync(string message);
+
+from IOpenAiChatFunction
 
 ## Edits
 [📖 Back to summary](#documentation)\

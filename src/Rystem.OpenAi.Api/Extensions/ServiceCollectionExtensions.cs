@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -95,6 +93,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 .TryAddTransient<IOpenAiBilling, OpenAiBilling>();
             services
                 .TryAddTransient<IOpenAiDeployment, OpenAiDeployment>();
+            return services;
+        }
+        public static IServiceCollection AddOpenAiChatFunction<TFunction>(this IServiceCollection services)
+            where TFunction : class, IOpenAiChatFunction
+        {
+            services
+                .AddTransient<IOpenAiChatFunction, TFunction>();
             return services;
         }
     }

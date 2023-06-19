@@ -3,9 +3,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
+using Rystem.OpenAi.Test.Functions;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -118,35 +117,24 @@ namespace Rystem.OpenAi.Test
             var request = openAiApi.Chat
                 .RequestWithUserMessage("What is the weather like in Boston?")
                 .WithModel(ChatModelType.Gpt35Turbo)
-                .WithFunction(new ChatFunction
+                .WithFunction(new JsonFunction
                 {
                     Name = functionName,
                     Description = "Get the current weather in a given location",
-                    Parameters = new ChatFunctionParameters
-                    {
-                        Type = "object",
-                        Properties = new Dictionary<string, ChatFunctionProperty>
+                    Parameters = new JsonFunctionNonPrimitiveProperty()
+                        .AddPrimitive("location", new JsonFunctionProperty
                         {
-                            {
-                                "location",
-                                new ChatFunctionProperty
-                                {
-                                    Type= "string",
-                                    Description = "The city and state, e.g. San Francisco, CA"
-                                }
-                            },
-                            {
-                                "unit",
-                                new ChatFunctionProperty
-                                {
-                                    Type= "string",
-                                    Enums = new List<string>{ "celsius", "fahrenheit" }
-                                }
-                            }
-                        },
-                        Required = new List<string> { "location" }
-                    }
+                            Type = "string",
+                            Description = "The city and state, e.g. San Francisco, CA"
+                        })
+                        .AddEnum("unit", new JsonFunctionEnumProperty
+                        {
+                            Type = "string",
+                            Enums = new List<string> { "celsius", "fahrenheit" }
+                        })
+                        .AddRequired("location")
                 });
+
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
@@ -163,14 +151,96 @@ namespace Rystem.OpenAi.Test
 
             var content = response.Result.Choices[0].Message.Content;
             Assert.NotNull(content);
-
         }
-        private sealed class WeatherRequest
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAsync(string name)
         {
-            [JsonPropertyName("location")]
-            public string Location { get; set; }
-            [JsonPropertyName("unit")]
-            public string Unit { get; set; }
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithFunction(WeatherFunction.NameLabel)
+                .ExecuteAndCalculateCostAsync(true);
+
+            var content = response.Result.Choices[0].Message.Content;
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithStreamAndCalculateCostAndComplexFunctionAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var results = new List<ChatResult>();
+            ChatResult check = null;
+            var cost = 0M;
+            await foreach (var x in openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsStreamAndCalculateCostAsync(true))
+            {
+                results.Add(x.Result.LastChunk);
+                check = x.Result.Composed;
+                cost += x.CalculateCost();
+            }
+            Assert.True(cost > 0);
+            Assert.NotNull(check.Choices.Last().Message.Content);
+            Assert.NotEmpty(results);
+            Assert.True(results.Last().Choices.Count != 0);
+            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndEnumAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("Where is my car DDM3YAA?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndComplexObjectsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("I want to travel in India from Rome, and I have a budget of 350 dollars. Does a fly exist?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndArraysAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("I need to buy 3 apples, 2 bananas, chicken, salmon and atumn. What is the best price to buy them all?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
         }
     }
 }

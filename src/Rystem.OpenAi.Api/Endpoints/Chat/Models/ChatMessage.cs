@@ -30,5 +30,30 @@ namespace Rystem.OpenAi.Chat
         }
         internal void BuildContent()
             => Content = _content?.ToString() ?? string.Empty;
+
+        private StringBuilder? _function;
+        internal void AddFunction(string name)
+        {
+            if (name != null && Function == null)
+            {
+                Function = new ChatMessageFunction
+                {
+                    Name = name,
+                    Arguments = string.Empty
+                };
+            }
+        }
+        internal void AddArgumentFunction(string? content)
+        {
+            if (content == null)
+                return;
+            _function ??= new StringBuilder();
+            _function.Append(content);
+        }
+        internal void BuildFunction()
+        {
+            if (Function != null)
+                Function.Arguments = _function?.ToString() ?? string.Empty;
+        }
     }
 }

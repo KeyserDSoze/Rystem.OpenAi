@@ -13,7 +13,7 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("messages")]
         public List<ChatMessage>? Messages { get; set; }
         [JsonPropertyName("functions")]
-        public List<ChatFunction>? Functions { get; set; }
+        public List<JsonFunction>? Functions { get; set; }
         [JsonPropertyName("temperature")]
         public double? Temperature { get; set; }
         [JsonPropertyName("top_p")]
