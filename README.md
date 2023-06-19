@@ -403,6 +403,8 @@ You can create your function using the interface IOpenAiChatFunction
         }
     }
 
+> :warning: Pay attention when you use "enum", in .Net you have to use the JsonStringEnumConverter like in the example.
+
 You have to setup it in dependency injection
     
     services
@@ -460,7 +462,11 @@ and use WithAllFunctions method
         .WithAllFunctions()
         .ExecuteAsStreamAndCalculateCostAsync(true))
 
-With true, automatically the framework understands the request from OpenAi and use the function to submit a new request.
+With true, automatically the framework understands the request from OpenAi and will use the right function to submit a new request.
+
+    Task<object> WrapAsync(string message);
+
+from IOpenAiChatFunction
 
 ## Edits
 [📖 Back to summary](#documentation)\
