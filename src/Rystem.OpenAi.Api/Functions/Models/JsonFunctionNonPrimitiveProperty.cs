@@ -8,11 +8,18 @@ namespace System.Text.Json.Serialization
         public JsonFunctionNonPrimitiveProperty()
         {
             Type = DefaultTypeName;
+            Properties = new Dictionary<string, JsonFunctionProperty>();
         }
         [JsonPropertyName("properties")]
-        public Dictionary<string, JsonFunctionProperty> Properties { get; set; } = null!;
+        public Dictionary<string, JsonFunctionProperty> Properties { get; }
         [JsonPropertyName("required")]
-        public List<string>? Required { get; set; }
+        public List<string>? Required { get; private set; }
+        public JsonFunctionNonPrimitiveProperty AddRequired(params string[] names)
+        {
+            Required ??= new List<string>();
+            Required.AddRange(names);
+            return this;
+        }
         public JsonFunctionNonPrimitiveProperty AddEnum(string key, JsonFunctionEnumProperty property)
             => AddProperty(key, property);
         public JsonFunctionNonPrimitiveProperty AddObject(string key, JsonFunctionNonPrimitiveProperty property)

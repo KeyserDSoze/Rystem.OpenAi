@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -21,10 +20,6 @@ namespace Rystem.OpenAi.Chat
                     Name = function.Name,
                     Description = function.Description,
                     Parameters = new JsonFunctionNonPrimitiveProperty()
-                    {
-                        Properties = new Dictionary<string, JsonFunctionProperty>(),
-                        Required = new List<string>()
-                    },
                 };
                 SetProperties(function.Input, chatFunction.Parameters);
                 if (!_functions.ContainsKey(function.Name))
@@ -77,15 +72,12 @@ namespace Rystem.OpenAi.Chat
         private static void SetRequired(string name, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
         {
             if (isRequired)
-            {
-                parameters.Required ??= new List<string>();
-                parameters.Required.Add(name);
-            }
+                parameters.AddRequired(name);
         }
         private static void SetPrimitive(PropertyInfo? property, string? name, string? description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters, Type? overriddenType = null)
         {
             var type = property?.PropertyType ?? overriddenType;
-            if (type != null)
+            if (type != null && name != null)
             {
                 var isInteger = type.IsInteger();
                 var isNumber = type.IsNumber();
@@ -140,7 +132,6 @@ namespace Rystem.OpenAi.Chat
                         Type = type.Name.ToLower(),
                     });
                 }
-
                 SetRequired(name, isRequired, parameters);
             }
         }
@@ -149,8 +140,6 @@ namespace Rystem.OpenAi.Chat
             var objectParameters = new JsonFunctionNonPrimitiveProperty
             {
                 Description = description,
-                Type = "object",
-                Properties = new Dictionary<string, JsonFunctionProperty>(),
             };
             parameters.AddObject(name, objectParameters);
             SetRequired(name, isRequired, parameters);
@@ -206,10 +195,7 @@ namespace Rystem.OpenAi.Chat
             }
             else
             {
-                var defaultObject = new JsonFunctionNonPrimitiveProperty
-                {
-                    Properties = new Dictionary<string, JsonFunctionProperty>(),
-                };
+                var defaultObject = new JsonFunctionNonPrimitiveProperty();
                 objectParameters.Items = defaultObject;
                 SetProperties(arrayType, defaultObject);
             }

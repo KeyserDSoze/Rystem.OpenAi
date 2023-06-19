@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Test.Functions;
 using Xunit;
@@ -124,31 +121,20 @@ namespace Rystem.OpenAi.Test
                 {
                     Name = functionName,
                     Description = "Get the current weather in a given location",
-                    Parameters = new JsonFunctionNonPrimitiveProperty
-                    {
-                        Type = "object",
-                        Properties = new Dictionary<string, JsonFunctionProperty>
+                    Parameters = new JsonFunctionNonPrimitiveProperty()
+                        .AddPrimitive("location", new JsonFunctionProperty
                         {
-                            {
-                                "location",
-                                new JsonFunctionProperty
-                                {
-                                    Type= "string",
-                                    Description = "The city and state, e.g. San Francisco, CA"
-                                }
-                            },
-                            {
-                                "unit",
-                                new JsonFunctionEnumProperty
-                                {
-                                    Type= "string",
-                                    Enums = new List<string>{ "celsius", "fahrenheit" }
-                                }
-                            }
-                        },
-                        Required = new List<string> { "location" }
-                    }
+                            Type = "string",
+                            Description = "The city and state, e.g. San Francisco, CA"
+                        })
+                        .AddEnum("unit", new JsonFunctionEnumProperty
+                        {
+                            Type = "string",
+                            Enums = new List<string> { "celsius", "fahrenheit" }
+                        })
+                        .AddRequired("location")
                 });
+
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
