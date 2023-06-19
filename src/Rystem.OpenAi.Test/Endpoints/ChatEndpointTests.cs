@@ -240,5 +240,21 @@ namespace Rystem.OpenAi.Test
             var content = response.Choices[0].Message.Content;
             Assert.NotNull(content);
         }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndArraysAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("I need to buy 3 apples, 2 bananas, chicken, salmon and atumn. What is the best price to buy them all?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
+        }
     }
 }

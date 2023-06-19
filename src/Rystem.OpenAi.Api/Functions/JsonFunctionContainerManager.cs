@@ -52,6 +52,10 @@ namespace Rystem.OpenAi.Chat
                 {
                     SetPrimitive(property, name, description, isRequired, parameters);
                 }
+                else if (property.PropertyType.IsArray)
+                {
+                    SetArray(property.PropertyType, name, description, isRequired, parameters);
+                }
                 else if (property.PropertyType.IsDictionary())
                 {
                     SetDictionary(property.PropertyType, name, description, isRequired, parameters);
@@ -59,10 +63,6 @@ namespace Rystem.OpenAi.Chat
                 else if (property.PropertyType.IsEnumerable())
                 {
                     SetEnumerable(property.PropertyType, name, description, isRequired, parameters);
-                }
-                else if (property.PropertyType.IsArray)
-                {
-                    SetArray(property.PropertyType, name, description, isRequired, parameters);
                 }
                 else if (property.PropertyType.IsEnum)
                 {
@@ -82,64 +82,67 @@ namespace Rystem.OpenAi.Chat
                 parameters.Required.Add(name);
             }
         }
-        private static void SetPrimitive(PropertyInfo property, string name, string description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
+        private static void SetPrimitive(PropertyInfo? property, string? name, string? description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters, Type? overriddenType = null)
         {
-            var type = property.PropertyType;
-            var isInteger = type.IsInteger();
-            var isNumber = type.IsNumber();
-            if (isInteger || isNumber)
+            var type = property?.PropertyType ?? overriddenType;
+            if (type != null)
             {
-                var rangeAttribute = property.GetCustomAttribute<JsonPropertyRangeAttribute>();
-                double? minimum = null;
-                double? maximum = null;
-                bool? minimumExclusive = null;
-                bool? maximumExclusive = null;
-                double? multipleOf = null;
-                if (rangeAttribute != null)
+                var isInteger = type.IsInteger();
+                var isNumber = type.IsNumber();
+                if (isInteger || isNumber)
                 {
-                    minimum = rangeAttribute.Minimum;
-                    maximum = rangeAttribute.Maximum;
-                    minimumExclusive = rangeAttribute.Exclusive;
-                    maximumExclusive = rangeAttribute.Exclusive;
+                    var rangeAttribute = property.GetCustomAttribute<JsonPropertyRangeAttribute>();
+                    double? minimum = null;
+                    double? maximum = null;
+                    bool? minimumExclusive = null;
+                    bool? maximumExclusive = null;
+                    double? multipleOf = null;
+                    if (rangeAttribute != null)
+                    {
+                        minimum = rangeAttribute.Minimum;
+                        maximum = rangeAttribute.Maximum;
+                        minimumExclusive = rangeAttribute.Exclusive;
+                        maximumExclusive = rangeAttribute.Exclusive;
+                    }
+                    var minimumAttribute = property.GetCustomAttribute<JsonPropertyMinimumAttribute>();
+                    if (minimumAttribute != null)
+                    {
+                        minimum = minimumAttribute.Minimum;
+                        minimumExclusive = minimumAttribute.Exclusive;
+                    }
+                    var maximumAttribute = property.GetCustomAttribute<JsonPropertyMaximumAttribute>();
+                    if (maximumAttribute != null)
+                    {
+                        maximum = maximumAttribute.Maximum;
+                        maximumExclusive = maximumAttribute.Exclusive;
+                    }
+                    var multipleOfProperty = property.GetCustomAttribute<JsonPropertyMultipleOfAttribute>();
+                    if (multipleOfProperty != null)
+                    {
+                        multipleOf = multipleOfProperty.MultipleOf;
+                    }
+                    parameters.AddPrimitive(name, new JsonFunctionNumberProperty
+                    {
+                        Type = isInteger ? "integer" : "number",
+                        Description = description,
+                        Minimum = minimum,
+                        Maximum = maximum,
+                        ExclusiveMaximum = maximumExclusive,
+                        ExclusiveMinimum = minimumExclusive,
+                        MultipleOf = multipleOf
+                    });
                 }
-                var minimumAttribute = property.GetCustomAttribute<JsonPropertyMinimumAttribute>();
-                if (minimumAttribute != null)
+                else
                 {
-                    minimum = minimumAttribute.Minimum;
-                    minimumExclusive = minimumAttribute.Exclusive;
+                    parameters.AddPrimitive(name, new JsonFunctionProperty
+                    {
+                        Description = description,
+                        Type = type.Name.ToLower(),
+                    });
                 }
-                var maximumAttribute = property.GetCustomAttribute<JsonPropertyMaximumAttribute>();
-                if (maximumAttribute != null)
-                {
-                    maximum = maximumAttribute.Maximum;
-                    maximumExclusive = maximumAttribute.Exclusive;
-                }
-                var multipleOfProperty = property.GetCustomAttribute<JsonPropertyMultipleOfAttribute>();
-                if (multipleOfProperty != null)
-                {
-                    multipleOf = multipleOfProperty.MultipleOf;
-                }
-                parameters.AddPrimitive(name, new JsonFunctionNumberProperty
-                {
-                    Type = isInteger ? "integer" : "number",
-                    Description = description,
-                    Minimum = minimum,
-                    Maximum = maximum,
-                    ExclusiveMaximum = maximumExclusive,
-                    ExclusiveMinimum = minimumExclusive,
-                    MultipleOf = multipleOf
-                });
-            }
-            else
-            {
-                parameters.AddPrimitive(name, new JsonFunctionProperty
-                {
-                    Description = description,
-                    Type = type.Name.ToLower(),
-                });
-            }
 
-            SetRequired(name, isRequired, parameters);
+                SetRequired(name, isRequired, parameters);
+            }
         }
         private static void SetObject(Type type, string name, string description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
         {
@@ -174,41 +177,70 @@ namespace Rystem.OpenAi.Chat
             });
             SetRequired(name, isRequired, parameters);
         }
+        private static void SetArray(Type arrayType, JsonFunctionArrayProperty objectParameters)
+        {
+            if (arrayType.IsPrimitive())
+            {
+                if (arrayType.IsNumber())
+                    objectParameters.Items = new JsonFunctionProperty
+                    {
+                        Type = "number",
+                    };
+                else if (arrayType.IsInteger())
+                    objectParameters.Items = new JsonFunctionProperty
+                    {
+                        Type = "integer",
+                    };
+                else
+                    objectParameters.Items = new JsonFunctionProperty
+                    {
+                        Type = arrayType.Name.ToLower(),
+                    };
+            }
+            else if (arrayType.IsEnum)
+            {
+                objectParameters.Items = new JsonFunctionEnumProperty
+                {
+                    Enums = Enum.GetNames(arrayType).ToList()
+                };
+            }
+            else
+            {
+                var defaultObject = new JsonFunctionNonPrimitiveProperty
+                {
+                    Properties = new Dictionary<string, JsonFunctionProperty>(),
+                };
+                objectParameters.Items = defaultObject;
+                SetProperties(arrayType, defaultObject);
+            }
+        }
         private static void SetArray(Type type, string name, string description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
         {
-            var objectParameters = new JsonFunctionNonPrimitiveProperty
+            var objectParameters = new JsonFunctionArrayProperty
             {
                 Description = description,
                 Type = "array",
-                Properties = new Dictionary<string, JsonFunctionProperty>(),
             };
-            parameters.Properties.Add(name, objectParameters);
+            var arrayType = type.GetElementType();
+            SetArray(arrayType, objectParameters);
+            parameters.AddArray(name, objectParameters);
             SetRequired(name, isRequired, parameters);
-            SetProperties(type, objectParameters);
         }
         private static void SetEnumerable(Type type, string name, string description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
         {
-            var objectParameters = new JsonFunctionNonPrimitiveProperty
+            var objectParameters = new JsonFunctionArrayProperty
             {
                 Description = description,
                 Type = "array",
-                Properties = new Dictionary<string, JsonFunctionProperty>(),
             };
-            parameters.Properties.Add(name, objectParameters);
+            var arrayType = type.GetGenericArguments().First();
+            SetArray(arrayType, objectParameters);
+            parameters.AddArray(name, objectParameters);
             SetRequired(name, isRequired, parameters);
-            SetProperties(type, objectParameters);
         }
         private static void SetDictionary(Type type, string name, string description, bool isRequired, JsonFunctionNonPrimitiveProperty parameters)
         {
-            var objectParameters = new JsonFunctionNonPrimitiveProperty
-            {
-                Description = description,
-                Type = "array",
-                Properties = new Dictionary<string, JsonFunctionProperty>(),
-            };
-            parameters.Properties.Add(name, objectParameters);
-            SetRequired(name, isRequired, parameters);
-            SetProperties(type, objectParameters);
+            SetArray(type, name, description, isRequired, parameters);
         }
     }
 }

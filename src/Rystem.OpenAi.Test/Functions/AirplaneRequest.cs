@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.Test.Functions
         [JsonRequired]
         public AirplanePosition Position { get; set; }
         [JsonPropertyDescription("Maximum price allowed by the client")]
-        [JsonPropertyRange(10, 560, true)]
+        //[JsonPropertyRange(10, 560, true)]
         public int MaximumPrice { get; set; }
     }
 }

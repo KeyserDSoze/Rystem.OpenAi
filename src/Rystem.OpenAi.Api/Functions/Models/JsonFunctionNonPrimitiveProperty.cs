@@ -21,6 +21,8 @@ namespace System.Text.Json.Serialization
             => AddProperty(key, property);
         public JsonFunctionNonPrimitiveProperty AddNumber(string key, JsonFunctionNumberProperty property)
             => AddProperty(key, property);
+        public JsonFunctionNonPrimitiveProperty AddArray(string key, JsonFunctionArrayProperty property)
+            => AddProperty(key, property);
         internal JsonFunctionNonPrimitiveProperty AddProperty<T>(string key, T property)
             where T : JsonFunctionProperty
         {

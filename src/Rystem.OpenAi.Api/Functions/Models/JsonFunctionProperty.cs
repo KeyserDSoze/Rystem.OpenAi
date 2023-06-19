@@ -3,6 +3,7 @@
     [JsonDerivedType(typeof(JsonFunctionEnumProperty))]
     [JsonDerivedType(typeof(JsonFunctionNumberProperty))]
     [JsonDerivedType(typeof(JsonFunctionNonPrimitiveProperty))]
+    [JsonDerivedType(typeof(JsonFunctionArrayProperty))]
     public class JsonFunctionProperty
     {
         [JsonPropertyName("type")]
