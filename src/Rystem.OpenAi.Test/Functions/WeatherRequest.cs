@@ -10,6 +10,7 @@ namespace Rystem.OpenAi.Test.Functions
         public string Location { get; set; }
         [JsonPropertyName("unit")]
         [JsonPropertyDescription("Unit Measure of temperature. e.g. Celsius or Fahrenheit")]
+        [JsonPropertyAllowedValues]
         public string Unit { get; set; }
     }
 }
