@@ -120,18 +120,18 @@ namespace Rystem.OpenAi.Test
             var request = openAiApi.Chat
                 .RequestWithUserMessage("What is the weather like in Boston?")
                 .WithModel(ChatModelType.Gpt35Turbo)
-                .WithFunction(new ChatFunction
+                .WithFunction(new JsonFunction
                 {
                     Name = functionName,
                     Description = "Get the current weather in a given location",
-                    Parameters = new ChatFunctionParameters
+                    Parameters = new JsonFunctionNonPrimitiveProperty
                     {
                         Type = "object",
-                        Properties = new Dictionary<string, ChatFunctionProperty>
+                        Properties = new Dictionary<string, JsonFunctionProperty>
                         {
                             {
                                 "location",
-                                new ChatFunctionProperty
+                                new JsonFunctionProperty
                                 {
                                     Type= "string",
                                     Description = "The city and state, e.g. San Francisco, CA"
@@ -139,7 +139,7 @@ namespace Rystem.OpenAi.Test
                             },
                             {
                                 "unit",
-                                new ChatFunctionEnumProperty
+                                new JsonFunctionEnumProperty
                                 {
                                     Type= "string",
                                     Enums = new List<string>{ "celsius", "fahrenheit" }
@@ -217,6 +217,22 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var response = await openAiApi.Chat
                 .RequestWithUserMessage("Where is my car DDM3YAA?")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var content = response.Choices[0].Message.Content;
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithComplexFunctionsAndComplexObjectsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("I want to travel in India from Rome, and I have a budget of 350 dollars. Does a fly exist?")
                 .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithAllFunctions()
                 .ExecuteAsync(true);

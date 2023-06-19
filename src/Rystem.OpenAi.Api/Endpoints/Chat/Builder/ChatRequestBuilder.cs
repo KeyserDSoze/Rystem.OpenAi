@@ -4,10 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
-using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -431,9 +430,9 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <param name="chatFunction"></param>
         /// <returns>Builder</returns>
-        public ChatRequestBuilder WithFunction(ChatFunction chatFunction)
+        public ChatRequestBuilder WithFunction(JsonFunction chatFunction)
         {
-            Request.Functions ??= new List<ChatFunction>();
+            Request.Functions ??= new List<JsonFunction>();
             Request.Functions.Add(chatFunction);
             return this;
         }
@@ -445,10 +444,10 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithFunction(string name)
         {
-            Request.Functions ??= new List<ChatFunction>();
+            Request.Functions ??= new List<JsonFunction>();
             var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
             if (!Request.Functions.Any(x => x.Name == name))
-                Request.Functions.Add(FunctionContainer.Instance.GetFunction(function));
+                Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
             return this;
         }
         /// <summary>
@@ -458,11 +457,11 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithAllFunctions()
         {
-            Request.Functions ??= new List<ChatFunction>();
+            Request.Functions ??= new List<JsonFunction>();
             foreach (var function in _functions)
             {
                 if (!Request.Functions.Any(x => x.Name == function.Name))
-                    Request.Functions.Add(FunctionContainer.Instance.GetFunction(function));
+                    Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
             }
             return this;
         }
