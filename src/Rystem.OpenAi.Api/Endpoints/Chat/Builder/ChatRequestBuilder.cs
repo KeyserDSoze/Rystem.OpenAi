@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -32,6 +33,7 @@ namespace Rystem.OpenAi.Chat
             _modelType = ChatModelType.Gpt35Turbo_Snapshot;
             _functions = functions;
         }
+        private const string FunctionNullFinishReason = "null";
         /// <summary>
         /// Execute operation.
         /// </summary>
@@ -50,13 +52,22 @@ namespace Rystem.OpenAi.Chat
                     if (functionToExecute != null && function.Arguments != null)
                     {
                         var responseFromFunction = await functionToExecute.WrapAsync(function.Arguments);
-                        AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
-                        response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
-                        if (response.Usage != null && usage != null)
+                        if (responseFromFunction != null)
                         {
-                            response.Usage.PromptTokens += usage.PromptTokens;
-                            response.Usage.CompletionTokens += usage.CompletionTokens;
-                            response.Usage.TotalTokens += usage.TotalTokens;
+                            AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
+                            response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+                            if (response.Usage != null && usage != null)
+                            {
+                                response.Usage.PromptTokens += usage.PromptTokens;
+                                response.Usage.CompletionTokens += usage.CompletionTokens;
+                                response.Usage.TotalTokens += usage.TotalTokens;
+                            }
+                        }
+                        else
+                        {
+                            var lastChoice = response.Choices.LastOrDefault();
+                            if (lastChoice != null)
+                                lastChoice.FinishReason = FunctionNullFinishReason;
                         }
                     }
                 }
@@ -111,8 +122,8 @@ namespace Rystem.OpenAi.Chat
                     else
                         result.Choices[0].Delta!.Role = chatRole;
                     results.Chunks.Add(result);
-                    results.Composed.Choices.Last().Message ??= new ChatMessage { Role = chatRole, Content = string.Empty };
-                    var lastMessage = results!.Composed!.Choices!.Last().Message!;
+                    results.Composed.Choices.LastOrDefault().Message ??= new ChatMessage { Role = chatRole, Content = string.Empty };
+                    var lastMessage = results!.Composed!.Choices!.LastOrDefault().Message!;
                     if (result.Choices[0].Delta?.Content != null)
                     {
                         lastMessage
@@ -145,10 +156,28 @@ namespace Rystem.OpenAi.Chat
                     if (functionToExecute != null && function.Arguments != null)
                     {
                         var responseFromFunction = await functionToExecute.WrapAsync(function.Arguments);
-                        AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
-                        await foreach (var stream in ExecuteAsStreamAsync(autoExecuteFunction, cancellationToken))
+                        if (responseFromFunction != null)
                         {
-                            yield return stream;
+                            AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
+                            await foreach (var stream in ExecuteAsStreamAsync(autoExecuteFunction, cancellationToken))
+                            {
+                                yield return stream;
+                            }
+                        }
+                        else
+                        {
+                            results.Chunks.Add(new ChatResult
+                            {
+                                Choices = new List<ChatChoice>
+                                {
+                                   new ChatChoice
+                                   {
+                                       FinishReason = FunctionNullFinishReason
+                                   }
+                                }
+                            });
+                            results!.Composed!.Choices.LastOrDefault().FinishReason = FunctionNullFinishReason;
+                            yield return results;
                         }
                     }
                 }
@@ -448,6 +477,23 @@ namespace Rystem.OpenAi.Chat
             var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
             if (!Request.Functions.Any(x => x.Name == name))
                 Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
+            return this;
+        }
+        /// <summary>
+        /// Developers can describe functions to gpt-4-snapshot and gpt-3.5-turbo-snapshot, and have the model intelligently choose to output a JSON object containing arguments to call those functions. This is a new way to more reliably connect GPT's capabilities with external tools and APIs.
+        /// These models have been fine-tuned to both detect when a function needs to be called(depending on the user’s input) and to respond with JSON that adheres to the function signature.Function calling allows developers to more reliably get structured data back from the model.
+        /// </summary>
+        /// <param name="chatFunction"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder IfTrueWithFunction(string name, bool condition)
+        {
+            if (condition)
+            {
+                Request.Functions ??= new List<JsonFunction>();
+                var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
+                if (!Request.Functions.Any(x => x.Name == name))
+                    Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
+            }
             return this;
         }
         /// <summary>

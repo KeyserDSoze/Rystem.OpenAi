@@ -468,6 +468,41 @@ With true, automatically the framework understands the request from OpenAi and w
 
 from IOpenAiChatFunction
 
+#### Null behavior from Function framework
+If you return from your WrapAsync null, the framework doesn't make another call to open ai and return immediately as finish reason "null".
+
+For example if I create a "unuseful" function that returns always null.
+
+    internal sealed class NullFunction : IOpenAiChatFunction
+    {
+        public const string NameLabel = "get_current_cart";
+        public string Name => NameLabel;
+        private const string DescriptionLabel = "Get the current cart of your user";
+        public string Description => DescriptionLabel;
+        public Type Input => typeof(NullRequestModel);
+        public Task<object> WrapAsync(string message)
+        {
+            _ = System.Text.Json.JsonSerializer.Deserialize<NullRequestModel>(message);
+            return Task.FromResult(default(object));
+        }
+    }
+
+I can test the behavior, and I expect the finish reason as "null".
+
+    var openAiApi = _openAiFactory.Create(name);
+    Assert.NotNull(openAiApi.Chat);
+    var response = await openAiApi.Chat
+        .RequestWithUserMessage("My username is Keyser D. Soze and I want to know what I have in my cart.")
+        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+        .WithAllFunctions()
+        .ExecuteAsync(true);
+
+    var function = response.Choices[0].Message.Function;
+    Assert.NotNull(function);
+    Assert.Contains("Keyser D. Soze", function.Arguments);
+    Assert.Equal("null", response.Choices[0].FinishReason);
+  
+
 ## Edits
 [📖 Back to summary](#documentation)\
 Given a prompt and an instruction, the model will return an edited version of the prompt.

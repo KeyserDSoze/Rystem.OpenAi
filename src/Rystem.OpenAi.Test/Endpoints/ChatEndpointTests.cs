@@ -242,5 +242,46 @@ namespace Rystem.OpenAi.Test
             var content = response.Choices[0].Message.Content;
             Assert.NotNull(content);
         }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithNullFunctionsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var response = await openAiApi.Chat
+                .RequestWithUserMessage("My username is Keyser D. Soze and I want to know what I have in my cart.")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsync(true);
+
+            var function = response.Choices[0].Message.Function;
+            Assert.NotNull(function);
+            Assert.Contains("Keyser D. Soze", function.Arguments);
+            Assert.Equal("null", response.Choices[0].FinishReason);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithStreamWithNullFunctionsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var results = new List<ChatResult>();
+            ChatResult check = null;
+            await foreach (var x in openAiApi.Chat
+                .RequestWithUserMessage("My username is Keyser D. Soze and I want to know what I have in my cart.")
+                .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
+                .WithAllFunctions()
+                .ExecuteAsStreamAsync(true))
+            {
+                results.Add(x.LastChunk);
+                check = x.Composed;
+            }
+            var function = check.Choices[0].Message.Function;
+            Assert.NotNull(function);
+            Assert.Contains("Keyser D. Soze", function.Arguments);
+            Assert.Equal("null", check.Choices[0].FinishReason);
+        }
     }
 }

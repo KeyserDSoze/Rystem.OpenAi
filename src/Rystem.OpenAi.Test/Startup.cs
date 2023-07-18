@@ -100,7 +100,8 @@ namespace Rystem.OpenAi.Test
                 .AddOpenAiChatFunction<WeatherFunction>()
                 .AddOpenAiChatFunction<AirplaneFunction>()
                 .AddOpenAiChatFunction<GroceryFunction>()
-                .AddOpenAiChatFunction<MapFunction>();
+                .AddOpenAiChatFunction<MapFunction>()
+                .AddOpenAiChatFunction<NullFunction>();
             var results = Task.WhenAll(tasks.Select(x => x.AsTask())).ConfigureAwait(false).GetAwaiter().GetResult();
             Assert.NotEmpty(results);
         }

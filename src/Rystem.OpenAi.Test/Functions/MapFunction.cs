@@ -4,6 +4,7 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Test.Functions
 {
+
     internal sealed class MapFunction : IOpenAiChatFunction
     {
         public const string NameLabel = "get_current_position";
