@@ -63,11 +63,11 @@ namespace Rystem.OpenAi
         }
         public OpenAiPriceSettings SetGpt4With8KPrice(decimal prompt = 0.03M, decimal completion = 0.06M)
         {
-            return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt4_32K}", new CostFormula
+            return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt4_8K}", new CostFormula
             {
                 PromptUsage = prompt
             })
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Gpt4_32K}", new CostFormula
+                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Gpt4_8K}", new CostFormula
                 {
                     CompletionUsage = completion,
                 });
