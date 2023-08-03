@@ -255,6 +255,24 @@ namespace Rystem.OpenAi.Chat
             return this;
         }
         /// <summary>
+        /// Add some messages to the request
+        /// </summary>
+        /// <param name="messages">Prompts</param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddMessages(params ChatMessage[] messages)
+        {
+            Request.Messages ??= new List<ChatMessage>();
+            foreach (var message in messages)
+                Request.Messages.Add(message);
+            return this;
+        }
+        /// <summary>
+        /// Get all messages added till now.
+        /// </summary>
+        /// <returns>List<ChatMessage></returns>
+        public List<ChatMessage> GetCurrentMessages()
+            => Request.Messages ?? new List<ChatMessage>();
+        /// <summary>
         /// Add a message to the request
         /// </summary>
         /// <param name="content"></param>
