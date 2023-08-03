@@ -3,13 +3,16 @@ using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi
 {
     internal sealed class OpenAiModel : OpenAiBase, IOpenAiModel
     {
         private readonly bool _forced;
-        public OpenAiModel(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiModel(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;

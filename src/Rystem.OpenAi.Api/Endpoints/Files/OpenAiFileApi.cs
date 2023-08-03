@@ -5,13 +5,16 @@ using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Files
 {
     internal sealed class OpenAiFile : OpenAiBase, IOpenAiFile
     {
         private readonly bool _forced;
-        public OpenAiFile(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiFile(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility) 
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;

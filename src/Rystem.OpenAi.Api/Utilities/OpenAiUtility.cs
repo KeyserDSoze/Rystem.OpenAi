@@ -6,10 +6,12 @@ namespace Rystem.OpenAi
     {
         public IOpenAiTokenizer Tokenizer { get; }
         public IOpenAiCost Cost { get; }
-        public OpenAiUtility(IOpenAiTokenizer tokenizer, IOpenAiCost cost)
+        public IOpenAiExecutor Executor { get; }
+        public OpenAiUtility(IOpenAiTokenizer tokenizer, IOpenAiCost cost, IOpenAiExecutor executor)
         {
             Tokenizer = tokenizer;
             Cost = cost;
+            Executor = executor;
         }
 
         public double CosineSimilarity(float[] from, float[] to)

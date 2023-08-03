@@ -2,15 +2,16 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Management
 {
     internal sealed class OpenAiDeployment : OpenAiBase, IOpenAiDeployment
     {
         public OpenAiDeployment(IHttpClientFactory httpClientFactory,
-           IEnumerable<OpenAiConfiguration> configurations,
-           IOpenAiUtility utility)
-           : base(httpClientFactory, configurations, utility)
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
         }
         public DeploymentBuilder Create(string? deploymentId = null)

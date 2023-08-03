@@ -16,7 +16,8 @@ namespace Rystem.OpenAi.Chat
         private readonly IEnumerable<IOpenAiChatFunction> _functions;
 
         internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            ChatMessage message, IOpenAiUtility utility,
+            ChatMessage message,
+            IOpenAiUtility utility,
             IEnumerable<IOpenAiChatFunction> functions) : base(client,
             configuration,
             () =>

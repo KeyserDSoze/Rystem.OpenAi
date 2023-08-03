@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Rystem.OpenAi.Test.Functions;
+using Rystem.OpenAi.Test.Logger;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -38,6 +40,8 @@ namespace Rystem.OpenAi.Test
             var tenantId = Environment.GetEnvironmentVariable("AzureADTenantId") ?? context.Configuration["AzureAd:TenantId"];
             var azureApiKey2 = Environment.GetEnvironmentVariable("Azure2ApiKey") ?? context.Configuration["Azure2:ApiKey"];
             var resourceName2 = Environment.GetEnvironmentVariable("Azure2ResourceName") ?? context.Configuration["Azure2:ResourceName"];
+            services.AddSingleton<CustomLoggerMemory>();
+            services.AddTransient(typeof(ILogger<>), typeof(CustomLogger<>));
             services
                 .AddOpenAi(settings =>
                 {

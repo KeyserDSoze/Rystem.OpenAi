@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Management
 {
     internal sealed class OpenAiBilling : OpenAiBase, IOpenAiBilling
     {
         public OpenAiBilling(IHttpClientFactory httpClientFactory,
-          IEnumerable<OpenAiConfiguration> configurations,
-          IOpenAiUtility utility)
-          : base(httpClientFactory, configurations, utility)
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
+            : base(httpClientFactory, configurations, utility)
         {
         }
         public BillingBuilder From(DateTime? from = null)

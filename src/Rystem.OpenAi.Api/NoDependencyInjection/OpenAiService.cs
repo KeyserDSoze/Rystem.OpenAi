@@ -22,10 +22,18 @@ namespace Rystem.OpenAi
         public static IOpenAiFactoryNoDependencyInjection Factory => s_openAiService;
         private OpenAiService() { }
         private readonly IServiceCollection _services = new ServiceCollection();
+        public IServiceCollection Services => _services;
         private IServiceProvider? _serviceProvider;
         public IOpenAiServiceSetupNoDependencyInjection AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
         {
             _services.AddOpenAi(settings, integrationName);
+            return this;
+        }
+        public IOpenAiServiceSetupNoDependencyInjection AddFurtherService<TService, TImplementation>(ServiceLifetime lifetime)
+            where TService : class
+            where TImplementation : class, TService
+        {
+            _services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
             return this;
         }
         public ValueTask<List<AutomaticallyDeploymentResult>> MapDeploymentsAutomaticallyAsync(bool forceDeploy = false, params string[] integrationNames)

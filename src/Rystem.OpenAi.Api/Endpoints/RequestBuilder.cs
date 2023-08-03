@@ -13,8 +13,10 @@ namespace Rystem.OpenAi
         private protected bool _forced;
         private protected ModelFamilyType _familyType;
         private protected readonly OpenAiUsage Usage = new OpenAiUsage();
-        private protected RequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            Func<T> requestCreator, IOpenAiUtility utility)
+        private protected RequestBuilder(HttpClient client,
+            OpenAiConfiguration configuration,
+            Func<T> requestCreator,
+            IOpenAiUtility utility)
         {
             Client = client;
             Configuration = configuration;
@@ -24,16 +26,22 @@ namespace Rystem.OpenAi
         private protected decimal CalculateCost(OpenAiType type, Usage? usage)
         {
             var cost = Utility.Cost;
-            return cost.Configure(settings =>
-            {
-                settings
-                    .WithFamily(_familyType)
-                    .WithType(type);
-            }, Configuration.Name).Invoke(new OpenAiUsage
-            {
-                PromptTokens = usage?.PromptTokens ?? 0,
-                CompletionTokens = (usage as CompletionUsage)?.CompletionTokens ?? 0
-            });
+            var result =
+                Utility.Executor.Execute($"Api: {type} calculation cost", () =>
+                {
+                    var response = cost.Configure(settings =>
+                    {
+                        settings
+                            .WithFamily(_familyType)
+                            .WithType(type);
+                    }, Configuration.Name).Invoke(new OpenAiUsage
+                    {
+                        PromptTokens = usage?.PromptTokens ?? 0,
+                        CompletionTokens = (usage as CompletionUsage)?.CompletionTokens ?? 0
+                    });
+                    return response;
+                });
+            return result;
         }
     }
 }

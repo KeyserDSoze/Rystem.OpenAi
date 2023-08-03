@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -16,6 +18,13 @@ namespace Rystem.OpenAi.Chat
         }
         public ChatRequestBuilder Request(ChatMessage message)
             => new ChatRequestBuilder(Client, _configuration, message, Utility, _functions);
+        public ChatRequestBuilder Request(params ChatMessage[] messages)
+        {
+            var builder = new ChatRequestBuilder(Client, _configuration, messages[0], Utility, _functions);
+            foreach (var message in messages.Skip(1))
+                builder.AddMessage(message);
+            return builder;
+        }
         public ChatRequestBuilder RequestWithUserMessage(string message)
             => new ChatRequestBuilder(Client, _configuration, new ChatMessage
             {

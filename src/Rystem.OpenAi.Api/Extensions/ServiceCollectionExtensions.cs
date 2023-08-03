@@ -30,7 +30,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services
                 .TryAddTransient<IOpenAiFactory, OpenAiFactory>();
-
+            services
+                .TryAddTransient<IOpenAiExecutor, OpenAiExecutor>();
             services.AddSingleton(new OpenAiConfiguration(openAiSettings, integrationName));
             var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
             {

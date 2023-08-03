@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Edit
 {
     internal sealed class OpenAiEdit : OpenAiBase, IOpenAiEdit
     {
-        public OpenAiEdit(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiEdit(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }
