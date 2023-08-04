@@ -1,13 +1,13 @@
 ﻿namespace System.Text.Json.Serialization
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public sealed class JsonPropertyMaximumAttribute : Attribute
+    public sealed class JsonPropertyMinimumAttribute : Attribute
     {
-        public double Maximum { get; }
+        public double Minimum { get; }
         public bool Exclusive { get; }
-        public JsonPropertyMaximumAttribute(double maximum, bool exclusive = false)
+        public JsonPropertyMinimumAttribute(double minimum, bool exclusive = false)
         {
-            Maximum = maximum;
+            Minimum = minimum;
             Exclusive = exclusive;
         }
     }

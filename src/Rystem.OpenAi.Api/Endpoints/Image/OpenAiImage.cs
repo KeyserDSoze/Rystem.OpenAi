@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Image
 {
     internal sealed class OpenAiImage : OpenAiBase, IOpenAiImage
     {
-        public OpenAiImage(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiImage(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
         }

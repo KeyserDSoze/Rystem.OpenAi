@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -17,7 +16,8 @@ namespace Rystem.OpenAi.Chat
         private readonly IEnumerable<IOpenAiChatFunction> _functions;
 
         internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            ChatMessage message, IOpenAiUtility utility,
+            ChatMessage message,
+            IOpenAiUtility utility,
             IEnumerable<IOpenAiChatFunction> functions) : base(client,
             configuration,
             () =>
@@ -34,6 +34,9 @@ namespace Rystem.OpenAi.Chat
             _functions = functions;
         }
         private const string FunctionNullFinishReason = "null";
+        private const string FunctionAutoExecutedFinishReason = "functionAutoExecuted";
+        private const string FunctionExecutedFinishReason = "functionExecuted";
+        private const string StopFinishReason = "stop";
         /// <summary>
         /// Execute operation.
         /// </summary>
@@ -41,36 +44,57 @@ namespace Rystem.OpenAi.Chat
         public async ValueTask<ChatResult> ExecuteAsync(bool autoExecuteFunction = false, CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
+            var isFromFunction = Request.Messages.Last().Role == ChatRole.Function;
             var response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+            if (isFromFunction && !autoExecuteFunction && response.Choices != null)
+            {
+                foreach (var choice in response.Choices)
+                {
+                    choice.FinishReason = FunctionExecutedFinishReason;
+                }
+            }
             if (autoExecuteFunction && response.Choices?.Count > 0)
             {
-                var usage = response.Usage;
-                var function = response.Choices[0].Message?.Function;
-                if (function?.Name != null)
+                var numberOfChoicesPerPrompt = Request.NumberOfChoicesPerPrompt;
+                for (var i = 0; i < response.Choices.Count; i++)
                 {
-                    var functionToExecute = _functions.FirstOrDefault(x => x.Name == function.Name);
-                    if (functionToExecute != null && function.Arguments != null)
+                    var choice = response.Choices[i];
+                    var function = choice.Message?.Function;
+                    if (function?.Name != null)
                     {
-                        var responseFromFunction = await functionToExecute.WrapAsync(function.Arguments);
-                        if (responseFromFunction != null)
+                        var functionToExecute = _functions.FirstOrDefault(x => x.Name == function.Name);
+                        if (functionToExecute != null && function.Arguments != null)
                         {
-                            AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
-                            response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
-                            if (response.Usage != null && usage != null)
+                            var responseFromFunction = await functionToExecute.WrapAsync(function.Arguments);
+                            if (responseFromFunction != null)
                             {
-                                response.Usage.PromptTokens += usage.PromptTokens;
-                                response.Usage.CompletionTokens += usage.CompletionTokens;
-                                response.Usage.TotalTokens += usage.TotalTokens;
+                                AddFunctionMessage(function.Name, JsonSerializer.Serialize(responseFromFunction));
+                                WithNumberOfChoicesPerPrompt(1);
+                                var responseForFunction = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+                                if (response.Usage != null && responseForFunction.Usage != null)
+                                {
+                                    response.Usage.PromptTokens += responseForFunction.Usage.PromptTokens;
+                                    response.Usage.CompletionTokens += responseForFunction.Usage.CompletionTokens;
+                                    response.Usage.TotalTokens += responseForFunction.Usage.TotalTokens;
+                                }
+                                response.Choices.RemoveAt(i);
+                                var choiceFromFunction = responseForFunction.Choices.LastOrDefault();
+                                if (choiceFromFunction != null)
+                                {
+                                    choiceFromFunction.FinishReason = FunctionAutoExecutedFinishReason;
+                                    response.Choices.Add(choiceFromFunction);
+                                }
                             }
-                        }
-                        else
-                        {
-                            var lastChoice = response.Choices.LastOrDefault();
-                            if (lastChoice != null)
-                                lastChoice.FinishReason = FunctionNullFinishReason;
+                            else
+                            {
+                                var lastChoice = response.Choices.LastOrDefault();
+                                if (lastChoice != null)
+                                    lastChoice.FinishReason = FunctionNullFinishReason;
+                            }
                         }
                     }
                 }
+                WithNumberOfChoicesPerPrompt(numberOfChoicesPerPrompt ?? 1);
             }
             return response;
         }
@@ -86,8 +110,11 @@ namespace Rystem.OpenAi.Chat
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>
-        /// <returns>ChatResult</returns>
-        public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync(bool autoExecuteFunction = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        /// <param name="autoExecuteFunction">Execute functions you injected autonomously.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>StreamingChatResult</returns>
+        public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync(bool autoExecuteFunction = false,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
             var results = new StreamingChatResult
@@ -106,6 +133,9 @@ namespace Rystem.OpenAi.Chat
             };
             var chatRole = ChatRole.Assistant;
             var index = -1;
+            var isFromFunction = Request.Messages.Last().Role == ChatRole.Function;
+            var functionCommand = autoExecuteFunction ? FunctionAutoExecutedFinishReason : FunctionExecutedFinishReason;
+            var stopCommand = isFromFunction ? functionCommand : StopFinishReason;
             await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
             {
                 if (result?.Choices != null && result.Choices.Count > 0 && result.Choices[0].Delta != null)
@@ -140,6 +170,13 @@ namespace Rystem.OpenAi.Chat
                         var argument = result.Choices[0].Delta?.Function!.Arguments;
                         if (argument != null)
                             lastMessage.AddArgumentFunction(argument);
+                    }
+                    var lastChoice = results.Chunks[^1].Choices.LastOrDefault();
+                    if (lastChoice?.FinishReason == StopFinishReason)
+                    {
+                        lastChoice.FinishReason = stopCommand;
+                        lastChoice = results.Composed.Choices.LastOrDefault();
+                        lastChoice.FinishReason = stopCommand;
                     }
                     yield return results;
                 }
@@ -218,6 +255,24 @@ namespace Rystem.OpenAi.Chat
             Request.Messages.Add(message);
             return this;
         }
+        /// <summary>
+        /// Add some messages to the request
+        /// </summary>
+        /// <param name="messages">Prompts</param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder AddMessages(params ChatMessage[] messages)
+        {
+            Request.Messages ??= new List<ChatMessage>();
+            foreach (var message in messages)
+                Request.Messages.Add(message);
+            return this;
+        }
+        /// <summary>
+        /// Get all messages added till now.
+        /// </summary>
+        /// <returns>List<ChatMessage></returns>
+        public List<ChatMessage> GetCurrentMessages()
+            => Request.Messages ?? new List<ChatMessage>();
         /// <summary>
         /// Add a message to the request
         /// </summary>

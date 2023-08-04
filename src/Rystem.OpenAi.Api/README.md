@@ -369,6 +369,10 @@ Here an example based on the link, you may find it in unit test.
         .ExecuteAndCalculateCostAsync();
     var content = response.Result.Choices[0].Message.Content;    
 
+In this case you receive as finish reason instead of "stop" the word "functionExecuted".
+
+    Assert.Equal("functionExecuted", response.Result.Choices[0].FinishReason);
+
 #### Function with framework
 You can create your function using the interface IOpenAiChatFunction
 
@@ -467,6 +471,10 @@ With true, automatically the framework understands the request from OpenAi and w
     Task<object> WrapAsync(string message);
 
 from IOpenAiChatFunction
+
+In this case you receive as finish reason instead of "stop" the word "functionAutoExecuted".
+
+    Assert.Equal("functionAutoExecuted", response.Result.Choices[0].FinishReason);
 
 #### Null behavior from Function framework
 If you return from your WrapAsync null, the framework doesn't make another call to open ai and return immediately as finish reason "null".

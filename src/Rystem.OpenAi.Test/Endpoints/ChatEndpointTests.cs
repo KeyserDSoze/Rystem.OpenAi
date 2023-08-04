@@ -30,6 +30,28 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(1)
                 .ExecuteAsync();
 
+            //var chatHistory = openAiApi.Chat.RequestWithSystemMessage("for example something to pass to the system.")
+            //    .AddUserMessage("first message from the user");
+            //var message = await chatHistory
+            //    .ExecuteAsync();
+            ////here the first output for the user from openai
+            //var contentFromAssistant = message.Choices[0].Message.Content;
+            ////response from openai added to the chat builder
+            //chatHistory.AddAssistantMessage(contentFromAssistant);
+            ////message from the user
+            //chatHistory.AddUserMessage("second message from the user");
+            //var message2 = await chatHistory
+            //   .ExecuteAsync();
+            ////here the second output for the user from openai
+            //var secondContentFromAssistant = message2.Choices[0].Message.Content;
+            ////response from openai added to the chat builder
+            //chatHistory.AddAssistantMessage(contentFromAssistant);
+            ////message from the user
+            //chatHistory.AddUserMessage("third message from the user");
+            //var message3 = await chatHistory
+            //   .ExecuteAsync();
+            ////and so on......
+
             Assert.NotNull(results);
             Assert.NotNull(results.CreatedUnixTime);
             Assert.True(results.CreatedUnixTime.Value != 0);
@@ -150,6 +172,61 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAndCalculateCostAsync();
 
             var content = response.Result.Choices[0].Message.Content;
+            Assert.Equal("functionExecuted", response.Result.Choices[0].FinishReason);
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithFunctionsAsStreamAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .RequestWithUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelType.Gpt35Turbo)
+                .WithFunction(new JsonFunction
+                {
+                    Name = functionName,
+                    Description = "Get the current weather in a given location",
+                    Parameters = new JsonFunctionNonPrimitiveProperty()
+                        .AddPrimitive("location", new JsonFunctionProperty
+                        {
+                            Type = "string",
+                            Description = "The city and state, e.g. San Francisco, CA"
+                        })
+                        .AddEnum("unit", new JsonFunctionEnumProperty
+                        {
+                            Type = "string",
+                            Enums = new List<string> { "celsius", "fahrenheit" }
+                        })
+                        .AddRequired("location")
+                });
+
+            var response = await request
+                .ExecuteAndCalculateCostAsync();
+
+            var function = response.Result.Choices[0].Message.Function;
+            Assert.NotNull(function);
+            Assert.Equal(function.Name, functionName);
+            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+            Assert.NotNull(weatherRequest?.Location);
+
+            request
+                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            var results = new List<ChatResult>();
+            ChatResult check = null;
+            await foreach (var x in request
+                .ExecuteAsStreamAndCalculateCostAsync())
+            {
+                results.Add(x.Result.LastChunk);
+                check = x.Result.Composed;
+            }
+
+            var content = check.Choices[0].Message.Content;
+            var finishReason = check.Choices[0].FinishReason;
+            Assert.Equal("functionExecuted", finishReason);
             Assert.NotNull(content);
         }
         [Theory]
@@ -166,6 +243,7 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAndCalculateCostAsync(true);
 
             var content = response.Result.Choices[0].Message.Content;
+            Assert.Equal("functionAutoExecuted", response.Result.Choices[0].FinishReason);
             Assert.NotNull(content);
         }
         [Theory]
@@ -192,6 +270,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(check.Choices.Last().Message.Content);
             Assert.NotEmpty(results);
             Assert.True(results.Last().Choices.Count != 0);
+            Assert.Equal("functionAutoExecuted", results.Last().Choices.Last().FinishReason);
             Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta?.Content != null);
         }
         [Theory]
@@ -208,6 +287,7 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync(true);
 
             var content = response.Choices[0].Message.Content;
+            Assert.Equal("functionAutoExecuted", response.Choices[0].FinishReason);
             Assert.NotNull(content);
         }
         [Theory]
@@ -224,6 +304,7 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync(true);
 
             var content = response.Choices[0].Message.Content;
+            Assert.Equal("functionAutoExecuted", response.Choices[0].FinishReason);
             Assert.NotNull(content);
         }
         [Theory]
@@ -232,14 +313,20 @@ namespace Rystem.OpenAi.Test
         public async ValueTask CreateChatCompletionWithComplexFunctionsAndArraysAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
-            Assert.NotNull(openAiApi.Chat);
-            var response = await openAiApi.Chat
-                .RequestWithUserMessage("I need to buy 3 apples, 2 bananas, chicken, salmon and atumn. What is the best price to buy them all?")
+            var results = new List<ChatResult>();
+            ChatResult check = null;
+            await foreach (var x in openAiApi.Chat
+                .RequestWithUserMessage("I need to buy 3 apples, 2 bananas, chicken, salmon and tuna. What is the best price to buy them all?")
                 .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithAllFunctions()
-                .ExecuteAsync(true);
+                .ExecuteAsStreamAsync(true))
+            {
+                results.Add(x.LastChunk);
+                check = x.Composed;
+            }
 
-            var content = response.Choices[0].Message.Content;
+            var content = check.Choices[0].Message.Content;
+            Assert.Equal("functionAutoExecuted", check.Choices[0].FinishReason);
             Assert.NotNull(content);
         }
         [Theory]

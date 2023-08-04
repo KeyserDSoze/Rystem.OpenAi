@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Embedding
 {
     internal sealed class OpenAiEmbedding : OpenAiBase, IOpenAiEmbedding
     {
-        public OpenAiEmbedding(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations,
-            IOpenAiUtility utility)
+        public OpenAiEmbedding(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility) 
             : base(httpClientFactory, configurations, utility)
         {
         }

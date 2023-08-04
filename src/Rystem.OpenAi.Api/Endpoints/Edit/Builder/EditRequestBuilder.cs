@@ -2,14 +2,16 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Completion;
 
 namespace Rystem.OpenAi.Edit
 {
     public sealed class EditRequestBuilder : RequestBuilder<EditRequest>
     {
         private EditModelType _modelType;
-        internal EditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string instruction, IOpenAiUtility utility) :
+        internal EditRequestBuilder(HttpClient client,
+            OpenAiConfiguration configuration,
+            string instruction,
+            IOpenAiUtility utility) :
             base(client, configuration, () =>
             {
                 return new EditRequest

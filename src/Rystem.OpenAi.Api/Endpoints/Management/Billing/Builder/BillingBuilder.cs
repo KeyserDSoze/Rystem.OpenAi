@@ -7,7 +7,10 @@ namespace Rystem.OpenAi.Management
 {
     public sealed class BillingBuilder : RequestBuilder<BillingRequest>
     {
-        public BillingBuilder(HttpClient client, OpenAiConfiguration configuration, IOpenAiUtility utility, DateTime? from) :
+        public BillingBuilder(HttpClient client,
+            OpenAiConfiguration configuration,
+            IOpenAiUtility utility,
+            DateTime? from) :
             base(client, configuration, () =>
             {
                 return new BillingRequest()

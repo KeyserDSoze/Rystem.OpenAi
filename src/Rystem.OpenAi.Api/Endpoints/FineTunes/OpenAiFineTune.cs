@@ -8,13 +8,16 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.FineTune
 {
     internal sealed class OpenAiFineTune : OpenAiBase, IOpenAiFineTune
     {
         private readonly bool _forced;
-        public OpenAiFineTune(IHttpClientFactory httpClientFactory, IEnumerable<OpenAiConfiguration> configurations, IOpenAiUtility utility)
+        public OpenAiFineTune(IHttpClientFactory httpClientFactory,
+            IEnumerable<OpenAiConfiguration> configurations,
+            IOpenAiUtility utility) 
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;

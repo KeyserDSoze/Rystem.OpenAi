@@ -7,7 +7,10 @@ namespace Rystem.OpenAi.Moderation
     public sealed class ModerationRequestBuilder : RequestBuilder<ModerationsRequest>
     {
         private ModerationModelType _modelType;
-        internal ModerationRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string input, IOpenAiUtility utility)
+        internal ModerationRequestBuilder(HttpClient client,
+            OpenAiConfiguration configuration,
+            string input,
+            IOpenAiUtility utility)
             : base(client, configuration, () =>
             {
                 return new ModerationsRequest()
