@@ -61,6 +61,7 @@ namespace Rystem.OpenAi.Test
                     .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
                     .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
                     .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo)
+                    .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo_Snapshot)
                     .MapDeploymentCustomModel("deployment-a074644e38f642658a73a3189f64bc1b", "text-ada-001");
                 settings.Price
                     .SetFineTuneForAda(0.0004M, 0.0016M)

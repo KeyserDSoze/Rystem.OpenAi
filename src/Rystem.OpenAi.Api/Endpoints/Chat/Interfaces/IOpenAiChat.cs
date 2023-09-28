@@ -9,6 +9,12 @@
         /// <returns>Builder</returns>
         ChatRequestBuilder Request(ChatMessage message);
         /// <summary>
+        /// Given a chat conversation, the model will return a chat completion response.
+        /// </summary>
+        /// <param name="messages">The messages to generate chat completions for, in the chat format.</param>
+        /// <returns>Builder</returns>
+        ChatRequestBuilder Request(params ChatMessage[] messages);
+        /// <summary>
         /// Start chat builder with a user message. User message is a message used to send information.
         /// </summary>
         /// <param name="message">The messages to generate chat completions for, in the chat format.</param>

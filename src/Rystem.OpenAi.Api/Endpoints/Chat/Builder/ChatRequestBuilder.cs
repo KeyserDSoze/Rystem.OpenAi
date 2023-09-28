@@ -16,7 +16,7 @@ namespace Rystem.OpenAi.Chat
         private readonly IEnumerable<IOpenAiChatFunction> _functions;
 
         internal ChatRequestBuilder(HttpClient client, OpenAiConfiguration configuration,
-            ChatMessage message,
+            ChatMessage? message,
             IOpenAiUtility utility,
             IEnumerable<IOpenAiChatFunction> functions) : base(client,
             configuration,
@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Chat
             {
                 return new ChatRequest()
                 {
-                    Messages = new List<ChatMessage>() { message },
+                    Messages = message != null ? new List<ChatMessage>() { message } : new List<ChatMessage>(),
                     ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel().Id
                 };
             }, utility)
