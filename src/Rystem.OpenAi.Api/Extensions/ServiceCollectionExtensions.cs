@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddTransient<IOpenAiExecutor, OpenAiExecutor>();
             services.AddSingleton(new OpenAiConfiguration(openAiSettings, integrationName));
-            var httpClientBuilder = services.AddHttpClient(OpenAiSettings.HttpClientName, client =>
+            var httpClientBuilder = services.AddHttpClient($"{OpenAiSettings.HttpClientName}-{integrationName}", client =>
             {
                 if (openAiSettings.Azure.HasConfiguration)
                 {
