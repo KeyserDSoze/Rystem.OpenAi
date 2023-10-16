@@ -42,7 +42,7 @@ namespace Rystem.OpenAi
             public string EditUri { get; set; } = string.Format(BaseUri, "{0}", "edits", "{1}", "{2}");
             public string EmbeddingUri { get; set; } = string.Format(BaseUri, "{0}", "embeddings", "{1}", "{2}");
             public string FileUri { get; set; } = string.Format(BaseUri, "{0}", "files", "{1}", "{2}");
-            public string FineTuneUri { get; set; } = string.Format(BaseUri, "{0}", "fine-tunes", "{1}", "{2}");
+            public string FineTuneUri { get; set; } = string.Format(BaseUri, "{0}", "fine-tuning/jobs", "{1}", "{2}");
             public string ModelUri { get; set; } = string.Format(BaseUri, "{0}", "models", "{1}", "{2}");
             public string ModerationUri { get; set; } = string.Format(BaseUri, "{0}", "moderations", "{1}", "{2}");
             public string ImageUri { get; set; } = string.Format(BaseUri, "{0}", "images", "{1}", "{2}");
