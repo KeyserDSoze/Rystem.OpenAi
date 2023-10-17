@@ -47,10 +47,8 @@ namespace Rystem.OpenAi.Test
             Assert.Empty(allFineTunes.Runnings);
 
             var createResult = await openAiApi.FineTune.Create(uploadResult.Id)
-                                    .WithModel("ada", ModelFamilyType.Ada)
-                                    .WithBatchSize(1)
+                                    .WithModel("davinci-002", ModelFamilyType.Davinci)
                                     .WithNumberOfEpochs(1)
-                                    .WithLearningRateMultiplier(1)
                                     .WithValidationFile(uploadResult2.Id)
                                     .ExecuteAsync();
             Assert.NotNull(createResult);
