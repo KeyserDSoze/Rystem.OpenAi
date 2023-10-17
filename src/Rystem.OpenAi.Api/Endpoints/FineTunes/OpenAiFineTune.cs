@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.FineTune
 {
@@ -17,27 +16,46 @@ namespace Rystem.OpenAi.FineTune
         private readonly bool _forced;
         public OpenAiFineTune(IHttpClientFactory httpClientFactory,
             IEnumerable<OpenAiConfiguration> configurations,
-            IOpenAiUtility utility) 
+            IOpenAiUtility utility)
             : base(httpClientFactory, configurations, utility)
         {
             _forced = false;
         }
         public FineTuneRequestBuilder Create(string trainingFileId)
             => new FineTuneRequestBuilder(Client, _configuration, trainingFileId, Utility);
-        public ValueTask<FineTuneResults> ListAsync(CancellationToken cancellationToken = default)
-            => Client.GetAsync<FineTuneResults>(_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced, string.Empty), _configuration, cancellationToken);
+        public ValueTask<FineTuneResults> ListAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        {
+            var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
+            var uri = $"{_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced, string.Empty)}{querystring}";
+            return Client.GetAsync<FineTuneResults>(uri, _configuration, cancellationToken);
+        }
+
         public ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => Client.GetAsync<FineTuneResult>(_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}"), _configuration, cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => Client.PostAsync<FineTuneResult>(_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}/cancel"), null, _configuration, cancellationToken);
-        public ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => Client.GetAsync<FineTuneEventsResult>(_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}/events"), _configuration, cancellationToken);
+        public ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        {
+            var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
+            var uri = $"{_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}/events")}{querystring}";
+            return Client.GetAsync<FineTuneEventsResult>(uri, _configuration, cancellationToken);
+        }
         public ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => Client.DeleteAsync<FineTuneDeleteResult>(_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}"), _configuration, cancellationToken);
-        public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(CancellationToken cancellationToken = default)
-            => Client.StreamAsync(_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced, string.Empty), null, HttpMethod.Get, _configuration, ReadFineTuneStreamAsync, cancellationToken);
-        public IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => Client.StreamAsync(_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced, $"/{fineTuneId}/events"), null, HttpMethod.Get, _configuration, ReadEventsStreamAsync, cancellationToken);
+        public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        {
+            var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
+            var uri = $"{_configuration.GetUri(OpenAiType.FineTune, string.Empty, _forced, string.Empty)}{querystring}";
+            return Client.StreamAsync(uri, null, HttpMethod.Get, _configuration, ReadFineTuneStreamAsync, cancellationToken);
+        }
+
+        public IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        {
+            var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
+            var uri = $"{_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}/events")}{querystring}";
+            return Client.StreamAsync(uri, null, HttpMethod.Get, _configuration, ReadEventsStreamAsync, cancellationToken);
+        }
+
         private static IAsyncEnumerable<FineTuneResult> ReadFineTuneStreamAsync(Stream stream, HttpResponseMessage response, CancellationToken cancellationToken)
         {
             return ReadStreamAsync(stream, response, bufferAsString =>

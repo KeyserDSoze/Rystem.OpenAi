@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Files;
 
 namespace Rystem.OpenAi.FineTune
 {
@@ -18,12 +16,12 @@ namespace Rystem.OpenAi.FineTune
         /// <param name="trainingFileId"></param>
         /// <returns>Builder</returns>
         FineTuneRequestBuilder Create(string trainingFileId);
-        ValueTask<FineTuneResults> ListAsync(CancellationToken cancellationToken = default);
-        IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(CancellationToken cancellationToken = default);
+        ValueTask<FineTuneResults> ListAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default);
         ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default);
         ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default);
-        ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, CancellationToken cancellationToken = default);
-        IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, CancellationToken cancellationToken = default);
+        ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
         ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
 }
