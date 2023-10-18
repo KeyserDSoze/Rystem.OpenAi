@@ -8,7 +8,7 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("created_at")]
-        public int CreatedAt { get; set; }
+        public int? CreatedAt { get; set; }
         [JsonPropertyName("events")]
         public List<FineTuneEvent>? Events { get; set; }
         [JsonPropertyName("fine_tuned_model")]
@@ -24,8 +24,10 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("training_file")]
         public string? TrainingFile { get; set; }
         [JsonPropertyName("updated_at")]
-        public int UpdatedAt { get; set; }
+        public int? UpdatedAt { get; set; }
+        [JsonPropertyName("finished_at")]
+        public int? FinishedAt { get; set; }
         [JsonPropertyName("trained_tokens")]
-        public int TrainedTokens { get; set; }
+        public int? TrainedTokens { get; set; }
     }
 }
