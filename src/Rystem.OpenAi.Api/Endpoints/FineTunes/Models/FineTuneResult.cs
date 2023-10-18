@@ -12,7 +12,7 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("events")]
         public List<FineTuneEvent>? Events { get; set; }
         [JsonPropertyName("fine_tuned_model")]
-        public object? FineTuneModel { get; set; }
+        public string? FineTuneModel { get; set; }
         [JsonPropertyName("hyperparams")]
         public Hyperparams? Hyperparams { get; set; }
         [JsonPropertyName("organization_id")]
