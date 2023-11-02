@@ -17,6 +17,7 @@ namespace Rystem.OpenAi.Test
         public async ValueTask GetAllModelsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
+            await openAiApi.Model.DeleteAsync("dadsadasdasdad");
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
             foreach (var model in results)

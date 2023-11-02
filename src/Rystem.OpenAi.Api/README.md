@@ -279,6 +279,12 @@ Retrieves a model instance, providing basic information about the model such as 
     var openAiApi = _openAiFactory.Create(name);
     var result = await openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
 
+### Delete fine-tune model
+Delete a fine-tuned model. You must have the Owner role in your organization.
+
+    var openAiApi = _openAiFactory.Create(name);
+    var deleteResult = await openAiApi.Model
+        .DeleteAsync(fineTuneModelId);
 
 ## Completions
 [📖 Back to summary](#documentation)\
@@ -725,8 +731,8 @@ Get fine-grained status updates for a fine-tune job.
 Delete a fine-tuned model. You must have the Owner role in your organization.
 
     var openAiApi = _openAiFactory.Create(name);
-    var deleteResult = await openAiApi.File
-        .DeleteAsync(fileId);
+    var deleteResult = await openAiApi.FineTune
+        .DeleteAsync(fineTuneModelId);
 
 ## Moderations
 [📖 Back to summary](#documentation)\
