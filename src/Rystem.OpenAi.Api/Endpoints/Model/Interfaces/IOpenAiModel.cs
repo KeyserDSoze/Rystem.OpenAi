@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Rystem.OpenAi.FineTune;
 
 namespace Rystem.OpenAi
 {
@@ -22,5 +23,12 @@ namespace Rystem.OpenAi
         /// </summary>
         /// <returns>Asynchronously returns the list of all <see cref="Model"/>s</returns>
         Task<List<Model>> ListAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fineTuneId">The id/name of the fine tune model.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Result for deletion</returns>
+        ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
 }

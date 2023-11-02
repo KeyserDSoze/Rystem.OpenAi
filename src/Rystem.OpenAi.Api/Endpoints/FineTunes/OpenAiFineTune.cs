@@ -41,7 +41,7 @@ namespace Rystem.OpenAi.FineTune
             return Client.GetAsync<FineTuneEventsResult>(uri, _configuration, cancellationToken);
         }
         public ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => Client.DeleteAsync<FineTuneDeleteResult>(_configuration.GetUri(OpenAiType.FineTune, fineTuneId, _forced, $"/{fineTuneId}"), _configuration, cancellationToken);
+            => Client.DeleteAsync<FineTuneDeleteResult>(_configuration.GetUri(OpenAiType.Model, fineTuneId, _forced, $"/{fineTuneId}"), _configuration, cancellationToken);
         public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
