@@ -1,6 +1,6 @@
 ﻿namespace System.Text.Json.Serialization
 {
-    public sealed class JsonFunction
+    public sealed class JsonFunction : ITool
     {
         [JsonPropertyName("name")]
         public string Name { get; set; } = null!;

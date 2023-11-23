@@ -44,7 +44,7 @@ namespace Rystem.OpenAi.Chat
         public async ValueTask<ChatResult> ExecuteAsync(bool autoExecuteFunction = false, CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
-            var isFromFunction = Request.Messages.Last().Role == ChatRole.Function;
+            var isFromFunction = Request.Messages.Last().ToolCall?.Function != null;
             var response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
             if (isFromFunction && !autoExecuteFunction && response.Choices != null)
             {
@@ -59,7 +59,7 @@ namespace Rystem.OpenAi.Chat
                 for (var i = 0; i < response.Choices.Count; i++)
                 {
                     var choice = response.Choices[i];
-                    var function = choice.Message?.Function;
+                    var function = choice.Message?.ToolCall?.Function;
                     if (function?.Name != null)
                     {
                         var functionToExecute = _functions.FirstOrDefault(x => x.Name == function.Name);
@@ -133,7 +133,7 @@ namespace Rystem.OpenAi.Chat
             };
             var chatRole = ChatRole.Assistant;
             var index = -1;
-            var isFromFunction = Request.Messages.Last().Role == ChatRole.Function;
+            var isFromFunction = Request.Messages.Last().ToolCall?.Function != null;
             var functionCommand = autoExecuteFunction ? FunctionAutoExecutedFinishReason : FunctionExecutedFinishReason;
             var stopCommand = isFromFunction ? functionCommand : StopFinishReason;
             await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
@@ -161,13 +161,13 @@ namespace Rystem.OpenAi.Chat
                         results.Composed.Usage.TotalTokens += 1;
                         results.Composed.Usage.CompletionTokens += 1;
                     }
-                    else if (result.Choices[0].Delta?.Function?.Name != null)
+                    else if (result.Choices[0].Delta?.ToolCall?.Function?.Name != null)
                     {
-                        lastMessage.AddFunction(result.Choices[0].Delta!.Function!.Name!);
+                        lastMessage.AddFunction(result.Choices[0].Delta!.ToolCall!.Function!.Name!);
                     }
-                    else if (result.Choices[0].Delta?.Function?.Arguments != null)
+                    else if (result.Choices[0].Delta?.ToolCall?.Function?.Arguments != null)
                     {
-                        var argument = result.Choices[0].Delta?.Function!.Arguments;
+                        var argument = result.Choices[0].Delta?.ToolCall!.Function!.Arguments;
                         if (argument != null)
                             lastMessage.AddArgumentFunction(argument);
                     }
@@ -186,7 +186,7 @@ namespace Rystem.OpenAi.Chat
 
             if (autoExecuteFunction)
             {
-                var function = results.Composed.Choices.LastOrDefault()?.Message?.Function;
+                var function = results.Composed.Choices.LastOrDefault()?.Message?.ToolCall?.Function;
                 if (function?.Name != null)
                 {
                     var functionToExecute = _functions.FirstOrDefault(x => x.Name == function.Name);
@@ -308,7 +308,23 @@ namespace Rystem.OpenAi.Chat
         /// <param name="content"></param>
         /// <returns>Builder</returns>
         public ChatRequestBuilder AddFunctionMessage(string name, string content)
-            => AddMessage(new ChatMessage { Name = name, Content = content, Role = ChatRole.Function });
+        {
+            Request.ToolChoice = "auto";
+            return AddMessage(new ChatMessage
+            {
+                ToolCall = new ChatMessageTool
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Type = "function",
+                    Function = new ChatMessageFunctionResponse
+                    {
+                        Name = name,
+                        Arguments = content
+                    }
+                },
+                Role = ChatRole.Tool
+            });
+        }
         /// <summary>
         /// ID of the model to use.
         /// </summary>
@@ -516,8 +532,8 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithFunction(JsonFunction chatFunction)
         {
-            Request.Functions ??= new List<JsonFunction>();
-            Request.Functions.Add(chatFunction);
+            Request.Tools ??= new List<ITool>();
+            Request.Tools.Add(chatFunction);
             return this;
         }
         /// <summary>
@@ -528,10 +544,10 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithFunction(string name)
         {
-            Request.Functions ??= new List<JsonFunction>();
+            Request.Tools ??= new List<ITool>();
             var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
-            if (!Request.Functions.Any(x => x.Name == name))
-                Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
+            if (!Request.Tools.Any(x => x is JsonFunction t && t.Name == name))
+                Request.Tools.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
             return this;
         }
         /// <summary>
@@ -544,10 +560,10 @@ namespace Rystem.OpenAi.Chat
         {
             if (condition)
             {
-                Request.Functions ??= new List<JsonFunction>();
+                Request.Tools ??= new List<ITool>();
                 var function = _functions.FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"Function {name} not found. Please install with AddOpenAiChatFunction.");
-                if (!Request.Functions.Any(x => x.Name == name))
-                    Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
+                if (!Request.Tools.Any(x => x is JsonFunction t && t.Name == name))
+                    Request.Tools.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
             }
             return this;
         }
@@ -558,11 +574,11 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithAllFunctions()
         {
-            Request.Functions ??= new List<JsonFunction>();
+            Request.Tools ??= new List<ITool>();
             foreach (var function in _functions)
             {
-                if (!Request.Functions.Any(x => x.Name == function.Name))
-                    Request.Functions.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
+                if (!Request.Tools.Any(x => x is JsonFunction t && t.Name == function.Name))
+                    Request.Tools.Add(JsonFunctionContainerManager.Instance.GetFunction(function));
             }
             return this;
         }

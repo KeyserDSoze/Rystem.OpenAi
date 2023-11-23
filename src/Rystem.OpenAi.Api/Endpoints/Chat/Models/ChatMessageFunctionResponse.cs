@@ -2,7 +2,7 @@
 
 namespace Rystem.OpenAi.Chat
 {
-    public sealed class ChatMessageFunction
+    public sealed class ChatMessageFunctionResponse
     {
         [JsonPropertyName("name")]
         public string? Name { get; set; }

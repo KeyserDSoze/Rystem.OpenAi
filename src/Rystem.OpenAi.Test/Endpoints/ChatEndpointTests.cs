@@ -160,7 +160,7 @@ namespace Rystem.OpenAi.Test
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
-            var function = response.Result.Choices[0].Message.Function;
+            var function = response.Result.Choices[0].Message.ToolCall?.Function;
             Assert.NotNull(function);
             Assert.Equal(function.Name, functionName);
             var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
@@ -207,7 +207,7 @@ namespace Rystem.OpenAi.Test
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
-            var function = response.Result.Choices[0].Message.Function;
+            var function = response.Result.Choices[0].Message.ToolCall.Function;
             Assert.NotNull(function);
             Assert.Equal(function.Name, functionName);
             var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
@@ -342,7 +342,7 @@ namespace Rystem.OpenAi.Test
                 .WithAllFunctions()
                 .ExecuteAsync(true);
 
-            var function = response.Choices[0].Message.Function;
+            var function = response.Choices[0].Message.ToolCall.Function;
             Assert.NotNull(function);
             Assert.Contains("Keyser D. Soze", function.Arguments);
             Assert.Equal("null", response.Choices[0].FinishReason);
@@ -365,7 +365,7 @@ namespace Rystem.OpenAi.Test
                 results.Add(x.LastChunk);
                 check = x.Composed;
             }
-            var function = check.Choices[0].Message.Function;
+            var function = check.Choices[0].Message.ToolCall.Function;
             Assert.NotNull(function);
             Assert.Contains("Keyser D. Soze", function.Arguments);
             Assert.Equal("null", check.Choices[0].FinishReason);
