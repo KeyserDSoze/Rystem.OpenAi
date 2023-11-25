@@ -2,5 +2,7 @@
 {
     public interface ITool
     {
+        [JsonPropertyName("type")]
+        string Type { get; }
     }
 }

@@ -4,6 +4,8 @@ namespace Rystem.OpenAi.Chat
 {
     public sealed class ChatMessageTool
     {
+        [JsonPropertyName("index")]
+        public int Index { get; set; }
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("type")]

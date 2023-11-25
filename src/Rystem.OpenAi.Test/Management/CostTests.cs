@@ -160,7 +160,7 @@ namespace Rystem.OpenAi.Test
                     var chatTokenizer = _utility.Tokenizer.WithChatModel(chatModel);
                     return (() => chat.CalculateCost(),
                             () => responseForChatWithCost.CalculateCost(),
-                            responseForChatWithCost.Result.Choices.Select(x => x.Message.Content).Where(x => x != null).ToList(),
+                            responseForChatWithCost.Result.Choices.Select(x => x.Message.Content as string).Where(x => x != null).ToList(),
                             responseForChatWithCost.Result.Usage.PromptTokens.Value,
                             responseForChatWithCost.Result.Usage.CompletionTokens.Value,
                             chatTokenizer);

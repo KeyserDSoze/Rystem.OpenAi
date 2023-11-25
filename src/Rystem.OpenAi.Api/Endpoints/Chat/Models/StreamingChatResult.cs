@@ -10,7 +10,5 @@ namespace Rystem.OpenAi.Chat
         public List<ChatResult> Chunks { get; set; } = null!;
         [JsonPropertyName("lastChunk")]
         public ChatResult LastChunk => Chunks.LastOrDefault();
-        [JsonPropertyName("composed")]
-        public ChatResult Composed { get; set; } = null!;
     }
 }

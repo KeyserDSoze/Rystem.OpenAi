@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -119,7 +120,7 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsStreamAndCalculateCostAsync())
             {
                 results.Add(x.Result.LastChunk);
-                check = x.Result.Composed;
+                //check = x.Result.Composed;
                 cost += x.CalculateCost();
             }
             Assert.True(cost > 0);
@@ -160,14 +161,14 @@ namespace Rystem.OpenAi.Test
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
-            var function = response.Result.Choices[0].Message.ToolCall?.Function;
+            var function = response.Result.Choices[0].Message.ToolCalls?.First().Function;
             Assert.NotNull(function);
             Assert.Equal(function.Name, functionName);
             var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
             Assert.NotNull(weatherRequest?.Location);
 
             request
-                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+                .AddToolMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
             response = await request
                 .ExecuteAndCalculateCostAsync();
 
@@ -207,21 +208,21 @@ namespace Rystem.OpenAi.Test
             var response = await request
                 .ExecuteAndCalculateCostAsync();
 
-            var function = response.Result.Choices[0].Message.ToolCall.Function;
+            var function = response.Result.Choices[0].Message.ToolCalls.First().Function;
             Assert.NotNull(function);
             Assert.Equal(function.Name, functionName);
             var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
             Assert.NotNull(weatherRequest?.Location);
 
             request
-                .AddFunctionMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+                .AddToolMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
             var results = new List<ChatResult>();
             ChatResult check = null;
             await foreach (var x in request
                 .ExecuteAsStreamAndCalculateCostAsync())
             {
                 results.Add(x.Result.LastChunk);
-                check = x.Result.Composed;
+                //check = x.Result.Composed;
             }
 
             var content = check.Choices[0].Message.Content;
@@ -263,7 +264,7 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsStreamAndCalculateCostAsync(true))
             {
                 results.Add(x.Result.LastChunk);
-                check = x.Result.Composed;
+                //check = x.Result.Composed;
                 cost += x.CalculateCost();
             }
             Assert.True(cost > 0);
@@ -313,21 +314,17 @@ namespace Rystem.OpenAi.Test
         public async ValueTask CreateChatCompletionWithComplexFunctionsAndArraysAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name);
-            var results = new List<ChatResult>();
-            ChatResult check = null;
+            StreamingChatResult results = null;
             await foreach (var x in openAiApi.Chat
                 .RequestWithUserMessage("I need to buy 3 apples, 2 bananas, chicken, salmon and tuna. What is the best price to buy them all?")
                 .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
                 .WithAllFunctions()
                 .ExecuteAsStreamAsync(true))
             {
-                results.Add(x.LastChunk);
-                check = x.Composed;
+                results = x;
             }
-
-            var content = check.Choices[0].Message.Content;
-            Assert.Equal("functionAutoExecuted", check.Choices[0].FinishReason);
-            Assert.NotNull(content);
+            Assert.NotNull(results);
+            Assert.Contains(results.Chunks.SelectMany(x => x.Choices), x => x.FinishReason == "functionAutoExecuted");
         }
         [Theory]
         [InlineData("")]
@@ -342,7 +339,7 @@ namespace Rystem.OpenAi.Test
                 .WithAllFunctions()
                 .ExecuteAsync(true);
 
-            var function = response.Choices[0].Message.ToolCall.Function;
+            var function = response.Choices[0].Message.ToolCalls.First().Function;
             Assert.NotNull(function);
             Assert.Contains("Keyser D. Soze", function.Arguments);
             Assert.Equal("null", response.Choices[0].FinishReason);
@@ -363,9 +360,9 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsStreamAsync(true))
             {
                 results.Add(x.LastChunk);
-                check = x.Composed;
+                //check = x.Composed;
             }
-            var function = check.Choices[0].Message.ToolCall.Function;
+            var function = check.Choices[0].Message.ToolCalls.First().Function;
             Assert.NotNull(function);
             Assert.Contains("Keyser D. Soze", function.Arguments);
             Assert.Equal("null", check.Choices[0].FinishReason);

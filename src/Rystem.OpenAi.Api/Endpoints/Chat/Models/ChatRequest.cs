@@ -38,7 +38,7 @@ namespace Rystem.OpenAi.Chat
         /// Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.
         /// </summary>
         [JsonPropertyName("seed")]
-        public string? Seed { get; set; }
+        public int? Seed { get; set; }
         /// <summary>
         /// Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message.
         /// auto means the model can pick between generating a message or calling a function. 
@@ -46,12 +46,12 @@ namespace Rystem.OpenAi.Chat
         /// none is the default when no functions are present.auto is the default if functions are present.
         /// </summary>
         [JsonPropertyName("tool_choice")]
-        public string? ToolChoice { get; set; }
+        public object? ToolChoice { get; set; }
         /// <summary>
         /// A list of tools the model may call. Currently, only functions are supported as a tool. 
         /// Use this to provide a list of functions the model may generate JSON inputs for.
         /// </summary>
         [JsonPropertyName("tools")]
-        public List<ITool>? Tools { get; set; }
+        public List<object>? Tools { get; set; }
     }
 }

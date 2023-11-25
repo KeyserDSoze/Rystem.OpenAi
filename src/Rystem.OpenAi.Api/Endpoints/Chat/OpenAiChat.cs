@@ -48,19 +48,18 @@ namespace Rystem.OpenAi.Chat
             }, Utility, _functions);
         public ChatRequestBuilder RequestWithFunctionMessage(string name, string message)
         {
-            //Request.ToolChoice = "auto";
             return new ChatRequestBuilder(Client, _configuration, new ChatMessage
             {
-                ToolCall = new ChatMessageTool
+                ToolCalls = new List<ChatMessageTool>(){ new ChatMessageTool
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Type = "function",
+                    Type = ChatConstants.ToolType.Function,
                     Function = new ChatMessageFunctionResponse
                     {
                         Name = name,
                         Arguments = message
                     }
-                },
+                } },
                 Role = ChatRole.Tool
             }, Utility, _functions);
         }
