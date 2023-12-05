@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Audio
             {
                 var request = new AudioRequest()
                 {
-                    ModelId = AudioModelType.Whisper.ToModelId()
+                    ModelId = AudioModelType.Whisper.ToModel()
                 };
                 var memoryStream = new MemoryStream();
                 audio.CopyTo(memoryStream);

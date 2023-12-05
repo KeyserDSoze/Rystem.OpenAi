@@ -1,7 +1,5 @@
 ﻿using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
-using Rystem.OpenAi.Completion;
-using Rystem.OpenAi.Edit;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
@@ -16,8 +14,6 @@ namespace Rystem.OpenAi
         IOpenAi Create(string? integrationName = default);
         IOpenAiAudio CreateAudio(string? integrationName = default);
         IOpenAiChat CreateChat(string? integrationName = default);
-        IOpenAiCompletion CreateCompletion(string? integrationName = default);
-        IOpenAiEdit CreateEdit(string? integrationName = default);
         IOpenAiEmbedding CreateEmbedding(string? integrationName = default);
         IOpenAiFile CreateFile(string? integrationName = default);
         IOpenAiFineTune CreateFineTune(string? integrationName = default);

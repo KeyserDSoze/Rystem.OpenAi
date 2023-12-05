@@ -8,7 +8,6 @@ namespace Rystem.OpenAi
         IOpenAiTokenizer WithModel(string modelId);
         IOpenAiTokenizer WithChatModel(ChatModelType chatModelType);
         IOpenAiTokenizer WithTextModel(TextModelType textModelType);
-        IOpenAiTokenizer WithEditModel(EditModelType editModelType);
         IOpenAiTokenizer WithEmbeddingModel(EmbeddingModelType embeddingModelType);
         IOpenAiTokenizer WithModerationModel(ModerationModelType moderationModelType);
         string Decode(List<int> tokens);

@@ -12,12 +12,7 @@ namespace Rystem.OpenAi
             SetGpt4With32KPrice();
             SetGpt3_5();
             SetGpt3_5_16K();
-            SetAda();
             SetAdaEmbeddings();
-            SetBabbage();
-            SetCurie();
-            SetCushman();
-            SetDavinci();
             SetFineTuneForAda();
             SetFineTuneForBabbage();
             SetFineTuneForCurie();
@@ -43,12 +38,7 @@ namespace Rystem.OpenAi
             SetGpt4With32KPrice();
             SetGpt3_5(0.002M, 0.002M);
             SetGpt3_5_16K();
-            SetAda();
             SetAdaEmbeddings(0.0004M);
-            SetBabbage();
-            SetCurie();
-            SetCushman();
-            SetDavinci();
             SetFineTuneForAda();
             SetFineTuneForBabbage();
             SetFineTuneForCurie();
@@ -66,22 +56,14 @@ namespace Rystem.OpenAi
             return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt4_8K}", new CostFormula
             {
                 PromptUsage = prompt
-            })
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Gpt4_8K}", new CostFormula
-                {
-                    CompletionUsage = completion,
-                });
+            });
         }
         public OpenAiPriceSettings SetGpt4With32KPrice(decimal prompt = 0.06M, decimal completion = 0.12M)
         {
             return Set($"{OpenAiType.Chat}_{ModelFamilyType.Gpt4_32K}", new CostFormula
             {
                 PromptUsage = prompt
-            })
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Gpt4_32K}", new CostFormula
-                {
-                    CompletionUsage = completion,
-                });
+            });
         }
         public OpenAiPriceSettings SetGpt3_5(decimal usage = 0.0015M, decimal completion = 0.002M)
         {
@@ -99,16 +81,6 @@ namespace Rystem.OpenAi
                 CompletionUsage = completion
             });
         }
-        public OpenAiPriceSettings SetAda(decimal usage = 0.0004M)
-        {
-            var formula = new CostFormula
-            {
-                Usage = usage
-            };
-            return
-                Set($"{OpenAiType.Edit}_{ModelFamilyType.Ada}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Ada}", formula);
-        }
         public OpenAiPriceSettings SetAdaEmbeddings(decimal usage = 0.0001M)
         {
             var formula = new CostFormula
@@ -117,48 +89,9 @@ namespace Rystem.OpenAi
             };
             return Set($"{OpenAiType.Embedding}_{ModelFamilyType.Ada}", formula);
         }
-        public OpenAiPriceSettings SetBabbage(decimal usage = 0.0005M)
-        {
-            var formula = new CostFormula
-            {
-                Usage = usage
-            };
-            return
-                Set($"{OpenAiType.Edit}_{ModelFamilyType.Babbage}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Babbage}", formula);
-        }
-        public OpenAiPriceSettings SetCurie(decimal usage = 0.002M)
-        {
-            var formula = new CostFormula
-            {
-                Usage = usage
-            };
-            return
-                Set($"{OpenAiType.Edit}_{ModelFamilyType.Curie}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Curie}", formula);
-        }
-        public OpenAiPriceSettings SetDavinci(decimal usage = 0.02M)
-        {
-            var formula = new CostFormula
-            {
-                Usage = usage
-            };
-            return
-                Set($"{OpenAiType.Edit}_{ModelFamilyType.Davinci}", formula)
-                .Set($"{OpenAiType.Completion}_{ModelFamilyType.Davinci}", formula);
-        }
-        public OpenAiPriceSettings SetCushman(decimal usage = 0.024M)
-        {
-            var formula = new CostFormula
-            {
-                Usage = usage
-            };
-            return
-                Set($"{OpenAiType.Completion}_{ModelFamilyType.Cushman}", formula);
-        }
         public OpenAiPriceSettings SetFineTuneForAda(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
-            return Set($"{OpenAiType.FineTune}_{ModelFamilyType.Ada}", new CostFormula
+            return Set($"{OpenAiType.FineTuning}_{ModelFamilyType.Ada}", new CostFormula
             {
                 Training = training,
                 Usage = usage
@@ -166,7 +99,7 @@ namespace Rystem.OpenAi
         }
         public OpenAiPriceSettings SetFineTuneForBabbage(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
-            return Set($"{OpenAiType.FineTune}_{ModelFamilyType.Babbage}", new CostFormula
+            return Set($"{OpenAiType.FineTuning}_{ModelFamilyType.Babbage}", new CostFormula
             {
                 Training = training,
                 Usage = usage
@@ -174,7 +107,7 @@ namespace Rystem.OpenAi
         }
         public OpenAiPriceSettings SetFineTuneForCurie(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
-            return Set($"{OpenAiType.FineTune}_{ModelFamilyType.Curie}", new CostFormula
+            return Set($"{OpenAiType.FineTuning}_{ModelFamilyType.Curie}", new CostFormula
             {
                 Training = training,
                 Usage = usage
@@ -182,7 +115,7 @@ namespace Rystem.OpenAi
         }
         public OpenAiPriceSettings SetFineTuneForDavinci(decimal training = 0.0004M, decimal usage = 0.0016M)
         {
-            return Set($"{OpenAiType.FineTune}_{ModelFamilyType.Davinci}", new CostFormula
+            return Set($"{OpenAiType.FineTuning}_{ModelFamilyType.Davinci}", new CostFormula
             {
                 Training = training,
                 Usage = usage

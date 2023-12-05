@@ -105,9 +105,6 @@ namespace Rystem.OpenAi.Test
         [InlineData(ModelFamilyType.Gpt3_5, OpenAiType.Chat, "", 1, "This model is the perfect model for you.", 9, 0.002, 3, 5, "Gpt35Turbo", false)]
         [InlineData(ModelFamilyType.Gpt3_5, OpenAiType.Chat, "", 3, "Multiple models, each with different capabilities and price points. Prices are per 1000 tokens. You can think of tokens as pieces of words, where 1000 tokens is about 750 words.", 40, 0.002, 3, 5, "Gpt35Turbo", false)]
         [InlineData(ModelFamilyType.Gpt3_5, OpenAiType.Chat, "", 7, "Multiple models, each with different capabilities and price points. Prices are per 1000 tokens. You can think of tokens as pieces of words, where 1000 tokens is about 750 words.", 40, 0.002, 3, 5, "Gpt35Turbo", false)]
-        [InlineData(ModelFamilyType.Davinci, OpenAiType.Completion, "", 1, "one two three four five six seven", 7, 0.02, 0, 0, "DavinciText3", false)]
-        [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 2, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
-        [InlineData(ModelFamilyType.Davinci, OpenAiType.Edit, "", 1, "Fix the spelling mistakes", 4, 0.02, 10, 1, "TextDavinciEdit", true)]
         [InlineData(ModelFamilyType.Ada, OpenAiType.Embedding, "", 1, "Fix the spelling mistakes", 4, 0.0004, 0, 0, "AdaTextEmbedding", true)]
         public async Task CalculateCosts(ModelFamilyType model, OpenAiType type, string integrationName, int times, string content, int numberOfTokens, decimal currentPrice, int startingAndEndingTokens, int fixedTokens, string modelType, bool imNotAbleToUnderstandHowToCalculateCompletionTokens)
         {
@@ -164,40 +161,6 @@ namespace Rystem.OpenAi.Test
                             responseForChatWithCost.Result.Usage.PromptTokens.Value,
                             responseForChatWithCost.Result.Usage.CompletionTokens.Value,
                             chatTokenizer);
-                case OpenAiType.Completion:
-                    var modelForCompletion = (TextModelType)Enum.Parse(typeof(TextModelType), modelType);
-                    var completion = openAiApi.Completion
-                     .Request(content)
-                     .WithModel(modelForCompletion)
-                     .WithTemperature(1);
-                    if (times > 1)
-                        for (var i = 1; i < times; i++)
-                            completion.AddPrompt(content);
-                    var responseForCompletionWithCost = await completion.ExecuteAndCalculateCostAsync();
-                    var completionTokenizer = _utility.Tokenizer.WithTextModel(modelForCompletion);
-                    return (() => completion.CalculateCost(),
-                            () => responseForCompletionWithCost.CalculateCost(),
-                            responseForCompletionWithCost.Result.Completions.Select(x => x.Text).Where(x => x != null).ToList(),
-                            responseForCompletionWithCost.Result.Usage.PromptTokens.Value,
-                            responseForCompletionWithCost.Result.Usage.CompletionTokens.Value,
-                            completionTokenizer);
-                case OpenAiType.Edit:
-                    var modelForEdit = (EditModelType)Enum.Parse(typeof(EditModelType), modelType);
-                    var edit = openAiApi.Edit
-                         .Request(content)
-                         .WithModel(modelForEdit)
-                         .WithTemperature(1);
-                    if (times > 1)
-                        for (var i = 1; i < times; i++)
-                            edit.SetInput(content);
-                    var responseForEditWithCost = await edit.ExecuteAndCalculateCostAsync();
-                    var editTokenizer = _utility.Tokenizer.WithEditModel(modelForEdit);
-                    return (() => edit.CalculateCost(),
-                            () => responseForEditWithCost.CalculateCost(),
-                            responseForEditWithCost.Result.Choices.Select(x => x.Text).Where(x => x != null).ToList(),
-                            responseForEditWithCost.Result.Usage.PromptTokens.Value,
-                            responseForEditWithCost.Result.Usage.CompletionTokens.Value,
-                            editTokenizer);
                 case OpenAiType.Embedding:
                     var embeddingModel = (EmbeddingModelType)Enum.Parse(typeof(EmbeddingModelType), modelType);
                     var embedding = openAiApi.Embedding

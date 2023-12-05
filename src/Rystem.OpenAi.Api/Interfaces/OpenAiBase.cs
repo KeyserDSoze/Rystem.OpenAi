@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi
 {

@@ -16,7 +16,7 @@ namespace Rystem.OpenAi.Moderation
                 return new ModerationsRequest()
                 {
                     Input = input,
-                    ModelId = ModerationModelType.TextModerationLatest.ToModel().Id
+                    ModelId = ModerationModelType.TextModerationLatest.ToModel()
                 };
             }, utility)
         {
@@ -36,7 +36,7 @@ namespace Rystem.OpenAi.Moderation
         /// <returns>Builder</returns>
         public ModerationRequestBuilder WithModel(ModerationModelType model)
         {
-            Request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel();
             _forced = false;
             _modelType = model;
             return this;

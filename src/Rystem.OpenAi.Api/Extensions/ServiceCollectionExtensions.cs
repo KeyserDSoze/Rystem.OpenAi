@@ -7,8 +7,6 @@ using Polly.Extensions.Http;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
-using Rystem.OpenAi.Completion;
-using Rystem.OpenAi.Edit;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
@@ -83,11 +81,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddTransient<IOpenAiFineTune, OpenAiFineTune>();
             services
-                .TryAddTransient<IOpenAiEdit, OpenAiEdit>();
-            services
                 .TryAddTransient<IOpenAiChat, OpenAiChat>();
-            services
-                .TryAddTransient<IOpenAiCompletion, OpenAiCompletion>();
             services
                 .TryAddTransient<IOpenAiManagement, OpenAiManagement>();
             services

@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Chat
                 return new ChatRequest()
                 {
                     Messages = message != null ? new List<ChatMessage>() { message } : new List<ChatMessage>(),
-                    ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel().Id,
+                    ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel(),
                     ToolChoice = message?.ToolCalls?.Any(x => x.Type == ChatConstants.ToolType.Function) == true ? ChatConstants.ToolChoice.Auto : ChatConstants.ToolChoice.None,
                 };
             }, utility)
@@ -56,7 +56,7 @@ namespace Rystem.OpenAi.Chat
             }
             return response;
         }
-        private async IAsyncEnumerable<ChatResult> AutoExecuteAsync(bool directPost, ChatResult response, CancellationToken cancellationToken)
+        private async IAsyncEnumerable<ChatResult> AutoExecuteAsync(bool directPost, ChatResult response, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (response.Choices?.Count > 0)
             {
@@ -389,7 +389,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithModel(ChatModelType model)
         {
-            Request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel();
             _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;

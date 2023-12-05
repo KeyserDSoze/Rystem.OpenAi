@@ -52,7 +52,7 @@ namespace Rystem.OpenAi
         public OpenAiSettings UseVersionForChat(string version)
             => UseVersionFor(OpenAiType.Chat, version);
         public OpenAiSettings UseVersionForFineTune(string version)
-            => UseVersionFor(OpenAiType.FineTune, version);
+            => UseVersionFor(OpenAiType.FineTuning, version);
         public OpenAiSettings UseVersionForFile(string version)
             => UseVersionFor(OpenAiType.File, version);
         public OpenAiSettings UseVersionForModel(string version)
@@ -61,10 +61,6 @@ namespace Rystem.OpenAi
             => UseVersionFor(OpenAiType.AudioTranslation, version);
         public OpenAiSettings UseVersionForAudioTranscription(string version)
             => UseVersionFor(OpenAiType.AudioTranscription, version);
-        public OpenAiSettings UseVersionForCompletion(string version)
-            => UseVersionFor(OpenAiType.Completion, version);
-        public OpenAiSettings UseVersionForEdit(string version)
-            => UseVersionFor(OpenAiType.Edit, version);
         public OpenAiSettings UseVersionForImage(string version)
             => UseVersionFor(OpenAiType.Image, version);
         public OpenAiSettings UseVersionForModeration(string version)

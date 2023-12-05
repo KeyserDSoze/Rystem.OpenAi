@@ -1,8 +1,5 @@
-﻿using System;
-using Rystem.OpenAi.Audio;
+﻿using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
-using Rystem.OpenAi.Completion;
-using Rystem.OpenAi.Edit;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
@@ -18,8 +15,6 @@ namespace Rystem.OpenAi
         IOpenAiFile File { get; }
         IOpenAiFineTune FineTune { get; }
         IOpenAiChat Chat { get; }
-        IOpenAiEdit Edit { get; }
-        IOpenAiCompletion Completion { get; }
         IOpenAiImage Image { get; }
         IOpenAiEmbedding Embedding { get; }
         IOpenAiModeration Moderation { get; }

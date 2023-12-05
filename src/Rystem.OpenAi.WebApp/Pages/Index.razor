@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using Rystem.OpenAi.Completion;
 @using global::Rystem.OpenAi;
 
 <PageTitle>Index</PageTitle>
@@ -8,10 +7,6 @@
 
 Welcome to your new app.
 
-@if (_result != null)
-{
-    <div>@_result!.Completions![0].Text</div>
-}
 
 
 
@@ -20,16 +15,4 @@ Welcome to your new app.
     [Inject]
     public IOpenAi? Api { get; set; }
 
-    private CompletionResult? _result;
-    protected override async Task OnParametersSetAsync()
-    {
-        _result = await Api!.Completion
-                 .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
-                 .WithModel(TextModelType.CurieText)
-                 .WithTemperature(0.1)
-                 .SetMaxTokens(5)
-                 .ExecuteAsync();
-        //_models = await Api.Model.ListAsync();
-        //await base.OnParametersSetAsync();
-    }
 }
