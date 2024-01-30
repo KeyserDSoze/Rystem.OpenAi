@@ -92,7 +92,7 @@ namespace Rystem.OpenAi.Audio
         /// Translates audio into English.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>AudioResult</returns>git
+        /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatJson;
