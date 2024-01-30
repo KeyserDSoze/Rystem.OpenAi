@@ -7,7 +7,7 @@ namespace Rystem.OpenAi.Image
         [JsonPropertyName("text")]
         public string? Text { get; set; }
 
-        [JsonPropertyName("langauge")]
+        [JsonPropertyName("language")]
         public string? Language { get; set; }
 
         [JsonPropertyName("duration")]

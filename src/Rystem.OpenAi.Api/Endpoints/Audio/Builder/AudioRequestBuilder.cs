@@ -92,7 +92,7 @@ namespace Rystem.OpenAi.Audio
         /// Translates audio into English.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>AudioResult</returns>
+        /// <returns>AudioResult</returns>git
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatJson;
@@ -118,7 +118,7 @@ namespace Rystem.OpenAi.Audio
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>VerboseAudioResult</returns>
-        public async ValueTask<AudioResult> VerboseTranslateAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<VerboseAudioResult> VerboseTranslateAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatVerboseJson;
             using var content = new MultipartFormDataContent();
@@ -135,7 +135,7 @@ namespace Rystem.OpenAi.Audio
 
             Request.Dispose();
 
-            var response = await Client.PostAsync<AudioResult>(Configuration.GetUri(OpenAiType.AudioTranslation, Request.ModelId!, _forced, string.Empty), content, Configuration, cancellationToken);
+            var response = await Client.PostAsync<VerboseAudioResult>(Configuration.GetUri(OpenAiType.AudioTranslation, Request.ModelId!, _forced, string.Empty), content, Configuration, cancellationToken);
             return response;
         }
         /// <summary>
