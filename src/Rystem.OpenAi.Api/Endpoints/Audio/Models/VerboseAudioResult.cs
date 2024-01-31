@@ -11,7 +11,7 @@ namespace Rystem.OpenAi.Image
         [JsonPropertyName("language")]
         public string? Language { get; set; }
 
-        [JsonPropertyName("duration")]
+        [JsonPropertyName("duration"), JsonConverter(typeof(NumberToTimeSpanConverter))]
         public TimeSpan Duration { get; set; }
 
         [JsonPropertyName("segments")]
@@ -22,13 +22,13 @@ namespace Rystem.OpenAi.Image
             [JsonPropertyName("id")]
             public int Id { get; set; }
 
-            [JsonPropertyName("seek")]
+            [JsonPropertyName("seek"), JsonConverter(typeof(NumberToTimeSpanConverter))]
             public TimeSpan Seek { get; set; }
 
-            [JsonPropertyName("start")]
+            [JsonPropertyName("start"), JsonConverter(typeof(NumberToTimeSpanConverter))]
             public TimeSpan Start { get; set; }
 
-            [JsonPropertyName("end")]
+            [JsonPropertyName("end"), JsonConverter(typeof(NumberToTimeSpanConverter))]
             public TimeSpan End { get; set; }
 
             [JsonPropertyName("text")]
