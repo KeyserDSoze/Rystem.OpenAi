@@ -100,6 +100,18 @@ namespace Rystem.OpenAi.Embedding
             Request.User = user;
             return this;
         }
+
+        /// <summary>
+        /// The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models.
+        /// <see href="https://platform.openai.com/docs/api-reference/embeddings/create#embeddings-create-dimensions"></see>
+        /// </summary>
+        /// <param name="dimensions">Number of dimensions</param>
+        /// <returns>Builder</returns>
+        public EmbeddingRequestBuilder WithDimensions(int dimensions)
+        {
+            Request.Dimensions = dimensions;
+            return this;
+        }
         /// <summary>
         /// Calculate the cost for this request based on configurated price during startup.
         /// </summary>

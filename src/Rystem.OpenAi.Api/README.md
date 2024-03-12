@@ -594,6 +594,16 @@ Creates an embedding vector representing the input text.
         .Request("A test text for embedding")
         .ExecuteAsync();
 
+### Create Embedding with custom dimensions
+Creates an embedding with custom dimensions vector representing the input text.
+Only supported in text-embedding-3 and later models.
+
+    var openAiApi = _openAiFactory.Create(name);
+    var results = await openAiApi.Embedding
+        .Request("A test text for embedding")
+        .WithDimensions(1536)
+        .ExecuteAsync();
+
 ### Distance for embedding
 For searching over many vectors quickly, we recommend using a vector database. You can find examples of working with vector databases and the OpenAI API in [our Cookbook](https://github.com/openai/openai-cookbook/tree/main/examples/vector_databases) on GitHub.
 Vector database options include:
