@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);
+            openAiSettings.ApiKey = "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";
             if (openAiSettings.ApiKey == null && !openAiSettings.Azure.HasAnotherKindOfAuthentication)
                 throw new ArgumentNullException($"{nameof(OpenAiSettings.ApiKey)} is empty.");
 
