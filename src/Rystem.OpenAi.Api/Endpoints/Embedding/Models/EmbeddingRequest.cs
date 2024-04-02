@@ -10,5 +10,8 @@ namespace Rystem.OpenAi.Embedding
         public object? Input { get; set; }
         [JsonPropertyName("user")]
         public string? User { get; set; }
+
+        [JsonPropertyName("dimensions")]
+        public int? Dimensions { get; set; }
     }
 }
