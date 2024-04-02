@@ -1,5 +1,6 @@
 ﻿namespace System.Text.Json.Serialization
 {
+
     public sealed class JsonFunction
     {
         [JsonPropertyName("name")]

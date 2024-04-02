@@ -18,8 +18,6 @@ namespace Rystem.OpenAi.Test
                 .UseVersionForAudioTranscription("v2")
                 .UseVersionForAudioTranscription("v3")
                 .UseVersionForChat("v2")
-                .UseVersionForCompletion("v2")
-                .UseVersionForEdit("v2")
                 .UseVersionForEmbedding("v2")
                 .UseVersionForFile("v2")
                 .UseVersionForFineTune("v2")

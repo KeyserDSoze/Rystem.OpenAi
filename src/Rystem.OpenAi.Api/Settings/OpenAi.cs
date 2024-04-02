@@ -2,12 +2,10 @@
 {
     public enum OpenAiType
     {
-        Completion,
         Chat,
-        Edit,
         Embedding,
         File,
-        FineTune,
+        FineTuning,
         Model,
         Moderation,
         Image,

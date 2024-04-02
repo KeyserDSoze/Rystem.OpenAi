@@ -8,20 +8,23 @@ namespace Rystem.OpenAi.Chat
 {
     internal sealed class JsonFunctionContainerManager
     {
-        private readonly ConcurrentDictionary<string, JsonFunction> _functions = new ConcurrentDictionary<string, JsonFunction>();
+        private readonly ConcurrentDictionary<string, JsonFunctionWrapper> _functions = new ConcurrentDictionary<string, JsonFunctionWrapper>();
         public static JsonFunctionContainerManager Instance { get; } = new JsonFunctionContainerManager();
         private JsonFunctionContainerManager() { }
-        public JsonFunction GetFunction(IOpenAiChatFunction function)
+        public JsonFunctionWrapper GetFunction(IOpenAiChatFunction function)
         {
             if (!_functions.ContainsKey(function.Name))
             {
-                var chatFunction = new JsonFunction()
+                var chatFunction = new JsonFunctionWrapper
                 {
-                    Name = function.Name,
-                    Description = function.Description,
-                    Parameters = new JsonFunctionNonPrimitiveProperty()
+                    Function = new JsonFunction()
+                    {
+                        Name = function.Name,
+                        Description = function.Description,
+                        Parameters = new JsonFunctionNonPrimitiveProperty()
+                    }
                 };
-                SetProperties(function.Input, chatFunction.Parameters);
+                SetProperties(function.Input, chatFunction.Function.Parameters);
                 if (!_functions.ContainsKey(function.Name))
                 {
                     _functions.TryAdd(function.Name, chatFunction);

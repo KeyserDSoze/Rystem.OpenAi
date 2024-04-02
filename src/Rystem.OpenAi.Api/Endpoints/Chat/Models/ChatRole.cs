@@ -5,21 +5,21 @@
         User,
         System,
         Assistant,
-        Function
+        Tool,
     }
     public static class ChatRoleExtensions
     {
         private const string UserLabel = "user";
         private const string SystemLabel = "system";
         private const string AssistantLabel = "assistant";
-        private const string FunctionLabel = "function";
+        private const string ToolLabel = "tool";
         public static string AsString(this ChatRole chatRole)
         {
             return chatRole switch
             {
                 ChatRole.User => UserLabel,
                 ChatRole.Assistant => AssistantLabel,
-                ChatRole.Function => FunctionLabel,
+                ChatRole.Tool => ToolLabel,
                 _ => SystemLabel,
             };
         }

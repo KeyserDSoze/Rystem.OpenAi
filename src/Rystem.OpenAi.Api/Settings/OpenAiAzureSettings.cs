@@ -26,37 +26,31 @@ namespace Rystem.OpenAi
         internal Dictionary<string, string> Deployments { get; } = new Dictionary<string, string>();
         public OpenAiAzureSettings MapDeploymentTextModel(string name, TextModelType model)
         {
-            Deployments.Add(name, model.ToModel().Id!);
+            Deployments.Add(name, model.ToModel()!);
             return this;
         }
         public OpenAiAzureSettings MapDeploymentEmbeddingModel(string name, EmbeddingModelType model)
         {
             if (!Deployments.ContainsKey(name))
-                Deployments.Add(name, model.ToModel().Id!);
+                Deployments.Add(name, model.ToModel()!);
             return this;
         }
         public OpenAiAzureSettings MapDeploymentAudioModel(string name, AudioModelType model)
         {
             if (!Deployments.ContainsKey(name))
-                Deployments.Add(name, model.ToModel().Id!);
+                Deployments.Add(name, model.ToModel()!);
             return this;
         }
         public OpenAiAzureSettings MapDeploymentChatModel(string name, ChatModelType model)
         {
             if (!Deployments.ContainsKey(name))
-                Deployments.Add(name, model.ToModel().Id!);
-            return this;
-        }
-        public OpenAiAzureSettings MapDeploymentEditModel(string name, EditModelType model)
-        {
-            if (!Deployments.ContainsKey(name))
-                Deployments.Add(name, model.ToModel().Id!);
+                Deployments.Add(name, model.ToModel()!);
             return this;
         }
         public OpenAiAzureSettings MapDeploymentModerationModel(string name, ModerationModelType model)
         {
             if (!Deployments.ContainsKey(name))
-                Deployments.Add(name, model.ToModel().Id!);
+                Deployments.Add(name, model.ToModel()!);
             return this;
         }
         public OpenAiAzureSettings MapDeploymentCustomModel(string name, string customeModelId)

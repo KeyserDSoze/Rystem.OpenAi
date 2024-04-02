@@ -20,7 +20,7 @@ namespace Rystem.OpenAi.Test
             await openAiApi.Model.DeleteAsync("dadsadasdasdad");
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
-            foreach (var model in results)
+            foreach (var model in results.Items)
             {
                 var modelResult = await openAiApi.Model.RetrieveAsync(model.Id);
                 Assert.NotNull(modelResult);
@@ -29,8 +29,8 @@ namespace Rystem.OpenAi.Test
                     Assert.True(modelResult.Created > new DateTime(2018, 1, 1));
             }
             Assert.NotNull(results);
-            Assert.NotEmpty(results);
-            Assert.Contains(results, c => c.Id.ToLower().StartsWith("text-davinci"));
+            Assert.NotEmpty(results.Items);
+            Assert.Contains(results.Items, c => c.Id.ToLower().StartsWith("text-davinci"));
         }
 
         [Theory]
@@ -40,7 +40,7 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Model);
 
-            var result = await openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
+            var result = await openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModel());
             Assert.NotNull(result);
 
             Assert.NotNull(result.CreatedUnixTime);
@@ -51,7 +51,7 @@ namespace Rystem.OpenAi.Test
 
             Assert.NotNull(result.Id);
             Assert.NotNull(result.OwnedBy);
-            Assert.Equal(TextModelType.DavinciText3.ToModel().Id, result.Id.ToLower());
+            Assert.Equal(TextModelType.DavinciText3.ToModel(), result.Id.ToLower());
         }
 
 
@@ -61,7 +61,7 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name);
             var models = await openAiApi.Model.ListAsync();
-            Assert.True(models.Count > 5);
+            Assert.True(models.Items.Count > 5);
         }
 
         [Theory]

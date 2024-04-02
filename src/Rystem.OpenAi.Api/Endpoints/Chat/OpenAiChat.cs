@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Polly;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -45,11 +47,21 @@ namespace Rystem.OpenAi.Chat
                 Role = ChatRole.Assistant
             }, Utility, _functions);
         public ChatRequestBuilder RequestWithFunctionMessage(string name, string message)
-            => new ChatRequestBuilder(Client, _configuration, new ChatMessage
+        {
+            return new ChatRequestBuilder(Client, _configuration, new ChatMessage
             {
-                Name = name,
-                Content = message,
-                Role = ChatRole.Function
+                ToolCalls = new List<ChatMessageTool>(){ new ChatMessageTool
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Type = ChatConstants.ToolType.Function,
+                    Function = new ChatMessageFunctionResponse
+                    {
+                        Name = name,
+                        Arguments = message
+                    }
+                } },
+                Role = ChatRole.Tool
             }, Utility, _functions);
+        }
     }
 }

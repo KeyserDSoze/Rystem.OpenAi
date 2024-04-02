@@ -12,15 +12,13 @@ namespace Rystem.OpenAi
             return this;
         }
         public IOpenAiTokenizer WithChatModel(ChatModelType chatModelType)
-            => WithModel(chatModelType.ToModelId());
+            => WithModel(chatModelType.ToModel());
         public IOpenAiTokenizer WithTextModel(TextModelType textModelType)
-            => WithModel(textModelType.ToModelId());
-        public IOpenAiTokenizer WithEditModel(EditModelType editModelType)
-            => WithModel(editModelType.ToModelId());
+            => WithModel(textModelType.ToModel());
         public IOpenAiTokenizer WithEmbeddingModel(EmbeddingModelType embeddingModelType)
-            => WithModel(embeddingModelType.ToModelId());
+            => WithModel(embeddingModelType.ToModel());
         public IOpenAiTokenizer WithModerationModel(ModerationModelType moderationModelType)
-            => WithModel(moderationModelType.ToModelId());
+            => WithModel(moderationModelType.ToModel());
         public string Decode(List<int> tokens)
             => _encoder.Decode(tokens);
         public string Decode(BytePairEncodingType type, List<int> tokens)

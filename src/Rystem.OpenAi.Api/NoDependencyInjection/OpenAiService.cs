@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
-using Rystem.OpenAi.Completion;
-using Rystem.OpenAi.Edit;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
@@ -53,10 +51,6 @@ namespace Rystem.OpenAi
             => Create(integrationName).Audio;
         public IOpenAiChat CreateChat(string? integrationName = null)
             => Create(integrationName).Chat;
-        public IOpenAiCompletion CreateCompletion(string? integrationName = null)
-            => Create(integrationName).Completion;
-        public IOpenAiEdit CreateEdit(string? integrationName = null)
-            => Create(integrationName).Edit;
         public IOpenAiEmbedding CreateEmbedding(string? integrationName = null)
             => Create(integrationName).Embedding;
         public IOpenAiFile CreateFile(string? integrationName = null)

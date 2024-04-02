@@ -37,9 +37,7 @@ namespace Rystem.OpenAi
         private sealed class UriHelperConfigurator
         {
             private const string BaseUri = "{0}/{1}{2}{3}";
-            public string CompletionUri { get; set; } = string.Format(BaseUri, "{0}", "completions", "{1}", "{2}");
             public string ChatUri { get; set; } = string.Format(BaseUri, "{0}", "chat/completions", "{1}", "{2}");
-            public string EditUri { get; set; } = string.Format(BaseUri, "{0}", "edits", "{1}", "{2}");
             public string EmbeddingUri { get; set; } = string.Format(BaseUri, "{0}", "embeddings", "{1}", "{2}");
             public string FileUri { get; set; } = string.Format(BaseUri, "{0}", "files", "{1}", "{2}");
             public string FineTuneUri { get; set; } = string.Format(BaseUri, "{0}", "fine_tuning/jobs", "{1}", "{2}");
@@ -62,12 +60,10 @@ namespace Rystem.OpenAi
         {
             var uriHelper = new UriHelperConfigurator();
             Settings.Version ??= "v1";
-            uriHelper.CompletionUri = string.Format(uriHelper.CompletionUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Completion)}", "{0}", string.Empty);
             uriHelper.ChatUri = string.Format(uriHelper.ChatUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Chat)}", "{0}", string.Empty);
-            uriHelper.EditUri = string.Format(uriHelper.EditUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Edit)}", "{0}", string.Empty);
             uriHelper.EmbeddingUri = string.Format(uriHelper.EmbeddingUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Embedding)}", "{0}", string.Empty);
             uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.File)}", "{0}", string.Empty);
-            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.FineTune)}", "{0}", string.Empty);
+            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.FineTuning)}", "{0}", string.Empty);
             uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Model)}", "{0}", string.Empty);
             uriHelper.ModerationUri = string.Format(uriHelper.ModerationUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Moderation)}", "{0}", string.Empty);
             uriHelper.ImageUri = string.Format(uriHelper.ImageUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Image)}", "{0}", string.Empty);
@@ -86,14 +82,12 @@ namespace Rystem.OpenAi
             {
                 OpenAiType.AudioTranscription => string.Format(uriHelper.AudioTranscriptionUri, appendBeforeQueryString),
                 OpenAiType.AudioTranslation => string.Format(uriHelper.AudioTranslationUri, appendBeforeQueryString),
-                OpenAiType.Completion => string.Format(uriHelper.CompletionUri, appendBeforeQueryString),
-                OpenAiType.Edit => string.Format(uriHelper.EditUri, appendBeforeQueryString),
                 OpenAiType.Moderation => string.Format(uriHelper.ModerationUri, appendBeforeQueryString),
                 OpenAiType.Image => string.Format(uriHelper.ImageUri, appendBeforeQueryString),
                 OpenAiType.Embedding => string.Format(uriHelper.EmbeddingUri, appendBeforeQueryString),
                 OpenAiType.Chat => string.Format(uriHelper.ChatUri, appendBeforeQueryString),
                 OpenAiType.File => string.Format(uriHelper.FileUri, appendBeforeQueryString),
-                OpenAiType.FineTune => string.Format(uriHelper.FineTuneUri, appendBeforeQueryString),
+                OpenAiType.FineTuning => string.Format(uriHelper.FineTuneUri, appendBeforeQueryString),
                 OpenAiType.Billing => string.Format(uriHelper.BillingUri, appendBeforeQueryString),
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
@@ -110,16 +104,14 @@ namespace Rystem.OpenAi
                 Settings.Azure.Deployments.Add("{0}", Forced);
 
             uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
-            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTune)}");
+            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
             uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
             uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
 
             foreach (var deployment in Settings.Azure.Deployments)
             {
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Completion}", $"{string.Format(uriHelper.CompletionUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Completion)}")}");
                 uris.TryAdd($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(uriHelper.ChatUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Chat)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Edit}", $"{string.Format(uriHelper.EditUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Edit)}")}");
                 uris.TryAdd($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(uriHelper.EmbeddingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Embedding)}")}");
                 uris.TryAdd($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(uriHelper.ModerationUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Moderation)}")}");
                 uris.TryAdd($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(uriHelper.ImageUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Image)}")}");
@@ -173,7 +165,7 @@ namespace Rystem.OpenAi
             {
                 case OpenAiType.File:
                     return string.Format(uriHelper.FileUri, appendBeforeQueryString);
-                case OpenAiType.FineTune:
+                case OpenAiType.FineTuning:
                     return string.Format(uriHelper.FineTuneUri, appendBeforeQueryString);
                 case OpenAiType.Billing:
                     return string.Format(uriHelper.BillingUri, appendBeforeQueryString);

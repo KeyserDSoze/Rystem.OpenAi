@@ -1,9 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi;
-using Rystem.OpenAi.Completion;
-using Rystem.OpenAi.Edit;
 
 namespace Rystem.OpenAi.Embedding
 {
@@ -16,7 +13,7 @@ namespace Rystem.OpenAi.Embedding
                 return new EmbeddingRequest()
                 {
                     Input = inputs.Length == 1 ? inputs[0] : (object)inputs,
-                    ModelId = EmbeddingModelType.AdaTextEmbedding.ToModel().Id,
+                    ModelId = EmbeddingModelType.AdaTextEmbedding.ToModel(),
                 };
             }, utility)
         {
@@ -69,7 +66,7 @@ namespace Rystem.OpenAi.Embedding
         /// <returns>Builder</returns>
         public EmbeddingRequestBuilder WithModel(EmbeddingModelType model)
         {
-            Request.ModelId = model.ToModel().Id;
+            Request.ModelId = model.ToModel();
             _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
