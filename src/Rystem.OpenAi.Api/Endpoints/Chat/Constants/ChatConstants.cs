@@ -10,6 +10,7 @@
         {
             public const string Auto = "auto";
             public const string None = "none";
+            public const string Required = "required";
         }
         public static class ResolutionVision
         {

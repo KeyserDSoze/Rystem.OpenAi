@@ -40,21 +40,25 @@ namespace Microsoft.Extensions.DependencyInjection
             var configuration = configurations.First(x => x.Name == integrationName);
             if (configuration.WithAzure)
             {
-                var availableDeployments = (await openAi.Deployment.ListAsync()).Succeeded;
-                foreach (var deployment in availableDeployments)
+                try
                 {
-                    configuration.Settings.Azure
-                        .MapDeploymentCustomModel(deployment.Id!, deployment.ModelId!);
-                    events.Add(new AutomaticallyDeploymentResult()
+                    var availableDeployments = (await openAi.Deployment.ListAsync()).Succeeded;
+                    foreach (var deployment in availableDeployments)
                     {
-                        IntegrationName = integrationName,
-                        Description = $"Mapped {deployment.Id} with {deployment.ModelId}"
-                    });
-                }
-                if (forceDeploy)
-                    await ForceDeployAsync(integrationName, availableDeployments, configuration, openAi, events);
+                        configuration.Settings.Azure
+                            .MapDeploymentCustomModel(deployment.Id!, deployment.ModelId!);
+                        events.Add(new AutomaticallyDeploymentResult()
+                        {
+                            IntegrationName = integrationName,
+                            Description = $"Mapped {deployment.Id} with {deployment.ModelId}"
+                        });
+                    }
+                    if (forceDeploy)
+                        await ForceDeployAsync(integrationName, availableDeployments, configuration, openAi, events);
 
-                configuration.ConfigureEndpoints();
+                    configuration.ConfigureEndpoints();
+                }
+                catch { }
             }
         }
         private static async ValueTask ForceDeployAsync(string integrationName,

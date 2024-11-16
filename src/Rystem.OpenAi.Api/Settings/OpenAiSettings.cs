@@ -59,6 +59,8 @@ namespace Rystem.OpenAi
             => UseVersionFor(OpenAiType.Model, version);
         public OpenAiSettings UseVersionForAudioTranslation(string version)
             => UseVersionFor(OpenAiType.AudioTranslation, version);
+        public OpenAiSettings UseVersionForAudioSpeech(string version)
+         => UseVersionFor(OpenAiType.AudioSpeech, version);
         public OpenAiSettings UseVersionForAudioTranscription(string version)
             => UseVersionFor(OpenAiType.AudioTranscription, version);
         public OpenAiSettings UseVersionForImage(string version)

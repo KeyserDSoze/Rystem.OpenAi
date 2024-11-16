@@ -11,6 +11,7 @@
         Image,
         AudioTranscription,
         AudioTranslation,
+        AudioSpeech,
         Billing,
         Deployment
     }

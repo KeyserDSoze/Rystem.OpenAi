@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Audio
 {
@@ -15,5 +14,7 @@ namespace Rystem.OpenAi.Audio
         }
         public AudioRequestBuilder Request(Stream file, string fileName = "default")
             => new AudioRequestBuilder(Client, _configuration, file, fileName, Utility);
+        public AudioSpeechRequestBuilder Speech(string input)
+            => new AudioSpeechRequestBuilder(Client, _configuration, input, Utility);
     }
 }

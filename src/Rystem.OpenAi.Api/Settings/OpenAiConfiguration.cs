@@ -46,6 +46,7 @@ namespace Rystem.OpenAi
             public string ImageUri { get; set; } = string.Format(BaseUri, "{0}", "images", "{1}", "{2}");
             public string AudioTranscriptionUri { get; set; } = string.Format(BaseUri, "{0}", "audio/transcriptions", "{1}", "{2}");
             public string AudioTranslationUri { get; set; } = string.Format(BaseUri, "{0}", "audio/translations", "{1}", "{2}");
+            public string AudioSpeechUri { get; set; } = string.Format(BaseUri, "{0}", "audio/speech", "{1}", "{2}");
             public string BillingUri { get; set; } = string.Format(BaseUri, "{0}", "dashboard/billing/usage", "{1}", "{2}");
             public string DeploymentUri { get; set; } = string.Format(BaseUri, "{0}", "deployments", "{1}", "{2}");
         }
@@ -69,6 +70,7 @@ namespace Rystem.OpenAi
             uriHelper.ImageUri = string.Format(uriHelper.ImageUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Image)}", "{0}", string.Empty);
             uriHelper.AudioTranscriptionUri = string.Format(uriHelper.AudioTranscriptionUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.AudioTranscription)}", "{0}", string.Empty);
             uriHelper.AudioTranslationUri = string.Format(uriHelper.AudioTranslationUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.AudioTranslation)}", "{0}", string.Empty);
+            uriHelper.AudioSpeechUri = string.Format(uriHelper.AudioSpeechUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.AudioSpeech)}", "{0}", string.Empty);
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://api.openai.com", "{0}", string.Empty);
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString)
@@ -82,6 +84,7 @@ namespace Rystem.OpenAi
             {
                 OpenAiType.AudioTranscription => string.Format(uriHelper.AudioTranscriptionUri, appendBeforeQueryString),
                 OpenAiType.AudioTranslation => string.Format(uriHelper.AudioTranslationUri, appendBeforeQueryString),
+                OpenAiType.AudioSpeech => string.Format(uriHelper.AudioSpeechUri, appendBeforeQueryString),
                 OpenAiType.Moderation => string.Format(uriHelper.ModerationUri, appendBeforeQueryString),
                 OpenAiType.Image => string.Format(uriHelper.ImageUri, appendBeforeQueryString),
                 OpenAiType.Embedding => string.Format(uriHelper.EmbeddingUri, appendBeforeQueryString),

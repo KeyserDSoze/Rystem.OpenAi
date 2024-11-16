@@ -2,7 +2,7 @@
 {
     public static class AudioModelTypeExtensions
     {
-        private static readonly string s_whisper ="whisper-1";
+        private static readonly string s_whisper = "whisper-1";
         public static string ToModel(this AudioModelType type)
         {
             switch (type)

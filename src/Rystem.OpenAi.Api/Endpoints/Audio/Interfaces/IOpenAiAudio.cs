@@ -12,5 +12,11 @@ namespace Rystem.OpenAi.Audio
         /// <param name="fileName"></param>
         /// <returns></returns>
         AudioRequestBuilder Request(Stream file, string fileName = "default");
+        /// <summary>
+        /// Generates audio from the input text.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        AudioSpeechRequestBuilder Speech(string input);
     }
 }

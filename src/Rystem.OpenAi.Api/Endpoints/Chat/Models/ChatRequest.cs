@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
@@ -53,5 +55,14 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         [JsonPropertyName("tools")]
         public List<object>? Tools { get; set; }
+    }
+    public sealed class ToolChoice
+    {
+        public required string Type { get; set; }
+
+    }
+    public sealed class FunctionToolChoice
+    {
+        public string Name { get; set; }
     }
 }

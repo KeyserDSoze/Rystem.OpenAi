@@ -141,6 +141,13 @@ namespace Rystem.OpenAi
                 PerMinute = perMinute
             });
         }
+        public OpenAiPriceSettings SetAudioForSpeech(decimal perUnit = 0.000015M)
+        {
+            return Set($"{OpenAiType.AudioSpeech}", new CostFormula
+            {
+                PerUnit = perUnit
+            });
+        }
         public OpenAiPriceSettings SetAudioForTranscription(decimal perMinute = 0.006M)
         {
             return Set($"{OpenAiType.AudioTranscription}", new CostFormula

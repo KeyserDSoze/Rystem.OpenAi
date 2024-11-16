@@ -103,6 +103,28 @@ namespace Rystem.OpenAi
             var responseAsString = await response.Content.ReadAsStringAsync();
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
+        internal static ValueTask<Stream> PostAsync(this HttpClient client,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteAndResponseAsStreamAsync(client, url, message, HttpMethod.Post, configuration, cancellationToken);
+        internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClient client,
+            string url,
+            object? message,
+            HttpMethod method,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+        {
+            if (configuration.NeedClientEnrichment)
+                await configuration.EnrichClientAsync(client);
+            var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
+            var responseAsStream = await response.Content.ReadAsStreamAsync();
+            var memoryStream = new MemoryStream();
+            await responseAsStream.CopyToAsync(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream;
+        }
         internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClient client,
             string url,
             object? message,

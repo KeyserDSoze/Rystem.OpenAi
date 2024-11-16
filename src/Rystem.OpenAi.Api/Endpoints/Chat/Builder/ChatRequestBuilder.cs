@@ -38,7 +38,7 @@ namespace Rystem.OpenAi.Chat
         /// Execute operation.
         /// </summary>
         /// <returns>ChatResult</returns>
-        public async ValueTask<ChatResult> ExecuteAsync(bool autoExecuteFunction = false, CancellationToken cancellationToken = default)
+        public async ValueTask<ChatResult> ExecuteAsync(bool autoExecuteFunction = false, bool requiredTool = false, CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
             var isFromFunction = Request.Messages.Last().ToolCalls?.Any(x => x.Type == ChatConstants.ToolType.Function) == true;
@@ -52,11 +52,11 @@ namespace Rystem.OpenAi.Chat
             }
             if (autoExecuteFunction)
             {
-                await foreach (var _ in AutoExecuteAsync(true, response, cancellationToken)) { }
+                await foreach (var _ in AutoExecuteAsync(true, response, requiredTool, cancellationToken)) { }
             }
             return response;
         }
-        private async IAsyncEnumerable<ChatResult> AutoExecuteAsync(bool directPost, ChatResult response, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<ChatResult> AutoExecuteAsync(bool directPost, ChatResult response, bool requiredTool, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (response.Choices?.Count > 0)
             {
@@ -78,7 +78,7 @@ namespace Rystem.OpenAi.Chat
                                     if (responseFromFunction != null)
                                     {
                                         AddMessage(choice.Message);
-                                        AddToolMessage(tool.Id!, JsonSerializer.Serialize(responseFromFunction));
+                                        AddToolMessage(tool.Id!, JsonSerializer.Serialize(responseFromFunction), requiredTool);
                                         WithNumberOfChoicesPerPrompt(1);
                                         await foreach (var responseForFunction in GetAsync())
                                         {
@@ -126,9 +126,9 @@ namespace Rystem.OpenAi.Chat
         /// Execute operation.
         /// </summary>
         /// <returns>CostResult<ChatResult></returns>
-        public async ValueTask<CostResult<ChatResult>> ExecuteAndCalculateCostAsync(bool autoExecuteFunction = false, CancellationToken cancellationToken = default)
+        public async ValueTask<CostResult<ChatResult>> ExecuteAndCalculateCostAsync(bool autoExecuteFunction = false, bool requiredTool = false, CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync(autoExecuteFunction, cancellationToken);
+            var response = await ExecuteAsync(autoExecuteFunction, requiredTool, cancellationToken);
             return new CostResult<ChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.Usage));
         }
         /// <summary>
@@ -138,6 +138,7 @@ namespace Rystem.OpenAi.Chat
         /// <param name="cancellationToken"></param>
         /// <returns>StreamingChatResult</returns>
         public async IAsyncEnumerable<StreamingChatResult> ExecuteAsStreamAsync(bool autoExecuteFunction = false,
+            bool requiredTool = false,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Request.Stream = true;
@@ -232,6 +233,7 @@ namespace Rystem.OpenAi.Chat
                               },
                         }
                     },
+                        requiredTool,
                         cancellationToken))
                     {
                         results.Chunks.Add(x);
@@ -246,9 +248,10 @@ namespace Rystem.OpenAi.Chat
         /// <returns>CostResult<ChatResult></returns>
         public async IAsyncEnumerable<CostResult<StreamingChatResult>> ExecuteAsStreamAndCalculateCostAsync(
             bool autoExecuteFunction = false,
+            bool requiredTool = false,
            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await foreach (var response in ExecuteAsStreamAsync(autoExecuteFunction, cancellationToken))
+            await foreach (var response in ExecuteAsStreamAsync(autoExecuteFunction, requiredTool, cancellationToken))
             {
                 yield return new CostResult<StreamingChatResult>(response, () => CalculateCost(OpenAiType.Chat, response?.LastChunk?.Usage));
             }
@@ -372,9 +375,9 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <param name="content"></param>
         /// <returns>Builder</returns>
-        public ChatRequestBuilder AddToolMessage(string id, string content)
+        public ChatRequestBuilder AddToolMessage(string id, string content, bool required = false)
         {
-            Request.ToolChoice = ChatConstants.ToolChoice.Auto;
+            Request.ToolChoice = required ? ChatConstants.ToolChoice.Required : ChatConstants.ToolChoice.Auto;
             return AddMessage(new ChatMessage
             {
                 Content = content,
@@ -382,6 +385,13 @@ namespace Rystem.OpenAi.Chat
                 Role = ChatRole.Tool,
             });
         }
+        /// <summary>
+        /// Function message is the response from external api, you need to set this message after a function is requested to call by Open Ai.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        public ChatRequestBuilder ForceToolMessage(string id, string content) 
+            => AddToolMessage(id, content, true);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

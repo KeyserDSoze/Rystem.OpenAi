@@ -14,6 +14,8 @@ namespace Rystem.OpenAi.Chat
             get => Role.AsString();
             set => Role = (ChatRole)Enum.Parse(typeof(ChatRole), $"{value.ToUpper()[0]}{value.ToLower()[1..]}");
         }
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
         [JsonPropertyName("content")]
         public object? Content { get; set; }
         [JsonPropertyName("tool_calls")]

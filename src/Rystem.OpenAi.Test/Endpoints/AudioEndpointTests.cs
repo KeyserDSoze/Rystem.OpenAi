@@ -140,5 +140,20 @@ namespace Rystem.OpenAi.Test
             Assert.StartsWith("Incidente tra due aerei di addestramento", results.Text);
             Assert.NotEmpty(results.Segments);
         }
+        [Theory]
+        [InlineData("", "Hello world!")]
+        public async ValueTask CreateSpeechAsync(string name, string text)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+
+            var result = await openAiApi.Audio
+                .Speech(text)
+                .WithVoice(AudioVoice.Fable)
+                .WithSpeed(1.3d)
+                .Mp3Async();
+
+            Assert.NotNull(result);
+            Assert.True(result.Length > 100);
+        }
     }
 }
