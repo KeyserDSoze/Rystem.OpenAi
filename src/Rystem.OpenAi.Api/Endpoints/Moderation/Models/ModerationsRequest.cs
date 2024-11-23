@@ -7,6 +7,6 @@ namespace Rystem.OpenAi.Moderation
         [JsonPropertyName("input")]
         public string? Input { get; set; }
         [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
     }
 }

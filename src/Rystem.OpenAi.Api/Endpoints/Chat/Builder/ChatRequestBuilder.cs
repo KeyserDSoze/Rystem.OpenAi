@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Chat
                 return new ChatRequest()
                 {
                     Messages = message != null ? new List<ChatMessage>() { message } : new List<ChatMessage>(),
-                    ModelId = ChatModelType.Gpt35Turbo_Snapshot.ToModel(),
+                    Model = ChatModelType.Gpt35Turbo_Snapshot.ToModel(),
                     ToolChoice = message?.ToolCalls?.Any(x => x.Type == ChatConstants.ToolType.Function) == true ? ChatConstants.ToolChoice.Auto : ChatConstants.ToolChoice.None,
                 };
             }, utility)
@@ -42,7 +42,7 @@ namespace Rystem.OpenAi.Chat
         {
             Request.Stream = false;
             var isFromFunction = Request.Messages.Last().ToolCalls?.Any(x => x.Type == ChatConstants.ToolType.Function) == true;
-            var response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+            var response = await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.Model!, _forced, string.Empty), Request, Configuration, cancellationToken);
             if (isFromFunction && !autoExecuteFunction && response.Choices != null)
             {
                 foreach (var choice in response.Choices)
@@ -101,10 +101,10 @@ namespace Rystem.OpenAi.Chat
                                         {
                                             if (directPost)
                                             {
-                                                yield return await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+                                                yield return await Client.PostAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.Model!, _forced, string.Empty), Request, Configuration, cancellationToken);
                                             }
                                             else
-                                                await foreach (var x in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
+                                                await foreach (var x in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.Model!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
                                                     yield return x;
                                         }
                                     }
@@ -151,7 +151,7 @@ namespace Rystem.OpenAi.Chat
             var isFromFunction = Request.Messages.Last().ToolCalls?.Any(x => x.Type == ChatConstants.ToolType.Function) == true;
             var functionCommand = autoExecuteFunction ? ChatConstants.FinishReason.FunctionAutoExecuted : ChatConstants.FinishReason.FunctionExecuted;
             var stopCommand = isFromFunction ? functionCommand : ChatConstants.FinishReason.Stop;
-            await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.ModelId!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
+            await foreach (var result in Client.StreamAsync<ChatResult>(Configuration.GetUri(OpenAiType.Chat, Request.Model!, _forced, string.Empty), Request, HttpMethod.Post, Configuration, null, cancellationToken))
             {
                 if (result?.Choices != null && result.Choices.Count > 0 && result.Choices[0].Delta != null)
                 {
@@ -390,7 +390,7 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <param name="content"></param>
         /// <returns>Builder</returns>
-        public ChatRequestBuilder ForceToolMessage(string id, string content) 
+        public ChatRequestBuilder ForceToolMessage(string id, string content)
             => AddToolMessage(id, content, true);
         /// <summary>
         /// ID of the model to use.
@@ -399,7 +399,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithModel(ChatModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
@@ -413,7 +413,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            Request.ModelId = modelId;
+            Request.Model = modelId;
             _forced = true;
             if (basedOnFamily != null)
                 _familyType = basedOnFamily.Value;
@@ -497,7 +497,7 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         public ChatRequestBuilder SetMaxTokens(int value)
         {
-            Request.MaxTokens = value;
+            Request.MaxCompletionsToken = value;
             return this;
         }
         /// <summary>

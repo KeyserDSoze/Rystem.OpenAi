@@ -33,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{190E37AE-CB9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.OpenAi.UnitTests", "src\Rystem.OpenAi.UnitTests\Rystem.OpenAi.UnitTests.csproj", "{607F39D7-D740-4C8A-8A17-C3913358D755}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.OpenAi", "Rystem.OpenAi\Rystem.OpenAi.csproj", "{048BFEF0-D7AB-4EFE-9408-9044373BA074}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{048BFEF0-D7AB-4EFE-9408-9044373BA074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{048BFEF0-D7AB-4EFE-9408-9044373BA074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{048BFEF0-D7AB-4EFE-9408-9044373BA074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{048BFEF0-D7AB-4EFE-9408-9044373BA074}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +69,7 @@ Global
 		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
 		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
 		{607F39D7-D740-4C8A-8A17-C3913358D755} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
+		{048BFEF0-D7AB-4EFE-9408-9044373BA074} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B777EEAE-3674-4FF8-B32A-5039FFFD6AF0}

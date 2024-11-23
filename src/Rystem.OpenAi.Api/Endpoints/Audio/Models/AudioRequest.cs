@@ -7,7 +7,7 @@ namespace Rystem.OpenAi.Image
     {
         public MemoryStream? Audio { get; set; }
         public string? AudioName { get; set; }
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
         public string? Prompt { get; set; }
         public string? ResponseFormat { get; set; }
         public double? Temperature { get; set; }

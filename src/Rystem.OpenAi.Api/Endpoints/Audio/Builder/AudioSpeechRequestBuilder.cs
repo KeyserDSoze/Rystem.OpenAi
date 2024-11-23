@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Audio
             {
                 var request = new AudioSpeechRequest()
                 {
-                    ModelId = AudioSpeechModelType.Tts.ToModel(),
+                    Model = AudioSpeechModelType.Tts.ToModel(),
                     Speed = 1,
                     Input = input,
                     Voice = AudioVoice.Alloy.ToString().ToLower(),
@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Audio
         private async ValueTask<Stream> ExecuteAsync(string responseFormat, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = responseFormat;
-            var response = await Client.PostAsync(Configuration.GetUri(OpenAiType.AudioSpeech, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+            var response = await Client.PostAsync(Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, _forced, string.Empty), Request, Configuration, cancellationToken);
             return response;
         }
         public ValueTask<Stream> Mp3Async(CancellationToken cancellationToken = default)

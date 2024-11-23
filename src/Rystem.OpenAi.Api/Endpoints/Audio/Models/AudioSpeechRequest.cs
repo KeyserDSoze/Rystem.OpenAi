@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Image
     public sealed class AudioSpeechRequest : IOpenAiRequest
     {
         [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
         [JsonPropertyName("input")]
         public string? Input { get; set; }
         [JsonPropertyName("voice")]

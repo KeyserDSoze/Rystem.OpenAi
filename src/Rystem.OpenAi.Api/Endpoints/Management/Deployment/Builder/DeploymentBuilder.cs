@@ -26,32 +26,32 @@ namespace Rystem.OpenAi.Management
         }
         public DeploymentBuilder WithDeploymentTextModel(string name, TextModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             return this;
         }
         public DeploymentBuilder WithDeploymentEmbeddingModel(string name, EmbeddingModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             return this;
         }
         public DeploymentBuilder WithDeploymentAudioModel(string name, AudioModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             return this;
         }
         public DeploymentBuilder WithDeploymentChatModel(string name, ChatModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             return this;
         }
         public DeploymentBuilder WithDeploymentModerationModel(string name, ModerationModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             return this;
         }
         public DeploymentBuilder WithDeploymentCustomModel(string name, string customeModelId)
         {
-            Request.ModelId = customeModelId;
+            Request.Model = customeModelId;
             return this;
         }
         /// <summary>

@@ -4,7 +4,7 @@ namespace Rystem.OpenAi.Management
 {
     public sealed class BillingRequest : IOpenAiRequest
     {
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
         public DateTime From { get; set; }
         public DateTime To { get; set; }
     }

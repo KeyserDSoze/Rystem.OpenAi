@@ -16,7 +16,7 @@ namespace Rystem.OpenAi.Moderation
                 return new ModerationsRequest()
                 {
                     Input = input,
-                    ModelId = ModerationModelType.TextModerationLatest.ToModel()
+                    Model = ModerationModelType.TextModerationLatest.ToModel()
                 };
             }, utility)
         {
@@ -28,7 +28,7 @@ namespace Rystem.OpenAi.Moderation
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<ModerationResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => Client.PostAsync<ModerationResult>(Configuration.GetUri(OpenAiType.Moderation, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+            => Client.PostAsync<ModerationResult>(Configuration.GetUri(OpenAiType.Moderation, Request.Model!, _forced, string.Empty), Request, Configuration, cancellationToken);
         /// <summary>
         /// ID of the model to use.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Rystem.OpenAi.Moderation
         /// <returns>Builder</returns>
         public ModerationRequestBuilder WithModel(ModerationModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             _forced = false;
             _modelType = model;
             return this;
@@ -49,7 +49,7 @@ namespace Rystem.OpenAi.Moderation
         /// <returns>Builder</returns>
         public ModerationRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            Request.ModelId = modelId;
+            Request.Model = modelId;
             _forced = true;
             if (basedOnFamily != null)
                 _familyType = basedOnFamily.Value;

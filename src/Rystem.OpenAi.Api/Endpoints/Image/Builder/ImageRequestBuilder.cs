@@ -33,7 +33,7 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, Endpoint);
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.Model!, _forced, Endpoint);
             return Client.PostAsync<ImageResult>(uri, CreateRequest(), Configuration, cancellationToken);
         }
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResultForBase64> ExecuteWithBase64Async(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.B64Json.AsString();
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.ModelId!, _forced, Endpoint);
+            var uri = Configuration.GetUri(OpenAiType.Image, Request.Model!, _forced, Endpoint);
             return Client.PostAsync<ImageResultForBase64>(uri, CreateRequest(), Configuration, cancellationToken);
         }
         /// <summary>

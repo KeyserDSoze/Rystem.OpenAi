@@ -1,0 +1,31 @@
+﻿using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Rystem.OpenAi
+{
+    internal sealed class DefaultServices : IServiceForFactory
+    {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IFactory<OpenAiConfiguration> _configurationFactory;
+        private readonly IFactory<IOpenAiPriceService> _priceService;
+        public DefaultServices(IHttpClientFactory httpClientFactory,
+            IFactory<OpenAiConfiguration> configurationFactory,
+            IFactory<IOpenAiPriceService> priceService,
+            IOpenAiUtility utility)
+        {
+            _httpClientFactory = httpClientFactory;
+            _configurationFactory = configurationFactory;
+            _priceService = priceService;
+            Utility = utility;
+        }
+        public HttpClient HttpClient => field ??= _httpClientFactory.CreateClient($"{OpenAiSettings.HttpClientName}-{_factoryName}" ?? string.Empty);
+        public IOpenAiUtility Utility { get; }
+        public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;
+        public IOpenAiPriceService Price => field ??= _priceService.Create(_factoryName)!;
+        private string? _factoryName;
+        public void SetFactoryName(string name)
+        {
+            _factoryName = name;
+        }
+    }
+}

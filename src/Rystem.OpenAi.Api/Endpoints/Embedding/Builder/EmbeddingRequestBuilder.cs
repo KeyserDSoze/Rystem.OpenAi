@@ -13,7 +13,7 @@ namespace Rystem.OpenAi.Embedding
                 return new EmbeddingRequest()
                 {
                     Input = inputs.Length == 1 ? inputs[0] : (object)inputs,
-                    ModelId = EmbeddingModelType.AdaTextEmbedding.ToModel(),
+                    Model = EmbeddingModelType.AdaTextEmbedding.ToModel(),
                 };
             }, utility)
         {
@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Embedding
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => Client.PostAsync<EmbeddingResult>(Configuration.GetUri(OpenAiType.Embedding, Request.ModelId!, _forced, string.Empty), Request, Configuration, cancellationToken);
+            => Client.PostAsync<EmbeddingResult>(Configuration.GetUri(OpenAiType.Embedding, Request.Model!, _forced, string.Empty), Request, Configuration, cancellationToken);
         /// <summary>
         /// Execute operation.
         /// </summary>
@@ -66,7 +66,7 @@ namespace Rystem.OpenAi.Embedding
         /// <returns>Builder</returns>
         public EmbeddingRequestBuilder WithModel(EmbeddingModelType model)
         {
-            Request.ModelId = model.ToModel();
+            Request.Model = model.ToModel();
             _forced = false;
             _familyType = model.ToFamily();
             _modelType = model;
@@ -80,7 +80,7 @@ namespace Rystem.OpenAi.Embedding
         /// <returns>Builder</returns>
         public EmbeddingRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            Request.ModelId = modelId;
+            Request.Model = modelId;
             _forced = true;
             if (basedOnFamily != null)
                 _familyType = basedOnFamily.Value;

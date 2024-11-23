@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Embedding
     public sealed class EmbeddingRequest : IOpenAiRequest
     {
         [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
         [JsonPropertyName("input")]
         public object? Input { get; set; }
         [JsonPropertyName("user")]

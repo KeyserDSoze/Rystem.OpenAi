@@ -15,6 +15,6 @@ namespace Rystem.OpenAi.Image
         [JsonPropertyName("response_format")]
         public string? ResponseFormat { get; set; }
         [JsonIgnore]
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
     }
 }

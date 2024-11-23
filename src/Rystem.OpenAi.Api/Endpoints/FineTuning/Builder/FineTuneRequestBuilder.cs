@@ -52,7 +52,7 @@ namespace Rystem.OpenAi.FineTune
         /// <returns>Builder</returns>
         public FineTuneRequestBuilder WithModel(string modelId, ModelFamilyType? basedOnFamily = null)
         {
-            Request.ModelId = modelId;
+            Request.Model = modelId;
             _forced = true;
             if (basedOnFamily != null)
                 _familyType = basedOnFamily.Value;

@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.FineTune
     public sealed class FineTuneRequest : IOpenAiRequest
     {
         [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
+        public string? Model { get; set; }
         [JsonPropertyName("training_file")]
         public string? TrainingFile { get; set; }
         [JsonPropertyName("validation_file")]

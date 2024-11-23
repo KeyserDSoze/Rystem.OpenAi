@@ -25,7 +25,7 @@ namespace Rystem.OpenAi
         {
             if (Logger != null)
             {
-                var timer = new Stopwatch();
+                var timer = new System.Diagnostics.Stopwatch();
                 timer.Start();
                 Logger.LogInformation(s_eventId, $"{message} starts.");
                 try

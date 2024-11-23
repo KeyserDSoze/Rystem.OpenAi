@@ -10,59 +10,106 @@ namespace Rystem.OpenAi.Chat
     /// </summary>
     public sealed class ChatRequest : IOpenAiRequest
     {
-        [JsonPropertyName("model")]
-        public string? ModelId { get; set; }
         [JsonPropertyName("messages")]
         public List<ChatMessage>? Messages { get; set; }
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
+        [JsonPropertyName("store")]
+        public bool? Store { get; set; }
+        [JsonPropertyName("metadata")]
+        public object? Metadata { get; set; }
+        [JsonPropertyName("frequency_penalty")]
+        public double? FrequencyPenalty { get; set; }
+        [JsonPropertyName("logit_bias")]
+        public Dictionary<string, int>? Bias { get; set; }
+        [JsonPropertyName("logprobs")]
+        public bool? LogProbs { get; set; }
+        [JsonPropertyName("top_logprobs")]
+        public bool? TopLogProbs { get; set; }
+        [JsonPropertyName("max_completion_tokens")]
+        public int? MaxCompletionsToken { get; set; }
+        [JsonPropertyName("n")]
+        public int? NumberOfChoicesPerPrompt { get; set; }
+        [JsonPropertyName("modalities")]
+        public List<string>? Modalities { get; set; }
+        [JsonPropertyName("prediction")]
+        public PredictionChatRequest? Prediction { get; set; }
+        [JsonPropertyName("audio")]
+        public AudioChatRequest? Audio { get; set; }
+        [JsonPropertyName("presence_penalty")]
+        public double? PresencePenalty { get; set; }
+        [JsonPropertyName("response_format")]
+        public ResponseFormatChatRequest? ResponseFormat { get; set; }
+        [JsonPropertyName("seed")]
+        public int? Seed { get; set; }
+        [JsonPropertyName("service_tier")]
+        public string? ServiceTier { get; set; }
+        [JsonPropertyName("stop")]
+        public object? StopSequence { get; set; }
+        [JsonPropertyName("stream")]
+        public bool Stream { get; internal set; } = false;
+        [JsonPropertyName("stream_options")]
+        public StreamOptionsChatRequest? StreamOptions { get; set; }
         [JsonPropertyName("temperature")]
         public double? Temperature { get; set; }
         [JsonPropertyName("top_p")]
         public double? TopP { get; set; }
-        [JsonPropertyName("stream")]
-        public bool Stream { get; internal set; } = false;
-        [JsonPropertyName("stop")]
-        public object? StopSequence { get; set; }
-        [JsonPropertyName("max_tokens")]
-        public int? MaxTokens { get; set; }
-        [JsonPropertyName("presence_penalty")]
-        public double? PresencePenalty { get; set; }
-        [JsonPropertyName("frequency_penalty")]
-        public double? FrequencyPenalty { get; set; }
-        [JsonPropertyName("n")]
-        public int? NumberOfChoicesPerPrompt { get; set; }
-        [JsonPropertyName("logit_bias")]
-        public Dictionary<string, int>? Bias { get; set; }
-        [JsonPropertyName("user")]
-        public string? User { get; set; }
-        /// <summary>
-        /// This feature is in Beta. If specified, our system will make a best effort to sample deterministically,
-        /// such that repeated requests with the same seed and parameters should return the same result. 
-        /// Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.
-        /// </summary>
-        [JsonPropertyName("seed")]
-        public int? Seed { get; set; }
-        /// <summary>
-        /// Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message.
-        /// auto means the model can pick between generating a message or calling a function. 
-        /// Specifying a particular function via {"type: "function", "function": {"name": "my_function"}} forces the model to call that function. 
-        /// none is the default when no functions are present.auto is the default if functions are present.
-        /// </summary>
-        [JsonPropertyName("tool_choice")]
-        public object? ToolChoice { get; set; }
-        /// <summary>
-        /// A list of tools the model may call. Currently, only functions are supported as a tool. 
-        /// Use this to provide a list of functions the model may generate JSON inputs for.
-        /// </summary>
         [JsonPropertyName("tools")]
         public List<object>? Tools { get; set; }
+        [JsonPropertyName("tool_choice")]
+        public object? ToolChoice { get; set; }
+        [JsonPropertyName("parallel_tool_calls")]
+        public bool? ParallelToolCalls { get; set; }
+        [JsonPropertyName("user")]
+        public string? User { get; set; }
     }
-    public sealed class ToolChoice
+    public sealed class ToolChoiceChatRequest
     {
-        public required string Type { get; set; }
-
+        [JsonPropertyName("tool")]
+        public string? Tool { get; set; }
+        [JsonPropertyName("choice")]
+        public string? Choice { get; set; }
     }
-    public sealed class FunctionToolChoice
+    public sealed class StreamOptionsChatRequest
     {
-        public string Name { get; set; }
+        [JsonPropertyName("include_usage")]
+        public bool IncludeUsage { get; set; }
+    }
+    public sealed class PredictionChatRequest
+    {
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+        [JsonPropertyName("content")]
+        public object? Content { get; set; }
+    }
+    public sealed class TextPredictionChatRequest
+    {
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
+    }
+    public sealed class AudioChatRequest
+    {
+        [JsonPropertyName("voice")]
+        public string? Voice { get; set; }
+        [JsonPropertyName("format")]
+        public string? Format { get; set; }
+    }
+    public sealed class ResponseFormatChatRequest
+    {
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+        [JsonPropertyName("content")]
+        public object? Content { get; set; }
+    }
+    public sealed class JsonSchemaResponseFormatChatRequest
+    {
+        [JsonPropertyName("type")]
+        public string? Description { get; set; }
+        [JsonPropertyName("schema")]
+        public string? Name { get; set; }
+        [JsonPropertyName("schema")]
+        public object Schema { get; set; }
     }
 }
