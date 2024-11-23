@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,22 +13,8 @@ namespace Rystem.OpenAi.Audio
         public OpenAiAudio(IFactory<DefaultServices> factory)
             : base(factory)
         {
-            //var request = new AudioSpeechRequest()
-            //{
-            //    Model = AudioSpeechModelType.Tts.ToModel(),
-            //    Speed = 1,
-            //    Input = input,
-            //    Voice = AudioVoice.Alloy.ToString().ToLower(),
-            //};
-            //return request;
         }
         internal const string ResponseFormatJson = "json";
-
-        /// <summary>
-        /// Transcribes audio into the input language.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranscriptAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatJson;
@@ -53,11 +40,6 @@ namespace Rystem.OpenAi.Audio
             return response;
         }
         internal const string ResponseFormatVerboseJson = "verbose_json";
-        /// <summary>
-        /// Transcribes audio into a verbose representation in the input language
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>VerboseAudioResult</returns>
         public async ValueTask<VerboseAudioResult> VerboseTranscriptAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatVerboseJson;
@@ -82,11 +64,6 @@ namespace Rystem.OpenAi.Audio
             var response = await DefaultServices.HttpClient.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
-        /// <summary>
-        /// Translates audio into English.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>AudioResult</returns>
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatJson;
@@ -106,11 +83,6 @@ namespace Rystem.OpenAi.Audio
             var response = await DefaultServices.HttpClient.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
-        /// <summary>
-        /// Translates audio into a verbose representation in English.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>VerboseAudioResult</returns>
         public async ValueTask<VerboseAudioResult> VerboseTranslateAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = ResponseFormatVerboseJson;
@@ -130,21 +102,20 @@ namespace Rystem.OpenAi.Audio
             var response = await DefaultServices.HttpClient.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
-        /// <summary>
-        /// An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <returns>AudioRequestBuilder</returns>
+        public async Task<IOpenAiAudio> WithStreamAsync(Stream file, string fileName = "default")
+        {
+            var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream).NoContext();
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            Request.Audio = memoryStream;
+            Request.AudioName = fileName;
+            return this;
+        }
         public IOpenAiAudio WithPrompt(string prompt)
         {
             Request.Prompt = prompt;
             return this;
         }
-        /// <summary>
-        /// The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. If set to 0, the model will use <see href="https://en.wikipedia.org/wiki/Log_probability">log probability</see> to automatically increase the temperature until certain thresholds are hit.
-        /// </summary>
-        /// <param name="temperature"></param>
-        /// <returns></returns>
         public IOpenAiAudio WithTemperature(double temperature)
         {
             if (temperature < 0)
@@ -154,20 +125,11 @@ namespace Rystem.OpenAi.Audio
             Request.Temperature = temperature;
             return this;
         }
-        /// <summary>
-        /// The language of the input audio. Supplying the input language in <see href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO-639-1</see> format will improve accuracy and latency.
-        /// </summary>
-        /// <param name="language"></param>
-        /// <returns></returns>
         public IOpenAiAudio WithLanguage(Language language)
         {
             Request.Language = language.ToIso639_1();
             return this;
         }
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
         public decimal CalculateCostForTranscription(int minutes = 0)
         {
             decimal outputPrice = 0;
@@ -178,10 +140,6 @@ namespace Rystem.OpenAi.Audio
             }
             return outputPrice;
         }
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
         public decimal CalculateCostForTranslation(int minutes = 0)
         {
             //todo: to refactor the audio input choose i don't like it

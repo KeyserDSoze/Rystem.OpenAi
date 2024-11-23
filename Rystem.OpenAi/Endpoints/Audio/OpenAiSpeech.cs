@@ -12,40 +12,28 @@ namespace Rystem.OpenAi.Audio
         public OpenAiSpeech(IFactory<DefaultServices> factory)
             : base(factory)
         {
-            //var request = new AudioRequest()
-            //{
-            //    Model = AudioModelType.Whisper.ToModel()
-            //};
-            //var memoryStream = new MemoryStream();
-            //audio.CopyTo(memoryStream);
-            //request.Audio = memoryStream;
-            //request.AudioName = audioName ?? "default";
-            //return request;
+            Request.Speed = 1;
+            Request.Voice = AudioVoice.Alloy.ToString().ToLower();
         }
-        private async ValueTask<Stream> ExecuteAsync(string responseFormat, CancellationToken cancellationToken = default)
+        private async ValueTask<Stream> ExecuteAsync(string input, string responseFormat, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = responseFormat;
+            Request.Input = input;
             var response = await DefaultServices.HttpClient.PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             return response;
         }
-        public ValueTask<Stream> Mp3Async(CancellationToken cancellationToken = default)
-            => ExecuteAsync("mp3", cancellationToken);
-        public ValueTask<Stream> OpusAsync(CancellationToken cancellationToken = default)
-            => ExecuteAsync("opus", cancellationToken);
-        public ValueTask<Stream> AacAsync(CancellationToken cancellationToken = default)
-            => ExecuteAsync("aac", cancellationToken);
-        public ValueTask<Stream> FlacAsync(CancellationToken cancellationToken = default)
-            => ExecuteAsync("flac", cancellationToken);
-        public ValueTask<Stream> WavAsync(CancellationToken cancellationToken = default)
-            => ExecuteAsync("wav", cancellationToken);
-        public ValueTask<Stream> PcmAsync(CancellationToken cancellationToken = default)
-            => ExecuteAsync("pcm", cancellationToken);
-        /// <summary>
-        /// The speed of the generated audio. Select a value from 0.25 to 4.0. 1.0 is the default.
-        /// </summary>
-        /// <param name="speed"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        public ValueTask<Stream> Mp3Async(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "mp3", cancellationToken);
+        public ValueTask<Stream> OpusAsync(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "opus", cancellationToken);
+        public ValueTask<Stream> AacAsync(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "aac", cancellationToken);
+        public ValueTask<Stream> FlacAsync(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "flac", cancellationToken);
+        public ValueTask<Stream> WavAsync(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "wav", cancellationToken);
+        public ValueTask<Stream> PcmAsync(string input, CancellationToken cancellationToken = default)
+            => ExecuteAsync(input, "pcm", cancellationToken);
         public IOpenAiSpeech WithSpeed(double speed)
         {
             if (speed < 0.25d || speed > 4d)
@@ -53,20 +41,11 @@ namespace Rystem.OpenAi.Audio
             Request.Speed = speed;
             return this;
         }
-        /// <summary>
-        /// The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.
-        /// </summary>
-        /// <param name="audioVoice"></param>
-        /// <returns></returns>
         public IOpenAiSpeech WithVoice(AudioVoice audioVoice)
         {
             Request.Voice = audioVoice.ToString().ToLower();
             return this;
         }
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
         public decimal CalculateCost()
         {
             //todo: to refactor the audio input choose i don't like it
