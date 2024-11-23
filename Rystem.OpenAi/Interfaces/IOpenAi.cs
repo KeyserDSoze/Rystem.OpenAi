@@ -1,4 +1,5 @@
-﻿using Rystem.OpenAi.Chat;
+﻿using Rystem.OpenAi.Audio;
+using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi
 {
@@ -13,5 +14,6 @@ namespace Rystem.OpenAi
         IOpenAiModel Model { get; }
         IOpenAiModeration Moderation { get; }
         IOpenAiManagement Management { get; }
+        IOpenAiSpeech Speech { get; }
     }
 }

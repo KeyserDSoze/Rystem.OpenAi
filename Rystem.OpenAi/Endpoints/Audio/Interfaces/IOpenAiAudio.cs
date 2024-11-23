@@ -1,4 +1,4 @@
-﻿namespace Rystem.OpenAi
+﻿namespace Rystem.OpenAi.Audio
 {
     public interface IOpenAiAudio
     {

@@ -177,9 +177,9 @@ namespace Rystem.OpenAi.Chat
             foreach (var responses in Usages)
             {
                 outputPrice += DefaultServices.Price.CalculatePrice(Request.Model!,
-                    new OpenAiCost { Value = responses.PromptTokens, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
-                    new OpenAiCost { Value = responses.CompletionTokensDetails?.AcceptedPredictionTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
-                    new OpenAiCost { Value = responses.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens });
+                    new OpenAiCost { Units = responses.PromptTokens, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+                    new OpenAiCost { Units = responses.CompletionTokensDetails?.AcceptedPredictionTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
+                    new OpenAiCost { Units = responses.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens });
             }
             return outputPrice;
         }

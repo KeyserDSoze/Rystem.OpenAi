@@ -2,7 +2,7 @@
 {
     public class OpenAiCost
     {
-        public decimal Value { get; set; }
+        public decimal Units { get; set; }
         public KindOfCost Kind { get; set; }
         public required UnitOfMeasure UnitOfMeasure { get; set; }
     }

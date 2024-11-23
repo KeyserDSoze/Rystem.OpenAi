@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi
@@ -7,6 +8,7 @@ namespace Rystem.OpenAi
     {
         private readonly IFactory<OpenAiConfiguration> _configurationFactory;
         private readonly IFactory<IOpenAiAudio> _openAiAudioFactory;
+        private readonly IFactory<IOpenAiSpeech> _openAiSpeechFactory;
         private readonly IFactory<IOpenAiChat> _openAiChatFactory;
         private readonly IFactory<IOpenAiEmbedding> _openAiEmbeddingFactory;
         private readonly IFactory<IOpenAiFineTune> _openAiFineTuneFactory;
@@ -18,6 +20,7 @@ namespace Rystem.OpenAi
         public OpenAi(
             IFactory<OpenAiConfiguration> configurationFactory,
             IFactory<IOpenAiAudio> openAiAudioFactory,
+            IFactory<IOpenAiSpeech> openAiSpeechFactory,
             IFactory<IOpenAiChat> openAiChatFactory,
             IFactory<IOpenAiEmbedding> openAiEmbeddingFactory,
             IFactory<IOpenAiFineTune> openAiFineTuneFactory,
@@ -29,6 +32,7 @@ namespace Rystem.OpenAi
         {
             _configurationFactory = configurationFactory;
             _openAiAudioFactory = openAiAudioFactory;
+            _openAiSpeechFactory = openAiSpeechFactory;
             _openAiChatFactory = openAiChatFactory;
             _openAiEmbeddingFactory = openAiEmbeddingFactory;
             _openAiFineTuneFactory = openAiFineTuneFactory;
@@ -39,6 +43,7 @@ namespace Rystem.OpenAi
             _openAiManagementFactory = openAiManagementFactory;
         }
         public IOpenAiAudio Audio => field ??= _openAiAudioFactory.Create(_factoryName)!;
+        public IOpenAiSpeech Speech => field ??= _openAiSpeechFactory.Create(_factoryName)!;
         public IOpenAiChat Chat => field ??= _openAiChatFactory.Create(_factoryName)!;
         public IOpenAiEmbedding Embeddings => field ??= _openAiEmbeddingFactory.Create(_factoryName)!;
         public IOpenAiFineTune FineTune => field ??= _openAiFineTuneFactory.Create(_factoryName)!;

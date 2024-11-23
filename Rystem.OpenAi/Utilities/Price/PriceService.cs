@@ -19,7 +19,7 @@ namespace Rystem.OpenAi
                 {
                     var cost = model.Costs.FirstOrDefault(x => x.Kind == spent.Kind && x.UnitOfMeasure == spent.UnitOfMeasure);
                     if (cost != null)
-                        total += cost.Value * spent.Value;
+                        total += cost.Units * spent.Units;
                 }
             }
             return total;
