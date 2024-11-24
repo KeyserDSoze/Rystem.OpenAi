@@ -102,6 +102,14 @@ namespace Rystem.OpenAi.Audio
             var response = await DefaultServices.HttpClient.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
+        public IOpenAiAudio WithFile(byte[] file, string fileName = "default")
+        {
+            var memoryStream = new MemoryStream(file);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            Request.Audio = memoryStream;
+            Request.AudioName = fileName;
+            return this;
+        }
         public async Task<IOpenAiAudio> WithStreamAsync(Stream file, string fileName = "default")
         {
             var memoryStream = new MemoryStream();

@@ -7,6 +7,13 @@ namespace Rystem.OpenAi.Audio
     public interface IOpenAiAudio
     {
         /// <summary>
+        /// Add the file as array of bytes
+        /// </summary>
+        /// <param name="file">Array of bytes</param>
+        /// <param name="fileName">Audio name</param>
+        /// <returns></returns>
+        IOpenAiAudio WithFile(byte[] file, string fileName = "default");
+        /// <summary>
         /// Add the file as stream
         /// </summary>
         /// <param name="file">Stream</param>
