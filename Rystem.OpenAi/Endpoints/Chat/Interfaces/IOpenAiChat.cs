@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Chat
 {
-    public interface IOpenAiChat
+    public interface IOpenAiChat : IOpenAiBase<IOpenAiChat>
     {
         /// <summary>
         /// Execute operation.
@@ -18,18 +18,6 @@ namespace Rystem.OpenAi.Chat
         /// <param name="cancellationToken"></param>
         /// <returns>StreamingChatResult</returns>
         IAsyncEnumerable<ChunkChatResult> ExecuteAsStreamAsync(bool withUsage = true, CancellationToken cancellationToken = default);
-        /// <summary>
-        /// ID of the model to use.
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <returns> <see cref="T"/></returns>
-        IOpenAiChat WithModel(OpenAiModelName model);
-        /// <summary>
-        /// ID of the model to use.
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <returns> <see cref="TClass"/></returns>
-        IOpenAiChat WithModel(string model);
         /// <summary>
         /// Add a message to the request
         /// </summary>
@@ -161,11 +149,6 @@ namespace Rystem.OpenAi.Chat
         /// <param name="seed"></param>
         /// <returns></returns>
         IOpenAiChat WithSeed(int? seed);
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
-        decimal CalculateCost();
         /// <summary>
         /// Add a message with content text or image to the request as User
         /// </summary>

@@ -1,5 +1,6 @@
 ﻿using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
+using Rystem.OpenAi.Embedding;
 
 namespace Rystem.OpenAi
 {

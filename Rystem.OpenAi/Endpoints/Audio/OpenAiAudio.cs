@@ -4,11 +4,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, ChatUsage>, IOpenAiAudio
+    internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest>, IOpenAiAudio
     {
         public OpenAiAudio(IFactory<DefaultServices> factory)
             : base(factory)
@@ -138,26 +137,15 @@ namespace Rystem.OpenAi.Audio
             Request.Language = language.ToIso639_1();
             return this;
         }
-        public decimal CalculateCostForTranscription(int minutes = 0)
+        public IOpenAiAudio WithTranscriptionMinutes(int minutes)
         {
-            decimal outputPrice = 0;
-            foreach (var responses in Usages)
-            {
-                outputPrice += DefaultServices.Price.CalculatePrice(Request.Model!,
-                    new OpenAiCost { Units = minutes, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Minutes });
-            }
-            return outputPrice;
+            Usages.Add(new OpenAiCost { Units = minutes, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Minutes });
+            return this;
         }
-        public decimal CalculateCostForTranslation(int minutes = 0)
+        public IOpenAiAudio WithTranslationMinutes(int minutes)
         {
-            //todo: to refactor the audio input choose i don't like it
-            decimal outputPrice = 0;
-            foreach (var responses in Usages)
-            {
-                outputPrice += DefaultServices.Price.CalculatePrice(Request.Model!,
-                    new OpenAiCost { Units = minutes, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Minutes });
-            }
-            return outputPrice;
+            Usages.Add(new OpenAiCost { Units = minutes, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Minutes });
+            return this;
         }
     }
 }

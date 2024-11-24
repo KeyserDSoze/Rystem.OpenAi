@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
 {
-    internal abstract class OpenAiBuilder<T, TRequest, TUsage> : IServiceForFactory
+    internal abstract class OpenAiBuilder<T, TRequest> : IServiceForFactory
         where T : class
         where TRequest : IOpenAiRequest, new()
     {
@@ -15,17 +15,12 @@ namespace Rystem.OpenAi
         }
         private string? _factoryName;
         private protected bool Forced { get; set; }
-        private protected List<TUsage> Usages { get; } = [];
+        private protected List<OpenAiCost> Usages { get; } = [];
         private protected DefaultServices DefaultServices => field ??= _factory.Create(_factoryName)!;
         public void SetFactoryName(string name)
         {
             _factoryName = name;
         }
-        /// <summary>
-        /// ID of the model to use.
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <returns> <see cref="T"/></returns>
         public T WithModel(OpenAiModelName model)
         {
             Request.Model = model;
@@ -33,17 +28,17 @@ namespace Rystem.OpenAi
             var entity = this as T;
             return entity!;
         }
-        /// <summary>
-        /// ID of the model to use.
-        /// </summary>
-        /// <param name="model">Model</param>
-        /// <returns> <see cref="T"/></returns>
         public T WithModel(string model)
         {
             Request.Model = model;
             Forced = true;
             var entity = this as T;
             return entity!;
+        }
+        public decimal CalculateCost()
+        {
+            var outputPrice = DefaultServices.Price.CalculatePrice(Request.Model!, [.. Usages]);
+            return outputPrice;
         }
     }
 }

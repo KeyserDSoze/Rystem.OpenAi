@@ -3,11 +3,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest, ChatUsage>, IOpenAiSpeech
+    internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest>, IOpenAiSpeech
     {
         public OpenAiSpeech(IFactory<DefaultServices> factory)
             : base(factory)
@@ -19,6 +18,7 @@ namespace Rystem.OpenAi.Audio
         {
             Request.ResponseFormat = responseFormat;
             Request.Input = input;
+            Usages.Add(new OpenAiCost { Units = Request.Input?.Length ?? 0, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Tokens });
             var response = await DefaultServices.HttpClient.PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             return response;
         }
@@ -45,17 +45,6 @@ namespace Rystem.OpenAi.Audio
         {
             Request.Voice = audioVoice.ToString().ToLower();
             return this;
-        }
-        public decimal CalculateCost()
-        {
-            //todo: to refactor the audio input choose i don't like it
-            decimal outputPrice = 0;
-            foreach (var responses in Usages)
-            {
-                outputPrice += DefaultServices.Price.CalculatePrice(Request.Model!,
-                    new OpenAiCost { Units = Request.Input?.Length ?? 0, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Tokens });
-            }
-            return outputPrice;
         }
     }
 }

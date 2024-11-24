@@ -8,10 +8,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Chat
 {
-    internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest, ChatUsage>, IOpenAiChat
+    internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest>, IOpenAiChat
     {
         public OpenAiChat(IFactory<DefaultServices> factory) : base(factory)
         {
+        }
+        private void AddUsages(ChatUsage usage)
+        {
+            Usages.AddRange([
+                new OpenAiCost { Units = usage.PromptTokens, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+                new OpenAiCost { Units = usage.CompletionTokensDetails?.AcceptedPredictionTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
+                new OpenAiCost { Units = usage.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens }]);
         }
         public async ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
@@ -19,7 +26,7 @@ namespace Rystem.OpenAi.Chat
             Request.StreamOptions = null;
             var response = await DefaultServices.HttpClient.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             if (response.Usage != null)
-                Usages.Add(response.Usage);
+                AddUsages(response.Usage);
             return response;
         }
         public async IAsyncEnumerable<ChunkChatResult> ExecuteAsStreamAsync(
@@ -35,7 +42,7 @@ namespace Rystem.OpenAi.Chat
             await foreach (var result in DefaultServices.HttpClient.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
             {
                 if (result.Usage != null)
-                    Usages.Add(result.Usage);
+                    AddUsages(result.Usage);
                 yield return result;
             }
         }
@@ -170,18 +177,6 @@ namespace Rystem.OpenAi.Chat
         {
             Request.User = user;
             return this;
-        }
-        public decimal CalculateCost()
-        {
-            decimal outputPrice = 0;
-            foreach (var responses in Usages)
-            {
-                outputPrice += DefaultServices.Price.CalculatePrice(Request.Model!,
-                    new OpenAiCost { Units = responses.PromptTokens, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
-                    new OpenAiCost { Units = responses.CompletionTokensDetails?.AcceptedPredictionTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
-                    new OpenAiCost { Units = responses.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens });
-            }
-            return outputPrice;
         }
         public IOpenAiChat WithSeed(int? seed)
         {

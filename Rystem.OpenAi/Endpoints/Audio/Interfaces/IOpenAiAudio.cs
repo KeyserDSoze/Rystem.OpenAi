@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Audio
 {
-    public interface IOpenAiAudio
+    public interface IOpenAiAudio : IOpenAiBase<IOpenAiAudio>
     {
         /// <summary>
         /// Add the file as array of bytes
@@ -68,17 +68,17 @@ namespace Rystem.OpenAi.Audio
         /// <param name="language"></param>
         /// <returns>IOpenAiAudio</returns>
         IOpenAiAudio WithLanguage(Language language);
-
         /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
+        /// Add minutes for your transcription
         /// </summary>
-        /// <returns>decimal</returns>
-        decimal CalculateCostForTranscription(int minutes = 0);
-
+        /// <param name="minutes"></param>
+        /// <returns></returns>
+        IOpenAiAudio WithTranscriptionMinutes(int minutes);
         /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
+        /// /// Add minutes for your translation
         /// </summary>
-        /// <returns>decimal</returns>
-        decimal CalculateCostForTranslation(int minutes = 0);
+        /// <param name="minutes"></param>
+        /// <returns></returns>
+        IOpenAiAudio WithTranslationMinutes(int minutes);
     }
 }

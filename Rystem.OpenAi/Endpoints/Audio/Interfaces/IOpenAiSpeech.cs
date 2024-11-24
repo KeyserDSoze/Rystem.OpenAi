@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Audio
 {
-    public interface IOpenAiSpeech
+    public interface IOpenAiSpeech : IOpenAiBase<IOpenAiSpeech>
     {
         /// <summary>
         /// Executes the request and returns an MP3 audio stream.
@@ -62,11 +62,5 @@ namespace Rystem.OpenAi.Audio
         /// <param name="audioVoice"></param>
         /// <returns>IOpenAiSpeech</returns>
         IOpenAiSpeech WithVoice(AudioVoice audioVoice);
-
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
-        decimal CalculateCost();
     }
 }

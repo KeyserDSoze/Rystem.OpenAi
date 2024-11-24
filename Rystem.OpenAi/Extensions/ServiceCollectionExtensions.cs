@@ -6,6 +6,8 @@ using Polly.Extensions.Http;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
+using Rystem.OpenAi.Embedding;
+using Rystem.OpenAi.Files;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
