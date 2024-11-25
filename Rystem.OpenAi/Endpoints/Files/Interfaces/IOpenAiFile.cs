@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
-        Task<List<FileResult>> AllAsync(CancellationToken cancellationToken = default);
+        ValueTask<FilesDataResult> AllAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// Returns information about a specific file.
         /// </summary>
@@ -29,6 +29,12 @@ namespace Rystem.OpenAi.Files
         /// <returns></returns>
         Task<string> RetrieveFileContentAsStringAsync(string fileId, CancellationToken cancellationToken = default);
         /// <summary>
+        /// Returns the contents of the specified file as stream.
+        /// </summary>
+        /// <param name="fileId">The ID of the file to use for this request</param>
+        /// <returns></returns>
+        Task<Stream> RetrieveFileContentAsStreamAsync(string fileId, CancellationToken cancellationToken = default);
+        /// <summary>
         /// Delete a file.
         ///	</summary>
         ///	 <param name="fileId">The ID of the file to use for this request</param>
@@ -39,6 +45,6 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         /// <param name="file">The stream for the file to use for this request</param>
         /// <param name="purpose">The intendend purpose of the uploaded documents. Use "fine-tune" for Fine-tuning. This allows us to validate the format of the uploaded file.</param>
-        ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", string purpose = "fine-tune", CancellationToken cancellationToken = default);
+        ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default);
     }
 }

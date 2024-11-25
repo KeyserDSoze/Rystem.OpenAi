@@ -5,13 +5,18 @@ namespace Rystem.OpenAi.Files
     /// <summary>
     /// Represents a single file used with the OpenAI Files endpoint.  Files are used to upload and manage documents that can be used with features like Fine-tuning.
     /// </summary>
-    public sealed class FileResult : StatedResult
+    public sealed class FileResult
     {
         /// <summary>
         /// Unique id for this file, so that it can be referenced in other operations
         /// </summary>
         [JsonPropertyName("id")]
         public string? Id { get; set; }
+        /// <summary>
+        /// Object type
+        /// </summary>
+        [JsonPropertyName("object")]
+        public string? Object { get; set; }
         /// <summary>
         /// The name of the file
         /// </summary>
@@ -22,6 +27,7 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         [JsonPropertyName("purpose")]
         public string? Purpose { get; set; }
+        //todo: purpose result has to be the purpose enum
         /// <summary>
         /// The size of the file in bytes
         /// </summary>
@@ -37,10 +43,5 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         [JsonPropertyName("deleted")]
         public bool Deleted { get; set; }
-        /// <summary>
-        /// The status details, it could be null
-        /// </summary>
-        [JsonPropertyName("status_details")]
-        public string? StatusDetails { get; set; }
     }
 }
