@@ -12,5 +12,7 @@ namespace Rystem.OpenAi.Moderation
 
         [JsonPropertyName("flagged")]
         public bool Flagged { get; set; }
+        [JsonPropertyName("category_applied_input_types")]
+        public ModerationCategoryAppliedInputType? CategoryAppliedInputTypes { get; set; }
     }
 }

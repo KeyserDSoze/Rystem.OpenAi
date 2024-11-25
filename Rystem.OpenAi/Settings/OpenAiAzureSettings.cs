@@ -23,7 +23,7 @@ namespace Rystem.OpenAi
         /// </summary>
         public OpenAiAzureAppRegistrationSettings AppRegistration { get; } = new OpenAiAzureAppRegistrationSettings();
         internal Dictionary<string, string> Deployments { get; } = new Dictionary<string, string>();
-        public OpenAiAzureSettings MapDeployment(string name, OpenAiModelName modelName)
+        public OpenAiAzureSettings MapDeployment(string name, ModelName modelName)
         {
             Deployments.TryAdd(name, modelName);
             return this;

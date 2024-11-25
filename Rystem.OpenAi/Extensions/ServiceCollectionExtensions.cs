@@ -8,6 +8,9 @@ using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
+using Rystem.OpenAi.FineTune;
+using Rystem.OpenAi.Models;
+using Rystem.OpenAi.Moderation;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -63,7 +66,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .AddFactory<IOpenAiSpeech, OpenAiSpeech>(integrationName, ServiceLifetime.Transient);
             services
-                .AddFactory<IOpenAiModel, OpenAiModelService>(integrationName, ServiceLifetime.Transient);
+                .AddFactory<IOpenAiModel, OpenAiModel>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiModeration, OpenAiModeration>(integrationName, ServiceLifetime.Transient);
             services

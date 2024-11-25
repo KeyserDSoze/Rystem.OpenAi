@@ -7,7 +7,7 @@
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns> <see cref="T"/></returns>
-        T WithModel(OpenAiModelName model);
+        T WithModel(ModelName model);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

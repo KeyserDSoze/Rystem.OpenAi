@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi.FineTune;
 
-namespace Rystem.OpenAi
+namespace Rystem.OpenAi.Models
 {
     /// <summary>
     /// List and describe the various models available in the API. 
@@ -22,7 +20,7 @@ namespace Rystem.OpenAi
         /// List all models via the API
         /// </summary>
         /// <returns>Asynchronously returns the list of all <see cref="Model"/>s</returns>
-        Task<OpenAiList<Model>> ListAsync(CancellationToken cancellationToken = default);
+        Task<ModelListResult> ListAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>

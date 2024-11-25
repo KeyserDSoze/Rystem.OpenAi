@@ -2,28 +2,24 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.FineTune;
 
-namespace Rystem.OpenAi
+namespace Rystem.OpenAi.Models
 {
-    internal sealed class OpenAiModel : OpenAiBase, IOpenAiModel
+    internal sealed class OpenAiModel : OpenAiBuilder<IOpenAiModel>, IOpenAiModel
     {
-        private readonly bool _forced;
-        public OpenAiModel(IHttpClientFactory httpClientFactory,
-            IEnumerable<OpenAiConfiguration> configurations,
-            IOpenAiUtility utility)
-            : base(httpClientFactory, configurations, utility)
+        public OpenAiModel(IFactory<DefaultServices> factory) : base(factory)
         {
-            _forced = false;
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => Client.GetAsync<Model>(_configuration.GetUri(OpenAiType.Model, string.Empty, _forced, $"/{id}"), _configuration, cancellationToken);
-        public async Task<OpenAiList<Model>> ListAsync(CancellationToken cancellationToken = default)
+            => DefaultServices.HttpClient.GetAsync<Model>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);
+        public async Task<ModelListResult> ListAsync(CancellationToken cancellationToken = default)
         {
-            var response = await Client.GetAsync<OpenAiList<Model>>(_configuration.GetUri(OpenAiType.Model, string.Empty, _forced, string.Empty), _configuration, cancellationToken);
+            var response = await DefaultServices.HttpClient.GetAsync<ModelListResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public ValueTask<FineTuningDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-           => Client.DeleteAsync<FineTuningDeleteResult>(_configuration.GetUri(OpenAiType.Model, fineTuneId, _forced, $"/{fineTuneId}"), _configuration, cancellationToken);
+           => DefaultServices.HttpClient.DeleteAsync<FineTuningDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Rystem.OpenAi
 {
-    internal sealed class OpenAiModel
+    internal sealed class Model
     {
-        private readonly OpenAiModelName _model;
-        public OpenAiModel(OpenAiModelName model)
+        private readonly ModelName _model;
+        public Model(ModelName model)
             => _model = model;
         public string AsString()
             => _model;

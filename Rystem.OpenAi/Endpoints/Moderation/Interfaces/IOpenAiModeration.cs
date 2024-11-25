@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Moderation
 {
-    public interface IOpenAiModeration
+    public interface IOpenAiModeration : IOpenAiBase<IOpenAiModeration>
     {
         /// <summary>
         /// Classifies if text violates OpenAI's Content Policy.
@@ -11,6 +13,6 @@ namespace Rystem.OpenAi.Moderation
         /// The input text to classify.
         /// </param>
         /// <returns>Builder</returns>
-        ModerationRequestBuilder Create(string input);
+        ValueTask<ModerationResult> ExecuteAsync(string input, CancellationToken cancellationToken = default);
     }
 }

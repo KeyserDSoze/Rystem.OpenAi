@@ -36,6 +36,12 @@ namespace Rystem.OpenAi.FineTune
             => DefaultServices.HttpClient.GetAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClient.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/cancel"), null, DefaultServices.Configuration, cancellationToken);
+        public ValueTask<FineTuneCheckPointEventsResult> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        {
+            var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
+            var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/checkpoints")}{querystring}";
+            return DefaultServices.HttpClient.GetAsync<FineTuneCheckPointEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
+        }
         public ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";

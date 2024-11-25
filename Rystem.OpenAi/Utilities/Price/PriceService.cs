@@ -5,12 +5,12 @@ namespace Rystem.OpenAi
 {
     internal sealed class PriceService : IOpenAiPriceService
     {
-        private readonly Dictionary<string, OpenAiModel> _prices;
-        public PriceService(Dictionary<string, OpenAiModel> prices)
+        private readonly Dictionary<string, Model> _prices;
+        public PriceService(Dictionary<string, Model> prices)
         {
             _prices = prices;
         }
-        public decimal CalculatePrice(OpenAiModelName modelName, params OpenAiCost[] spentRequests)
+        public decimal CalculatePrice(ModelName modelName, params OpenAiCost[] spentRequests)
         {
             var total = 0m;
             if (_prices.TryGetValue(modelName, out var model))
