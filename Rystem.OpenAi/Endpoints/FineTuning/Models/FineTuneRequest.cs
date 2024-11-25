@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.FineTune
 {
@@ -11,8 +12,12 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("validation_file")]
         public string? ValidationFile { get; set; }
         [JsonPropertyName("hyperparameters")]
-        public FineTuneRequestHyperparameters? Hyperparameters { get; set; }
+        public FineTuneHyperParameters? Hyperparameters { get; set; }
         [JsonPropertyName("suffix")]
         public string? Suffix { get; set; }
+        [JsonPropertyName("integrations")]
+        public List<FineTuneIntegration>? Integrations { get; set; }
+        [JsonPropertyName("seed")]
+        public int? Seed { get; set; }
     }
 }

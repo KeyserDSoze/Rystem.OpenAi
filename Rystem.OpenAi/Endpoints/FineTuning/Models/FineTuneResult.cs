@@ -3,10 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.FineTune
 {
-    public sealed class FineTuneResult : StatedResult
+    public sealed class FineTuneResult
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
+        [JsonPropertyName("object")]
+        public string? Object { get; set; }
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
         [JsonPropertyName("created_at")]
         public int? CreatedAt { get; set; }
         [JsonPropertyName("events")]
@@ -14,9 +18,12 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("fine_tuned_model")]
         public string? FineTuneModel { get; set; }
         [JsonPropertyName("hyperparams")]
-        public Hyperparams? Hyperparams { get; set; }
+        public FineTuneHyperParameters? Hyperparams { get; set; }
         [JsonPropertyName("organization_id")]
         public string? OrganizationId { get; set; }
+        //todo: add the real status enum for this property The current status of the fine-tuning job, which can be either validating_files, queued, running, succeeded, failed, or cancelled.
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
         [JsonPropertyName("result_files")]
         public List<string>? ResultFiles { get; set; }
         [JsonPropertyName("validation_file")]
@@ -27,7 +34,13 @@ namespace Rystem.OpenAi.FineTune
         public int? UpdatedAt { get; set; }
         [JsonPropertyName("finished_at")]
         public int? FinishedAt { get; set; }
+        [JsonPropertyName("estimated_finish")]
+        public int? EstimatedFinish { get; set; }
         [JsonPropertyName("trained_tokens")]
         public int? TrainedTokens { get; set; }
+        [JsonPropertyName("integrations")]
+        public List<FineTuneIntegration>? Integrations { get; set; }
+        [JsonPropertyName("error")]
+        public FineTuneError? Error { get; set; }
     }
 }

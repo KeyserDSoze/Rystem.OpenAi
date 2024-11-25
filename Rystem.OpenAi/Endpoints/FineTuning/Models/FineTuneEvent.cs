@@ -4,6 +4,8 @@ namespace Rystem.OpenAi.FineTune
 {
     public sealed class FineTuneEvent
     {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
         [JsonPropertyName("object")]
         public string? Object { get; set; }
         [JsonPropertyName("created_at")]
