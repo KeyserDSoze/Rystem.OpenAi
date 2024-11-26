@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Models
             var response = await DefaultServices.HttpClient.GetAsync<ModelListResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
             return response;
         }
-        public ValueTask<FineTuningDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-           => DefaultServices.HttpClient.DeleteAsync<FineTuningDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
+        public ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
+           => DefaultServices.HttpClient.DeleteAsync<FineTuneDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
     }
 }

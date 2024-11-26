@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Rystem.OpenAi.Moderation
 {
-    internal sealed class OpenAiModeration : OpenAiBuilder<ModerationsRequest>, IOpenAiModeration
+    internal sealed class OpenAiModeration : OpenAiBuilder<IOpenAiModeration, ModerationsRequest>, IOpenAiModeration
     {
         public OpenAiModeration(IFactory<DefaultServices> factory) : base(factory)
         {
@@ -20,7 +16,7 @@ namespace Rystem.OpenAi.Moderation
         public ValueTask<ModerationResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
         {
             Request.Input = input;
-            return DefaultServices.HttpClient.PostAsync<ModerationResult>(Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClient.PostAsync<ModerationResult>(DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
         }
     }
 }

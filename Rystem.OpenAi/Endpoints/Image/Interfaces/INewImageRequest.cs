@@ -1,6 +1,6 @@
 ﻿namespace Rystem.OpenAi.Image
 {
-    public interface IImageRequestBuilder
+    public interface INewImageRequest
     {
     }
 }

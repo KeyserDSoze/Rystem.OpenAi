@@ -6,7 +6,7 @@ using System.Net.Http;
 namespace Rystem.OpenAi.Image
 {
     public abstract class ImageModificationRequestBuilder<TBuilder> : ImageRequestBuilder<TBuilder>
-        where TBuilder : IImageRequestBuilder
+        where TBuilder : INewImageRequest
     {
         private readonly ByteArrayContent? _image;
         private readonly string? _imageName;

@@ -63,14 +63,6 @@ namespace Rystem.OpenAi.FineTune
         ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Deletes a fine-tune operation by ID.
-        /// </summary>
-        /// <param name="fineTuneId">The ID of the fine-tune operation.</param>
-        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-        /// <returns>A task that represents the asynchronous operation, containing the deletion result.</returns>
-        ValueTask<FineTuningDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Streams fine-tune results as an asynchronous enumerable.
         /// </summary>
         /// <param name="take">The number of results to take.</param>

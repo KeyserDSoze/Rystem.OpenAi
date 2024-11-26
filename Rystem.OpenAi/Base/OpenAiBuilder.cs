@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
 {
     internal abstract class OpenAiBuilder<T> : IServiceForFactory
     {
-        private readonly IFactory<DefaultServices> _factory;
+        private protected readonly IFactory<DefaultServices> _factory;
         public OpenAiBuilder(IFactory<DefaultServices> factory)
         {
             _factory = factory;
@@ -18,6 +17,16 @@ namespace Rystem.OpenAi
         public void SetFactoryName(string name)
         {
             _factoryName = name;
+        }
+    }
+    internal abstract class OpenAiBuilder<T, TRequest> : OpenAiBuilder<T>, IServiceForFactory
+        where T : class
+        where TRequest : IOpenAiRequest, new()
+    {
+        private protected TRequest Request { get; }
+        public OpenAiBuilder(IFactory<DefaultServices> factory) : base(factory)
+        {
+            Request = new TRequest();
         }
         public T WithModel(ModelName model)
         {
@@ -38,16 +47,5 @@ namespace Rystem.OpenAi
             var outputPrice = DefaultServices.Price.CalculatePrice(Request.Model!, [.. Usages]);
             return outputPrice;
         }
-    }
-    internal abstract class OpenAiBuilder<T, TRequest> : OpenAiBuilder<T>, IServiceForFactory
-        where T : class
-        where TRequest : IOpenAiRequest, new()
-    {
-        private protected TRequest Request { get; } = new TRequest();
-        public OpenAiBuilder(IFactory<DefaultServices> factory) : base(factory)
-        {
-
-        }
-
     }
 }

@@ -20,6 +20,14 @@
         CachedInput,
         Training,
         AudioInput,
-        AudioOutput
+        AudioOutput,
+        ImageStandard256,
+        ImageStandard512,
+        ImageStandard1024,
+        ImageStandard1024x1792,
+        ImageStandard1792x1024,
+        ImageHd1024,
+        ImageHd1024x1792,
+        ImageHd1792x1024,
     }
 }

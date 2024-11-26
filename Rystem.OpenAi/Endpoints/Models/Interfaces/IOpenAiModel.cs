@@ -27,6 +27,6 @@ namespace Rystem.OpenAi.Models
         /// <param name="fineTuneId">The id/name of the fine tune model.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Result for deletion</returns>
-        ValueTask<FineTuningDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
+        ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
 }

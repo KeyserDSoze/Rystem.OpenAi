@@ -9,6 +9,7 @@ using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
 using Rystem.OpenAi.FineTune;
+using Rystem.OpenAi.Image;
 using Rystem.OpenAi.Models;
 using Rystem.OpenAi.Moderation;
 

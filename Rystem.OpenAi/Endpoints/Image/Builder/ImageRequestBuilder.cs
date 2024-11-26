@@ -5,24 +5,18 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
 {
-    public abstract class ImageRequestBuilder<TBuilder> : RequestBuilder<ImageRequest>, IImageRequestBuilder
-        where TBuilder : IImageRequestBuilder
+    internal abstract class ImageRequestBuilder<TBuilder> : OpenAiBuilder<IOpenAiImage, ImageRequest>, INewImageRequest
+        where TBuilder : INewImageRequest
     {
         private protected ImageSize _size;
-        private protected ImageRequestBuilder(HttpClient client,
-            OpenAiConfiguration configuration,
-            IOpenAiUtility utility,
-            Func<ImageRequest> defaultRequestCreator)
-            : base(client, configuration, () => defaultRequestCreator(), utility)
+        private protected ImageQuality _quality;
+        private protected ImageRequestBuilder(IFactory<DefaultServices> factory) : base(factory)
         {
-            _familyType = ModelFamilyType.Image;
-            _size = ImageSize.Large;
-            Request.Size = _size.AsString();
         }
-        private protected abstract object CreateRequest();
         private protected abstract string Endpoint { get; }
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
@@ -33,8 +27,8 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.Model!, _forced, Endpoint);
-            return Client.PostAsync<ImageResult>(uri, CreateRequest(), Configuration, cancellationToken);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, Endpoint);
+            return DefaultServices.HttpClient.PostAsync<ImageResult>(uri, Request, DefaultServices.Configuration, cancellationToken);
         }
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
@@ -45,8 +39,8 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResultForBase64> ExecuteWithBase64Async(CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.B64Json.AsString();
-            var uri = Configuration.GetUri(OpenAiType.Image, Request.Model!, _forced, Endpoint);
-            return Client.PostAsync<ImageResultForBase64>(uri, CreateRequest(), Configuration, cancellationToken);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, Endpoint);
+            return DefaultServices.HttpClient.PostAsync<ImageResultForBase64>(uri, Request, DefaultServices.Configuration, cancellationToken);
         }
         /// <summary>
         /// Download N images as Stream after you create, variate or edit by a given prompt.
@@ -79,18 +73,27 @@ namespace Rystem.OpenAi.Image
             if (numberOfResults > 10 || numberOfResults < 1)
                 throw new ArgumentOutOfRangeException(nameof(numberOfResults), "The number of results must be between 1 and 10");
             Request.NumberOfResults = numberOfResults;
-            return (TBuilder)(this as IImageRequestBuilder);
+            ChangeUsage();
+            return (TBuilder)(this as INewImageRequest);
         }
         /// <summary>
         /// The size of the generated images. Must be one of 256x256, 512x512, or 1024x1024.
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        public TBuilder WithSize(ImageSize size)
+        public TBuilder WithSize(ImageSize size, ImageQuality quality)
         {
             _size = size;
+            _quality = quality;
+            ChangeUsage();
             Request.Size = size.AsString();
-            return (TBuilder)(this as IImageRequestBuilder);
+            Request.Quality = quality.AsString();
+            return (TBuilder)(this as INewImageRequest);
+        }
+        private void ChangeUsage()
+        {
+            Usages.Clear();
+            Usages.Add(new OpenAiCost { Units = Request.NumberOfResults, UnitOfMeasure = UnitOfMeasure.Images, Kind = _size.AsCost(_quality) });
         }
         /// <summary>
         /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
@@ -101,25 +104,7 @@ namespace Rystem.OpenAi.Image
         public TBuilder WithUser(string user)
         {
             Request.User = user;
-            return (TBuilder)(this as IImageRequestBuilder);
-        }
-        /// <summary>
-        /// Calculate the cost for this request based on configurated price during startup.
-        /// </summary>
-        /// <returns>decimal</returns>
-        public decimal CalculateCost()
-        {
-            var cost = Utility.Cost;
-            return cost.Configure(settings =>
-            {
-                settings
-                    .WithType(OpenAiType.Image)
-                    .WithImageSize(_size);
-            }, Configuration.Name).Invoke(new OpenAiUsage
-            {
-                ImageSize = _size,
-                Units = Request.NumberOfResults
-            });
+            return (TBuilder)(this as INewImageRequest);
         }
     }
 }

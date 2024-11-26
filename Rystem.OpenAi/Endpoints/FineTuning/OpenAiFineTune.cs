@@ -48,8 +48,6 @@ namespace Rystem.OpenAi.FineTune
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/events")}{querystring}";
             return DefaultServices.HttpClient.GetAsync<FineTuneEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
         }
-        public ValueTask<FineTuningDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClient.DeleteAsync<FineTuningDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
         public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
