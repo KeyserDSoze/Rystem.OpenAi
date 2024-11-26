@@ -2,32 +2,20 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
 {
-    public abstract class ImageModificationRequestBuilder<TBuilder> : ImageRequestBuilder<TBuilder>
+    internal abstract class ImageModificationRequestBuilder<TBuilder> : ImageRequestBuilder<TBuilder>
         where TBuilder : INewImageRequest
     {
         private readonly ByteArrayContent? _image;
         private readonly string? _imageName;
         private protected ByteArrayContent? _mask;
         private protected string? _maskName;
-        private protected ImageModificationRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string? prompt,
-            Stream image, string imageName, bool transform, ImageSize size, IOpenAiUtility utility) :
-            base(client, configuration, utility, () =>
-            {
-                var request = new ImageRequest
-                {
-                    Prompt = prompt,
-                    NumberOfResults = 1,
-                    Size = size.AsString(),
-                };
-                return request;
-            })
+        private protected ImageModificationRequestBuilder(IFactory<DefaultServices> factory) : base(factory)
         {
-            _size = size;
-            _image = CalculateBytesFromImage(transform, image);
-            _imageName = imageName;
+
         }
         private protected ByteArrayContent CalculateBytesFromImage(bool transform, Stream image)
         {
