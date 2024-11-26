@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
 {

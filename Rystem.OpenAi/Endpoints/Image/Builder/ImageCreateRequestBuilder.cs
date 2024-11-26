@@ -9,5 +9,6 @@ namespace Rystem.OpenAi.Image
         }
         private const string Generations = "/generations";
         private protected override string Endpoint => Generations;
+        private protected override object CreateRequest() => Request;
     }
 }

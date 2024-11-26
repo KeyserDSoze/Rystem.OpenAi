@@ -3,14 +3,14 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
 {
-    public sealed class ImageEditRequestBuilder : ImageModificationRequestBuilder<ImageEditRequestBuilder>
+    internal sealed class ImageEditRequestBuilder : ImageModificationRequestBuilder<ImageEditRequestBuilder>
     {
-        internal ImageEditRequestBuilder(HttpClient client, OpenAiConfiguration configuration, string? prompt,
-            Stream image, string imageName, bool transform, ImageSize size, IOpenAiUtility utility) :
-            base(client, configuration, prompt, image, imageName, transform, size, utility)
+        internal ImageEditRequestBuilder(IFactory<DefaultServices> factory) :
+            base(factory)
         { }
         private const string Edits = "/edits";
         private protected override string Endpoint => Edits;

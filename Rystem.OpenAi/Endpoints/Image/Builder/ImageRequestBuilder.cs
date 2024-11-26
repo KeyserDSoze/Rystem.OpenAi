@@ -18,6 +18,7 @@ namespace Rystem.OpenAi.Image
         {
         }
         private protected abstract string Endpoint { get; }
+        private protected abstract object CreateRequest();
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
         /// </summary>
@@ -28,7 +29,7 @@ namespace Rystem.OpenAi.Image
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, Endpoint);
-            return DefaultServices.HttpClient.PostAsync<ImageResult>(uri, Request, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClient.PostAsync<ImageResult>(uri, CreateRequest(), DefaultServices.Configuration, cancellationToken);
         }
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
