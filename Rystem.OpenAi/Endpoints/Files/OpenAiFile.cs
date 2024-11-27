@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Files
 {
-    internal sealed class OpenAiFile : OpenAiBuilder<IOpenAiFile, FileRequest>, IOpenAiFile
+    internal sealed class OpenAiFile : OpenAiBuilder<IOpenAiFile>, IOpenAiFile
     {
         public OpenAiFile(IFactory<DefaultServices> factory)
             : base(factory)

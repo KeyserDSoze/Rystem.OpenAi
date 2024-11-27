@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Embedding
 {
-    public interface IOpenAiEmbedding : IOpenAiBase<IOpenAiEmbedding>
+    public interface IOpenAiEmbedding : IOpenAiBase<IOpenAiEmbedding, EmbeddingModelName>
     {
         /// <summary>
         /// Adds inputs for the embedding operation.

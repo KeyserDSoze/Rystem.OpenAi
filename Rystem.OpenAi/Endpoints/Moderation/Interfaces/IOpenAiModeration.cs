@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Moderation
 {
-    public interface IOpenAiModeration : IOpenAiBase<IOpenAiModeration>
+    public interface IOpenAiModeration : IOpenAiBase<IOpenAiModeration, ModerationModelName>
     {
         /// <summary>
         /// Classifies if text violates OpenAI's Content Policy.

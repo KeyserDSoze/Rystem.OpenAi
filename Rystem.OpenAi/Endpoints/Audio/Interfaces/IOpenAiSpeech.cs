@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Audio
 {
-    public interface IOpenAiSpeech : IOpenAiBase<IOpenAiSpeech>
+    public interface IOpenAiSpeech : IOpenAiBase<IOpenAiSpeech, SpeechModelName>
     {
         /// <summary>
         /// Executes the request and returns an MP3 audio stream.

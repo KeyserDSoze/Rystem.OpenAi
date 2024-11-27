@@ -8,10 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Chat
 {
-    internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest>, IOpenAiChat
+    internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest, ChatModelName>, IOpenAiChat
     {
         public OpenAiChat(IFactory<DefaultServices> factory) : base(factory)
         {
+            Request.Model = ChatModelName.Gpt4_o;
         }
         private void AddUsages(ChatUsage usage)
         {

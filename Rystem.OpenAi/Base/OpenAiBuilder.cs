@@ -19,16 +19,17 @@ namespace Rystem.OpenAi
             _factoryName = name;
         }
     }
-    internal abstract class OpenAiBuilder<T, TRequest> : OpenAiBuilder<T>, IServiceForFactory
+    internal abstract class OpenAiBuilder<T, TRequest, TModel> : OpenAiBuilder<T>, IServiceForFactory
         where T : class
         where TRequest : IOpenAiRequest, new()
+        where TModel : ModelName
     {
         private protected TRequest Request { get; }
         public OpenAiBuilder(IFactory<DefaultServices> factory) : base(factory)
         {
             Request = new TRequest();
         }
-        public T WithModel(ModelName model)
+        public T WithModel(TModel model)
         {
             Request.Model = model;
             Forced = false;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Chat
 {
-    public interface IOpenAiChat : IOpenAiBase<IOpenAiChat>
+    public interface IOpenAiChat : IOpenAiBase<IOpenAiChat, ChatModelName>
     {
         /// <summary>
         /// Execute operation.

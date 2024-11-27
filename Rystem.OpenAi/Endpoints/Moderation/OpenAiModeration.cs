@@ -4,10 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Moderation
 {
-    internal sealed class OpenAiModeration : OpenAiBuilder<IOpenAiModeration, ModerationsRequest>, IOpenAiModeration
+    internal sealed class OpenAiModeration : OpenAiBuilder<IOpenAiModeration, ModerationsRequest, ModerationModelName>, IOpenAiModeration
     {
         public OpenAiModeration(IFactory<DefaultServices> factory) : base(factory)
         {
+            Request.Model = ModerationModelName.OmniLatest;
         }
         /// <summary>
         /// Classifies if text violates OpenAI's Content Policy.

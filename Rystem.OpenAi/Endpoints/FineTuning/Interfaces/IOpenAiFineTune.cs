@@ -8,7 +8,7 @@ namespace Rystem.OpenAi.FineTune
     /// <summary>
     /// Manage fine-tuning jobs to tailor a model to your specific training data. See <see href="https://platform.openai.com/docs/guides/fine-tuning">Fine-tuning guide</see>.
     /// </summary>
-    public interface IOpenAiFineTune : IOpenAiBase<IOpenAiFineTune>
+    public interface IOpenAiFineTune : IOpenAiBase<IOpenAiFineTune, FineTuningModelName>
     {
         /// <summary>
         /// Sets the file ID of the training dataset.

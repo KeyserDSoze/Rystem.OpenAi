@@ -1,5 +1,9 @@
+﻿using System;
+using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Rystem.OpenAi.Image;
+using Xunit;
 
 namespace Rystem.OpenAi.UnitTests
 {

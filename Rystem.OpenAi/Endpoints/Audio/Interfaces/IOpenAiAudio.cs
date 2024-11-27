@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Audio
 {
-    public interface IOpenAiAudio : IOpenAiBase<IOpenAiAudio>
+    public interface IOpenAiAudio : IOpenAiBase<IOpenAiAudio, AudioModelName>
     {
         /// <summary>
         /// Add the file as array of bytes

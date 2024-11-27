@@ -8,7 +8,7 @@ namespace Rystem.OpenAi.Image
     /// <summary>
     /// Interface for building and executing OpenAI image operations such as generating, editing, and variating images.
     /// </summary>
-    public interface IOpenAiImage : IOpenAiBase<IOpenAiImage>
+    public interface IOpenAiImage : IOpenAiBase<IOpenAiImage, ImageModelName>
     {
         /// <summary>
         /// Generates an image based on the provided prompt.

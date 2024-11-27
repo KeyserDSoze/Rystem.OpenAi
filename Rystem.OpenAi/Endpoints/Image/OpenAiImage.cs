@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using System.IO;
-using System.Drawing.Imaging;
-using System.Drawing;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
 {
-    internal sealed class OpenAiImage : OpenAiBuilder<IOpenAiImage, ImageRequest>, IOpenAiImage
+    internal sealed class OpenAiImage : OpenAiBuilder<IOpenAiImage, ImageRequest, ImageModelName>, IOpenAiImage
     {
         private Stream? _mask;
         private string? _maskName;
@@ -19,12 +16,13 @@ namespace Rystem.OpenAi.Image
         private ImageQuality _quality;
         public OpenAiImage(IFactory<DefaultServices> factory) : base(factory)
         {
+            Request.Model = ImageModelName.Dalle3;
         }
         private void CheckPromptLenght(string prompt)
         {
-            if (Request.Model == ModelName.Image.Dalle2 && prompt.Length > 1000)
+            if (Request.Model == ImageModelName.Dalle2 && prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
-            if (Request.Model == ModelName.Image.Dalle2 && prompt.Length > 4000)
+            if (Request.Model == ImageModelName.Dalle2 && prompt.Length > 4000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 4000 characters.");
         }
         private const string ImageLabel = "image";

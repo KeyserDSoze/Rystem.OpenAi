@@ -1,13 +1,14 @@
 ﻿namespace Rystem.OpenAi
 {
-    public interface IOpenAiBase<out T>
+    public interface IOpenAiBase<out T, TModel>
+        where TModel : ModelName
     {
         /// <summary>
         /// ID of the model to use.
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns> <see cref="T"/></returns>
-        T WithModel(ModelName model);
+        T WithModel(TModel model);
         /// <summary>
         /// ID of the model to use.
         /// </summary>

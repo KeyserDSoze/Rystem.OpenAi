@@ -5,11 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Embedding
 {
-    internal sealed class OpenAiEmbedding : OpenAiBuilder<IOpenAiEmbedding, EmbeddingRequest>, IOpenAiEmbedding
+    internal sealed class OpenAiEmbedding : OpenAiBuilder<IOpenAiEmbedding, EmbeddingRequest, EmbeddingModelName>, IOpenAiEmbedding
     {
         private readonly List<string> _inputs = [];
         public OpenAiEmbedding(IFactory<DefaultServices> factory) : base(factory)
         {
+            Request.Model = EmbeddingModelName.Text_embedding_3_large;
         }
         public IOpenAiEmbedding WithInputs(params string[] inputs)
         {

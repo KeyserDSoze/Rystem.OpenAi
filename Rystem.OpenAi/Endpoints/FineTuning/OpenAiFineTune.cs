@@ -13,12 +13,13 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.FineTune
 {
-    internal sealed class OpenAiFineTune : OpenAiBuilder<IOpenAiFineTune, FineTuneRequest>, IOpenAiFineTune
+    internal sealed class OpenAiFineTune : OpenAiBuilder<IOpenAiFineTune, FineTuneRequest, FineTuningModelName>, IOpenAiFineTune
     {
         private const string WandBLabel = "wandb";
         public OpenAiFineTune(IFactory<DefaultServices> factory)
             : base(factory)
         {
+            Request.Model = FineTuningModelName.Gpt_4o_2024_08_06;
         }
         public IOpenAiFineTune WithFileId(string trainingFileId)
         {

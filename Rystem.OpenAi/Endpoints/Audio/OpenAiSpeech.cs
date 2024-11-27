@@ -6,13 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest>, IOpenAiSpeech
+    internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest, SpeechModelName>, IOpenAiSpeech
     {
         public OpenAiSpeech(IFactory<DefaultServices> factory)
             : base(factory)
         {
             Request.Speed = 1;
             Request.Voice = AudioVoice.Alloy.ToString().ToLower();
+            Request.Model = SpeechModelName.TtsHd;
         }
         private async ValueTask<Stream> ExecuteAsync(string input, string responseFormat, CancellationToken cancellationToken = default)
         {

@@ -7,11 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Audio
 {
-    internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest>, IOpenAiAudio
+    internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
         public OpenAiAudio(IFactory<DefaultServices> factory)
             : base(factory)
         {
+            Request.Model = AudioModelName.Whisper;
         }
         internal const string ResponseFormatJson = "json";
         public async ValueTask<AudioResult> TranscriptAsync(CancellationToken cancellationToken = default)
