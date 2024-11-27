@@ -8,6 +8,8 @@ namespace Rystem.OpenAi.Image
     {
         [JsonPropertyName("b64_json")]
         public string? Base64Value { get; set; }
+        [JsonPropertyName("revised_prompt")]
+        public string? RevisedPrompt { get; set; }
         public System.Drawing.Image? ConvertToImage()
         {
             if (!string.IsNullOrWhiteSpace(Base64Value))
