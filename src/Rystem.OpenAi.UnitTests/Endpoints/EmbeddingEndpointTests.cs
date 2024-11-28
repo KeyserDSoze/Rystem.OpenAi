@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask GetBasicEmbeddingAsync(string name)
         {
-            var openAiApi = name == "NoDI" ? OpenAiService.Instance.Create(name) : _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings
@@ -51,7 +51,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask ReturnedUsageAsync(string integrationName)
         {
-            var openAiApi = integrationName == "NoDI" ? OpenAiService.Instance.Create(integrationName) : _openAiFactory.Create(integrationName);
+            var openAiApi = integrationName == "NoDI" ? OpenAiServiceLocator.Instance.Create(integrationName) : _openAiFactory.Create(integrationName);
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings
@@ -74,7 +74,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask GetBasicEmbeddingWithCustomDimensionsAsync(string name)
         {
-            var openAiApi = name == "NoDI" ? OpenAiService.Instance.Create(name) : _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name);
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings

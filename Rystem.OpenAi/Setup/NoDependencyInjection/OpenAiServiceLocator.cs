@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
@@ -13,20 +11,20 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    public sealed class OpenAiService
+    public sealed class OpenAiServiceLocator
     {
-        private static readonly OpenAiService s_openAiService = new OpenAiService();
-        public static OpenAiService Instance => s_openAiService;
-        private OpenAiService() { }
+        private static readonly OpenAiServiceLocator s_openAiService = new();
+        public static OpenAiServiceLocator Instance => s_openAiService;
+        private OpenAiServiceLocator() { }
         private readonly IServiceCollection _services = new ServiceCollection();
         public IServiceCollection Services => _services;
         private IServiceProvider? _serviceProvider;
-        public OpenAiService AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
+        public OpenAiServiceLocator AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
         {
             _services.AddOpenAi(settings, integrationName);
             return this;
         }
-        public OpenAiService AddFurtherService<TService, TImplementation>(ServiceLifetime lifetime)
+        public OpenAiServiceLocator AddFurtherService<TService, TImplementation>(ServiceLifetime lifetime)
             where TService : class
             where TImplementation : class, TService
         {
