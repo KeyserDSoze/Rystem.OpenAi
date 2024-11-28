@@ -21,9 +21,8 @@ namespace Rystem.OpenAi.FineTune
         public FineTuneHyperParameters? Hyperparams { get; set; }
         [JsonPropertyName("organization_id")]
         public string? OrganizationId { get; set; }
-        //todo: add the real status enum for this property The current status of the fine-tuning job, which can be either validating_files, queued, running, succeeded, failed, or cancelled.
         [JsonPropertyName("status")]
-        public string? Status { get; set; }
+        public FineTuneStatus? Status { get; set; }
         [JsonPropertyName("result_files")]
         public List<string>? ResultFiles { get; set; }
         [JsonPropertyName("validation_file")]

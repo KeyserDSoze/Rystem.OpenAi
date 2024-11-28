@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Chat;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ModelName.Chat.Gpt4_o)
+                .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
@@ -75,7 +74,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ModelName.Chat.Gpt4_o)
+                .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .WithStopSequence("alekud")
                 .AddStopSequence("coltello")
@@ -107,7 +106,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ModelName.Chat.Gpt4_o)
+                .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAsync())
