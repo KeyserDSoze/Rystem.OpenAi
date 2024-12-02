@@ -16,7 +16,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask CreateChatCompletionAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
 
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
@@ -53,7 +53,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(results.Created);
             Assert.NotNull(results.Choices);
             Assert.True(results.Choices.Count != 0);
-            Assert.Contains(results.Choices, c => c.Message.Role == ChatRole.Assistant);
+            Assert.Contains(results.Choices, c => c.Message?.Role == ChatRole.Assistant);
             Assert.True(cost > 0);
         }
 
@@ -63,7 +63,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask CreateChatCompletionWithStreamAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Chat);
             //var biasDictionary = new Dictionary<string, int>
             //{
@@ -91,8 +91,8 @@ namespace Rystem.OpenAi.Test
                 results.Add(x);
 
             Assert.NotEmpty(results);
-            Assert.True(results.Last().Choices.Count != 0);
-            Assert.Contains(results.SelectMany(x => x.Choices), c => c.Delta == null || c.Delta?.Role == ChatRole.Assistant);
+            Assert.True(results.Last().Choices?.Count != 0);
+            Assert.Contains(results.SelectMany(x => x.Choices ?? []), c => c.Delta == null || c.Delta?.Role == ChatRole.Assistant);
         }
 
         [Theory]
@@ -100,7 +100,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask CreateChatCompletionWithStreamAndCalculateCostAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Chat);
             var results = new List<ChunkChatResult>();
             await foreach (var x in openAiApi.Chat

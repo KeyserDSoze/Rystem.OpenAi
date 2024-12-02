@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Test
         [Fact]
         public void SetupError()
         {
-            var openAiApi = _openAiFactory.Create("");
+            var openAiApi = _openAiFactory.Create("")!;
             var request = openAiApi.Audio;
             try
             {
@@ -41,7 +41,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateTranslationAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Audio);
 
             var location = Assembly.GetExecutingAssembly().Location;
@@ -58,14 +58,14 @@ namespace Rystem.OpenAi.Test
                 .TranslateAsync();
 
             Assert.NotNull(results);
-            Assert.True(results.Text.Length > 100);
+            Assert.True(results.Text?.Length > 100);
         }
 
         [Theory]
         [InlineData("")]
         public async ValueTask CreateVerboseTranslationAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Audio);
 
             var location = Assembly.GetExecutingAssembly().Location;
@@ -82,8 +82,8 @@ namespace Rystem.OpenAi.Test
                 .VerboseTranslateAsync();
 
             Assert.NotNull(results);
-            Assert.True(results.Text.Length > 100);
-            Assert.NotEmpty(results.Segments);
+            Assert.True(results.Text?.Length > 100);
+            Assert.NotEmpty(results.Segments ?? []);
         }
 
 
@@ -91,7 +91,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateTranscriptionAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
             using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
@@ -108,7 +108,7 @@ namespace Rystem.OpenAi.Test
                 .TranscriptAsync();
 
             Assert.NotNull(results);
-            Assert.True(results.Text.Length > 100);
+            Assert.True(results.Text?.Length > 100);
             Assert.StartsWith("Incidente tra due aerei di addestramento", results.Text);
         }
 
@@ -116,7 +116,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateVerboseTranscriptionAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             var location = Assembly.GetExecutingAssembly().Location;
             location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
             using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
@@ -133,15 +133,15 @@ namespace Rystem.OpenAi.Test
                 .VerboseTranscriptAsync();
 
             Assert.NotNull(results);
-            Assert.True(results.Text.Length > 100);
+            Assert.True(results.Text?.Length > 100);
             Assert.StartsWith("Incidente tra due aerei di addestramento", results.Text);
-            Assert.NotEmpty(results.Segments);
+            Assert.NotEmpty(results.Segments ?? []);
         }
         [Theory]
         [InlineData("", "Hello world!")]
         public async ValueTask CreateSpeechAsync(string name, string text)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
 
             var result = await openAiApi.Speech
                 .WithVoice(AudioVoice.Fable)

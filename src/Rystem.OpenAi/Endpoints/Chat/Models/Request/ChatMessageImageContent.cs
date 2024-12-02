@@ -5,8 +5,8 @@ namespace Rystem.OpenAi.Chat
     public sealed class ChatMessageImageContent
     {
         [JsonPropertyName("url")]
-        public string Url { get; set; }
+        public string? Url { get; set; }
         [JsonPropertyName("detail")]
-        public string Detail { get; set; }
+        public string? Detail { get; set; }
     }
 }

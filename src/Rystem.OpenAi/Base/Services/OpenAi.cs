@@ -23,6 +23,7 @@ namespace Rystem.OpenAi
         private readonly IFactory<IOpenAiModel> _openAiModelFactory;
         private readonly IFactory<IOpenAiModeration> _openAiModerationFactory;
         private readonly IFactory<IOpenAiManagement> _openAiManagementFactory;
+#pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public OpenAi(
             IFactory<OpenAiConfiguration> configurationFactory,
             IFactory<IOpenAiAudio> openAiAudioFactory,
@@ -48,6 +49,7 @@ namespace Rystem.OpenAi
             _openAiModerationFactory = openAiModerationFactory;
             _openAiManagementFactory = openAiManagementFactory;
         }
+#pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public IOpenAiAudio Audio => field ??= _openAiAudioFactory.Create(_factoryName)!;
         public IOpenAiSpeech Speech => field ??= _openAiSpeechFactory.Create(_factoryName)!;
         public IOpenAiChat Chat => field ??= _openAiChatFactory.Create(_factoryName)!;

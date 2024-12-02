@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Rystem.OpenAi\Rystem.OpenAi.csproj" />
+    <ProjectReference Include="..\Rystem.OpenAi\Rystem.OpenAi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

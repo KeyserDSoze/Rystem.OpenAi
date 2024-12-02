@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask GetBasicEmbeddingAsync(string name)
         {
-            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings
@@ -39,9 +39,9 @@ namespace Rystem.OpenAi.Test
                 Assert.Null(results.Created);
             }
             Assert.NotNull(results.Object);
-            Assert.True(results.Data.Count != 0);
-            Assert.True(results.Data.First().Embedding.Length == 1536);
-            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
+            Assert.True(results.Data?.Count != 0);
+            Assert.True(results.Data?.FirstOrDefault()?.Embedding?.Length == 1536);
+            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding!, results.Data.First().Embedding!);
             Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }
 
@@ -51,7 +51,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask ReturnedUsageAsync(string integrationName)
         {
-            var openAiApi = integrationName == "NoDI" ? OpenAiServiceLocator.Instance.Create(integrationName) : _openAiFactory.Create(integrationName);
+            var openAiApi = integrationName == "NoDI" ? OpenAiServiceLocator.Instance.Create(integrationName) : _openAiFactory.Create(integrationName)!;
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings
@@ -74,7 +74,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("NoDI")]
         public async ValueTask GetBasicEmbeddingWithCustomDimensionsAsync(string name)
         {
-            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name);
+            var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Embeddings);
 
             var results = await openAiApi.Embeddings
@@ -96,9 +96,9 @@ namespace Rystem.OpenAi.Test
                 Assert.Null(results.Created);
             }
             Assert.NotNull(results.Object);
-            Assert.True(results.Data.Count != 0);
-            Assert.True(results.Data.First().Embedding.Length == 999);
-            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
+            Assert.True(results.Data?.Count != 0);
+            Assert.True(results.Data!.First().Embedding?.Length == 999);
+            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data!.First().Embedding!, results.Data!.First().Embedding!);
             Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }
     }

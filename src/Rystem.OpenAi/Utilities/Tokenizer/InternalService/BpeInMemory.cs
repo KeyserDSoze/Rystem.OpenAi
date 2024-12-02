@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             if (modelId != null)
             {
                 var finalMap = (from map in Mapping
-                                where map.StartsWith.Any(x => modelId.StartsWith(x))
+                                where map.StartsWith?.Any(x => modelId.StartsWith(x)) == true
                                 select map).FirstOrDefault();
                 if (finalMap != null)
                     return GetRight(finalMap.Type);

@@ -6,10 +6,12 @@ namespace Rystem.OpenAi
     internal abstract class OpenAiBuilder<T> : IServiceForFactory
     {
         private protected readonly IFactory<DefaultServices> _factory;
+#pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public OpenAiBuilder(IFactory<DefaultServices> factory)
         {
             _factory = factory;
         }
+#pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         private string? _factoryName;
         private protected bool Forced { get; set; }
         private protected List<OpenAiCost> Usages { get; } = [];

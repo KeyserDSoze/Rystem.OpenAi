@@ -5,8 +5,8 @@ namespace Rystem.OpenAi.Chat
     public sealed class ForcedFunctionTool
     {
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
         [JsonPropertyName("function")]
-        public ForcedFunctionTool Function { get; set; }
+        public ForcedFunctionTool? Function { get; set; }
     }
 }

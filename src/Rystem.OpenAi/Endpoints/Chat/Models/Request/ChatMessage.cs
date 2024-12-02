@@ -21,6 +21,6 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("tool_calls")]
         public List<ChatMessageTool>? ToolCalls { get; set; }
         [JsonPropertyName("tool_call_id")]
-        public string ToolCallId { get; set; }
+        public string? ToolCallId { get; set; }
     }
 }
