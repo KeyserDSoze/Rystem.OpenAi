@@ -20,7 +20,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 
 ## Requirements
 
-This library targets .NET standard 2.1 and above.
+This library targets .NET 9 and above.
 
 ### Adv
 Watch out my Rystem framework to be able to do .Net webapp faster (easy integration with repository pattern or CQRS for your Azure services).
@@ -66,15 +66,10 @@ Install-Package Rystem.OpenAi
     - [List Models](#list-models)
     - [Retrieve Models](#retrieve-models)
     - [Delete fine-tune model](#delete-fine-tune-model)
-  - [Completions](#completions)
-    - [Streaming](#streaming)
   - [Chat](#chat)
     - [Chat Streaming](#chat-streaming)
     - [Chat functions](#chat-functions)
       - [Simple function configuration](#simple-function-configuration)
-      - [Function with framework](#function-with-framework)
-      - [Null behavior from Function framework](#null-behavior-from-function-framework)
-  - [Edits](#edits)
   - [Images](#images)
     - [Create Image](#create-image)
     - [Create Image Edit](#create-image-edit)
@@ -125,6 +120,12 @@ You may install with Dependency Injection one or more than on integrations at th
     services.AddOpenAi(settings =>
     {
         settings.ApiKey = apiKey;
+        //add a default model for chatClient, you can add everything in this way to prepare at the best your
+        //client for the request
+        settings.DefaultRequestConfiguration.Chat = chatClient =>
+        {
+            chatClient.WithModel(configuration["OpenAi2:ModelName"]!);
+        };
     });
 
 ## Dependency Injection With Azure
@@ -198,6 +199,7 @@ You may install different version for each endpoint.
      services.AddOpenAi(settings =>
             {
                 settings.ApiKey = azureApiKey;
+                settings.Version = "2024-08-01-preview";
                 settings
                     .UseVersionForChat("2023-03-15-preview");
             });
@@ -236,11 +238,11 @@ In the next example we have two different configurations, one with OpenAi and a 
             .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
     }, "Azure");
 
-I can retrieve the integration with IOpenAiFactory interface and the name of the integration.
+I can retrieve the integration with IFactory<> interface (from Rystem) and the name of the integration.
 
-    private readonly IOpenAiFactory _openAiFactory;
+    private readonly IFactory<IOpenAi> _openAiFactory;
 
-    public CompletionEndpointTests(IOpenAiFactory openAiFactory)
+    public CompletionEndpointTests(IFactory<IOpenAi> openAiFactory)
     {
         _openAiFactory = openAiFactory;
     }
@@ -248,21 +250,26 @@ I can retrieve the integration with IOpenAiFactory interface and the name of the
     public async ValueTask DoSomethingWithDefaultIntegrationAsync()
     {
         var openAiApi = _openAiFactory.Create();
-        openAiApi.Completion.........
+        openAiApi.Chat.........
     }
 
     public async ValueTask DoSomethingWithAzureIntegrationAsync()
     {
         var openAiApi = _openAiFactory.Create("Azure");
-        openAiApi.Completion.........
+        openAiApi.Chat.........
     }
 
 or get the more specific service
 
+    private readonly IFactory<IOpenAiChat> _chatFactory;
+    public Constructor(IFactory<IOpenAiChat> chatFactory)
+    {
+        _chatFactory = chatFactory;
+    }
     public async ValueTask DoSomethingWithAzureIntegrationAsync()
     {
-        var openAiEmbeddingApi = _openAiFactory.CreateEmbedding(name);
-        openAiEmbeddingApi.Request(....);
+        var chat = _chatFactory.Create(name);
+        chat.ExecuteRequestAsync(....);
     }
 
 ## Without Dependency Injection
@@ -276,12 +283,12 @@ You may configure in a static constructor or during startup your integration wit
 
 and you can use it with the same static class OpenAiService and the static Create method
 
-    var openAiApi = OpenAiService.Factory.Create(name);
+    var openAiApi = OpenAiService.Instance.Create(name);
     openAiApi.Embedding......
 
 or get the more specific service
 
-    var openAiEmbeddingApi = OpenAiService.Factory.CreateEmbedding(name);
+    var openAiEmbeddingApi = OpenAiService.Instance.CreateEmbedding(name);
     openAiEmbeddingApi.Request(....);
 
 ## Models
@@ -309,58 +316,41 @@ Delete a fine-tuned model. You must have the Owner role in your organization.
     var deleteResult = await openAiApi.Model
         .DeleteAsync(fineTuneModelId);
 
-## Completions
-[📖 Back to summary](#documentation)\
-Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.\
-You may find more details [here](https://platform.openai.com/docs/api-reference/completions),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/CompletionEndpointTests.cs) samples from unit test
-
-    var openAiApi = _openAiFactory.Create(name);
-    var results = await openAiApi.Completion
-        .Request("One Two Three Four Five Six Seven Eight Nine One Two Three Four Five Six Seven Eight")
-        .WithModel(TextModelType.CurieText)
-        .WithTemperature(0.1)
-        .SetMaxTokens(5)
-        .ExecuteAsync();
-
-### Streaming
-
-    var openAiApi = _openAiFactory.Create(name);
-    var results = new List<CompletionResult>();
-            await foreach (var x in openAiApi.Completion
-               .Request("Today is Monday, tomorrow is", "10 11 12 13 14")
-               .WithTemperature(0)
-               .SetMaxTokens(3)
-               .ExecuteAsStreamAsync())
-            {
-                results.Add(x);
-            }
-
 ## Chat
 [📖 Back to summary](#documentation)\
 Given a chat conversation, the model will return a chat completion response.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/chat),
 and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ChatEndpointTests.cs) samples from unit test.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
     var results = await openAiApi.Chat
-            .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-            .WithModel(ChatModelType.Gpt4)
-            .WithTemperature(1)
-            .ExecuteAsync();
+        .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+        .WithModel(ChatModelName.Gpt4_o)
+        .WithTemperature(1)
+        .ExecuteAsync();
 
 ### Chat Streaming
 
-    var openAiApi = _openAiFactory.Create(name);
-    var results = new List<ChatResult>();
-        await foreach (var x in openAiApi.Chat
-            .Request(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-            .WithModel(ChatModelType.Gpt35Turbo)
-            .WithTemperature(1)
-            .ExecuteAsStreamAsync())
-            {
-                results.Add(x);
-            }
+    var openAiApi = _openAiFactory.Create(name)!;
+    var results = new List<ChunkChatResult>();
+    await foreach (var x in openAiApi.Chat
+        .AddMessage(new ChatMessageRequest { Role = ChatRole.System, Content = "You are a friend of mine." })
+        .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+        .WithModel(ChatModelName.Gpt4_o)
+        .WithTemperature(1)
+        .WithStopSequence("alekud")
+        .AddStopSequence("coltello")
+        .WithNumberOfChoicesPerPrompt(1)
+        .WithFrequencyPenalty(0)
+        .WithPresencePenalty(0)
+        .WithNucleusSampling(1)
+        .SetMaxTokens(1200)
+        .WithUser("KeyserDSoze")
+        .ExecuteAsStreamAsync())
+        {
+            results.Add(x);
+        }
+
 
 ### Chat functions
 You may find the update [here](https://openai.com/blog/function-calling-and-other-api-updates)
@@ -402,60 +392,6 @@ In this case you receive as finish reason instead of "stop" the word "functionEx
 
     Assert.Equal("functionExecuted", response.Result.Choices[0].FinishReason);
 
-#### Function with framework
-You can create your function using the interface IOpenAiChatFunction
-
-    internal sealed class WeatherFunction : IOpenAiChatFunction
-    {
-        private static readonly JsonSerializerOptions s_options = new()
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            WriteIndented = true,
-        };
-        static WeatherFunction()
-        {
-            var converter = new JsonStringEnumConverter();
-            s_options.Converters.Add(converter);
-        }
-        public const string NameLabel = "get_current_weather";
-        public string Name => NameLabel;
-        private const string DescriptionLabel = "Get the current weather in a given location";
-        public string Description => DescriptionLabel;
-        public Type Input => typeof(WeatherRequest);
-        public async Task<object> WrapAsync(string message)
-        {
-            var request = System.Text.Json.JsonSerializer.Deserialize<WeatherRequest>(message, s_options);
-            if (request == null)
-                await Task.Delay(0);
-            return new WeatherResponseModel
-            {
-                Description = "Sunny",
-                Temperature = 22,
-                Unit = "Celsius"
-            };
-        }
-    }
-
-> :warning: Pay attention when you use "enum", in .Net you have to use the JsonStringEnumConverter like in the example.
-
-You have to setup it in dependency injection
-
-    services
-        .AddOpenAiChatFunction<WeatherFunction>();
-
-You have to create the Request model for your json:
-
-    internal sealed class WeatherRequest
-    {
-        [JsonPropertyName("location")]
-        [JsonRequired]
-        [JsonPropertyDescription("The city and state, e.g. San Francisco, CA")]
-        public string Location { get; set; }
-        [JsonPropertyName("unit")]
-        [JsonPropertyDescription("Unit Measure of temperature. e.g. Celsius or Fahrenheit")]
-        public string Unit { get; set; }
-    }
-
 You can use some JsonProperty attribute like:
 
 - JsonPropertyName: name of the property
@@ -478,81 +414,8 @@ After the configuration you can use this function framework in this way:
 
     var content = response.Result.Choices[0].Message.Content;
 
-With true in method ExecuteAsync or ExecuteAndCalculateCostAsync you ask the api to call automatically your function when a function is requested by OpenAi.
-You, also, can add all the functions you injected in one go.
-
-    services
-        .AddOpenAiChatFunction<WeatherFunction>()
-        .AddOpenAiChatFunction<AirplaneFunction>()
-        .AddOpenAiChatFunction<GroceryFunction>()
-        .AddOpenAiChatFunction<MapFunction>();
-
-and use WithAllFunctions method
-
-    await foreach (var x in openAiApi.Chat
-        .RequestWithUserMessage("What is the weather like in Boston?")
-        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
-        .WithAllFunctions()
-        .ExecuteAsStreamAndCalculateCostAsync(true))
-
-With true, automatically the framework understands the request from OpenAi and will use the right function to submit a new request.
-
-    Task<object> WrapAsync(string message);
-
-from IOpenAiChatFunction
-
-In this case you receive as finish reason instead of "stop" the word "functionAutoExecuted".
-
-    Assert.Equal("functionAutoExecuted", response.Result.Choices[0].FinishReason);
-
-#### Null behavior from Function framework
-If you return from your WrapAsync null, the framework doesn't make another call to open ai and return immediately as finish reason "null".
-
-For example if I create a "unuseful" function that returns always null.
-
-    internal sealed class NullFunction : IOpenAiChatFunction
-    {
-        public const string NameLabel = "get_current_cart";
-        public string Name => NameLabel;
-        private const string DescriptionLabel = "Get the current cart of your user";
-        public string Description => DescriptionLabel;
-        public Type Input => typeof(NullRequestModel);
-        public Task<object> WrapAsync(string message)
-        {
-            _ = System.Text.Json.JsonSerializer.Deserialize<NullRequestModel>(message);
-            return Task.FromResult(default(object));
-        }
-    }
-
-I can test the behavior, and I expect the finish reason as "null".
-
-    var openAiApi = _openAiFactory.Create(name);
-    Assert.NotNull(openAiApi.Chat);
-    var response = await openAiApi.Chat
-        .RequestWithUserMessage("My username is Keyser D. Soze and I want to know what I have in my cart.")
-        .WithModel(ChatModelType.Gpt35Turbo_Snapshot)
-        .WithAllFunctions()
-        .ExecuteAsync(true);
-
-    var function = response.Choices[0].Message.Function;
-    Assert.NotNull(function);
-    Assert.Contains("Keyser D. Soze", function.Arguments);
-    Assert.Equal("null", response.Choices[0].FinishReason);
-
-
-## Edits
-[📖 Back to summary](#documentation)\
-Given a prompt and an instruction, the model will return an edited version of the prompt.
-You may find more details [here](https://platform.openai.com/docs/api-reference/edits),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/EditEndpointTests.cs) samples from unit test.
-
-    var openAiApi = _openAiFactory.Create(name);
-    var results = await openAiApi.Edit
-            .Request("Fix the spelling mistakes")
-            .WithModel(EditModelType.TextDavinciEdit)
-            .SetInput("What day of the wek is it?")
-            .WithTemperature(0.5)
-            .ExecuteAsync();
+## Function chaining
+You may find the PlayFramework [here](https://github.com/KeyserDSoze/Rystem.OpenAi/tree/master/src/Rystem.PlayFramework)
 
 ## Images
 [📖 Back to summary](#documentation)\
@@ -563,44 +426,58 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
 ### Create Image
 Creates an image given a prompt.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
     var response = await openAiApi.Image
-        .Generate("A cute baby sea otter")
-        .WithSize(ImageSize.Small)
-        .ExecuteAsync();
+        .WithSize(ImageSize.Large)
+        .GenerateAsync("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.");
+    var uri = response.Data?.FirstOrDefault();
 
 Download directly and save as stream
 
-    var openAiApi = _openAiFactory.Create(name);
-    var streams = new List<Stream>();
-    await foreach (var image in openAiApi.Image
-        .Generate("A cute baby sea otter")
-        .WithSize(ImageSize.Small)
-        .DownloadAsync())
-    {
-        streams.Add(image);
-    }
+    var openAiApi = _openAiFactory.Create(name)!;
+
+    var response = await openAiApi.Image
+        .WithSize(ImageSize.Large)
+        .GenerateAsBase64Async("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.");
+
+    var image = response.Data?.FirstOrDefault();
+    var imageAsStream = image.ConvertToStream();
 
 ### Create Image Edit
 Creates an edited or extended image given an original image and a prompt.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\otter.png");
+    var editableFile = new MemoryStream();
+    await readableStream.CopyToAsync(editableFile);
+    editableFile.Position = 0;
+
     var response = await openAiApi.Image
-        .Generate("A cute baby sea otter wearing a beret")
-        .EditAndTrasformInPng(editableFile, "otter.png")
         .WithSize(ImageSize.Small)
         .WithNumberOfResults(2)
-        .ExecuteAsync();
+        .EditAsync("A cute baby sea otter wearing a beret", editableFile, "otter.png");
+
+    var uri = response.Data?.FirstOrDefault();
 
 ### Create Image Variation
 Creates a variation of a given image.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
+
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\otter.png");
+    var editableFile = new MemoryStream();
+    await readableStream.CopyToAsync(editableFile);
+    editableFile.Position = 0;
     var response = await openAiApi.Image
-        .VariateAndTransformInPng(editableFile, "otter.png")
         .WithSize(ImageSize.Small)
         .WithNumberOfResults(1)
-        .ExecuteAsync();
+        .VariateAsync(editableFile, "otter.png");
+
+    var uri = response.Data?.FirstOrDefault();
 
 ## Embeddings
 [📖 Back to summary](#documentation)\
@@ -612,19 +489,24 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
 ### Create Embedding
 Creates an embedding vector representing the input text.
 
-    var openAiApi = _openAiFactory.Create(name);
-    var results = await openAiApi.Embedding
-        .Request("A test text for embedding")
+    var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
+
+    var results = await openAiApi.Embeddings
+        .WithInputs("A test text for embedding")
         .ExecuteAsync();
+
+    var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding!, results.Data.First().Embedding!);
 
 ### Create Embedding with custom dimensions
 Creates an embedding with custom dimensions vector representing the input text.
 Only supported in text-embedding-3 and later models.
 
-    var openAiApi = _openAiFactory.Create(name);
-    var results = await openAiApi.Embedding
-        .Request("A test text for embedding")
-        .WithDimensions(1536)
+    var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
+
+    var results = await openAiApi.Embeddings
+        .AddPrompt("A test text for embedding")
+        .WithModel("text-embedding-3-large")
+        .WithDimensions(999)
         .ExecuteAsync();
 
 ### Distance for embedding
@@ -656,32 +538,40 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
 ### Create Transcription
 Transcribes audio into the input language.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+
+    var editableFile = new MemoryStream();
+    readableStream.CopyTo(editableFile);
+    editableFile.Position = 0;
+
     var results = await openAiApi.Audio
-        .Request(editableFile, "default.mp3")
+        .WithFile(editableFile.ToArray(), "default.mp3")
+        .WithTemperature(1)
+        .WithLanguage(Language.Italian)
+        .WithPrompt("Incidente")
         .TranscriptAsync();
-
-Also available as a more verbose result exposing timestamps, confidence and statistics:
-
-    var openAiApi = _openAiFactory.Create(name);
-    var verboseResults = await openAiApi.Audio
-        .Request(editableFile, "default.mp3")
-        .VerboseTranscriptAsync();
 
 ### Create Translation
 Translates audio into English.
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
+
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+    var editableFile = new MemoryStream();
+    await readableStream.CopyToAsync(editableFile);
+    editableFile.Position = 0;
+
     var results = await openAiApi.Audio
-        .Request(editableFile, "default.mp3")
+        .WithTemperature(1)
+        .WithPrompt("sample")
+        .WithFile(editableFile.ToArray(), "default.mp3")
         .TranslateAsync();
 
-Also available as a more verbose result exposing timestamps, confidence and statistics:
-
-    var openAiApi = _openAiFactory.Create(name);
-    var verboseResults = await openAiApi.Audio
-        .Request(editableFile, "default.mp3")
-        .VerboseTranslateAsync();
 
 ## File
 [📖 Back to summary](#documentation)\
@@ -790,11 +680,13 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
 ### Create moderation
 Classifies if text violates OpenAI's Content Policy
 
-    var openAiApi = _openAiFactory.Create(name);
+    var openAiApi = _openAiFactory.Create(name)!;
     var results = await openAiApi.Moderation
-            .Create("I want to kill them.")
-            .WithModel(ModerationModelType.TextModerationStable)
-            .ExecuteAsync();
+        .WithModel("testModel")
+        .WithModel(ModerationModelName.OmniLatest)
+        .ExecuteAsync("I want to kill them and everyone else.");
+
+    var categories = results.Results?.FirstOrDefault()?.Categories;
 
 
 ## Utilities
@@ -809,11 +701,12 @@ Here an example from Unit test.
 
     IOpenAiUtility _openAiUtility;
     var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding, results.Data.First().Embedding);
+    var resultOfEuclideanDinstance = _openAiUtility.EuclideanDistance(results.Data.First().Embedding, results.Data.First().Embedding);
     Assert.True(resultOfCosineSimilarity >= 1);
 
 Without DI, you need to setup an OpenAiService [without Dependency Injection](#without-dependency-injection) and after that you can use
 
-    IOpenAiUtility openAiUtility = OpenAiService.Factory.Utility();
+    IOpenAiUtility openAiUtility = OpenAiService.Instance.Utility();
 
 ### Tokens
 [📖 Back to summary](#documentation)\
@@ -831,35 +724,13 @@ You can think of tokens as pieces of words, where 1,000 tokens is about 750 word
 [📖 Back to summary](#documentation)\
 You can think of tokens as pieces of words, where 1,000 tokens is about 750 words.
 
-    IOpenAiCost _openAiCost;
-    var integrationName = "Azure";
-    var manualCostCalculator = _openAiCost.Configure(x =>
-    {
-        x
-        .WithFamily(ModelFamilyType.Gpt3_5)
-        .WithType(OpenAiType.Chat);
-    }, integrationName);
-    var manualCalculatedPrice = manualCostCalculator.Invoke(new OpenAiUsage
-    {
-        PromptTokens = numberOfTokens * times,
-    });
-
-You may get price for your request directly from any endpoint
-
-     var chat = openAiApi.Chat
-            .Request(new ChatMessage { Role = ChatRole.User, Content = content })
-            .WithModel(chatModel)
-            .WithTemperature(1);
-     var costForRequest = chat.CalculateCost();
-
-You can get the cost for current request
-
-    var chat = openAiApi.Chat
-            .Request(new ChatMessage { Role = ChatRole.User, Content = content })
-            .WithModel(chatModel)
-            .WithTemperature(1);
-     var responseForChatWithCost = await chat.ExecuteAndCalculateCostAsync();
-     var costForRequestAndResponse = responseForChatWithCost.CalculateCost();
+    var openAiApi = _openAiFactory.Create(name)!;
+    var results = await openAiApi.Chat
+        .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+        .WithModel(ChatModelName.Gpt4_o)
+        .WithTemperature(1)
+        .ExecuteAsync();
+    var cost = openAiApi.Chat.CalculateCost();
 
 ### Setup price
 [📖 Back to summary](#documentation)\
@@ -879,9 +750,11 @@ During setup of your OpenAi service you may add your custom price table with set
             .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
             .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
             .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
-        settings.Price
-            .SetFineTuneForAda(0.2M, 0.2M)
-            .SetAudioForTranslation(0.2M);
+        settings.PriceBuilder
+            .AddModel(ChatModelName.Gpt4_o,
+            new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+            new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
+            new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
     }, "Azure");
 
 ## Management
