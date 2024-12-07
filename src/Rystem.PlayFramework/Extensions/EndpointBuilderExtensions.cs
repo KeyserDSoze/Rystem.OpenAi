@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         }
         public static IApplicationBuilder UseAiEndpoints(this IApplicationBuilder app, bool isAuthorized)
         {
-            return app.UseAiEndpoints(isAuthorized, Array.Empty<string>());
+            return app.UseAiEndpoints(isAuthorized, []);
         }
         private static IApplicationBuilder UseAiEndpoints(this IApplicationBuilder app, bool authorization, params string[] policies)
         {

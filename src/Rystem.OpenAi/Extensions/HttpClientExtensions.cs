@@ -40,7 +40,7 @@ namespace Rystem.OpenAi
                 """;
             }
         }
-        private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions s_options = new()
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = true,
@@ -73,7 +73,7 @@ namespace Rystem.OpenAi
             }
             else
             {
-                var errorMessage = await response.Content.ReadAsStringAsync();
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
                 var error = new ErrorResponse
                 {
                     Error = errorMessage,
@@ -135,7 +135,7 @@ namespace Rystem.OpenAi
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
-            var responseAsString = await response.Content.ReadAsStringAsync();
+            var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
         internal static ValueTask<Stream> PostAsync(this HttpClient client,
@@ -154,9 +154,9 @@ namespace Rystem.OpenAi
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
-            var responseAsStream = await response.Content.ReadAsStreamAsync();
+            var responseAsStream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var memoryStream = new MemoryStream();
-            await responseAsStream.CopyToAsync(memoryStream);
+            await responseAsStream.CopyToAsync(memoryStream, cancellationToken);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
@@ -171,7 +171,7 @@ namespace Rystem.OpenAi
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(client);
             var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
-            using var stream = await response.Content.ReadAsStreamAsync();
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
             await foreach (var item in items)
                 yield return item!;

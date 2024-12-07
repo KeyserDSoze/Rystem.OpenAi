@@ -174,7 +174,7 @@ namespace Rystem.PlayFramework
                     chatClient.AddSystemMessage($"Response for function {functionName}: {responseAsJson}");
                 }
             }
-            chatResponse = await chatClient.ExecuteAsync(default);
+            chatResponse = await chatClient.ExecuteAsync(cancellationToken);
             if (chatResponse?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
             {
                 await foreach (var result in GetResponseAsync(sceneName, clientName, chatClient, chatResponse, cancellationToken))

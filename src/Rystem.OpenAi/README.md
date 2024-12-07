@@ -902,7 +902,7 @@ You may use the management endpoint to retrieve data for your usage. Here an exa
 
 ### Deployments
 [📖 Back to summary](#documentation)\
-Only for Azure you have to deploy a model to use model in yout application. You can configure Deployment during startup of your application.
+Only for Azure you have to deploy a model to use model in your application. You can configure Deployment during startup of your application.
 
     services.AddOpenAi(settings =>
     {
