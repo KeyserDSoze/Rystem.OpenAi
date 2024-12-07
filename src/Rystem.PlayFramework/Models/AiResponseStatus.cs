@@ -4,6 +4,7 @@
     {
         Starting,
         Running,
+        FunctionStreamRequest,
         FunctionRequest,
         FinishedOk,
         FinishedNoTool,

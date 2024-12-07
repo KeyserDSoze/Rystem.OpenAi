@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.UnitTests
             {
                 settings.ApiKey = azureApiKey;
                 settings
-                    .UseVersionForChat("2023-03-15-preview");
+                    .UseVersionForChat("2024-08-01-preview");
                 settings.Azure.ResourceName = resourceName;
                 settings.Azure.AppRegistration.ClientId = clientId;
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;

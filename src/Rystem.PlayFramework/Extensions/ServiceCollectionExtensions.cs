@@ -5,11 +5,16 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddPlayFramework(this IServiceCollection services,
-            Action<IScenesBuilder> builder, string? name = null)
+            Action<IScenesBuilder> builder,
+            string? name = null,
+            bool streaming = false)
         {
             services.AddPopulationService();
             services.AddHttpContextAccessor();
-            services.AddFactory<ISceneManager, SceneManager>(name, ServiceLifetime.Transient);
+            if (!streaming)
+                services.AddFactory<ISceneManager, SceneManager>(name, ServiceLifetime.Transient);
+            else
+                services.AddFactory<ISceneManager, StreamingSceneManager>(name, ServiceLifetime.Transient);
             services.AddSingleton<ActorsOpenAiEndpointParser>();
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());
