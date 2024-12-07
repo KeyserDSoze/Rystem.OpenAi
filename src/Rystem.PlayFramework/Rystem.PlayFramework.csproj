@@ -34,7 +34,7 @@
         </When>
         <When Condition=" '$(Configuration)'!='Debug' ">
             <ItemGroup>
-                <PackageReference Include="Rystem.OpenAi" Version="9.0.0" />
+                <PackageReference Include="Rystem.OpenAi" Version="4.0.0-alpha" />
             </ItemGroup>
         </When>
     </Choose>
