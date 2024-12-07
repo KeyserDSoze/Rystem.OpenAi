@@ -9,7 +9,20 @@ namespace Rystem.OpenAi
         {
             Tokenizer = tokenizer;
         }
-
+        public double EuclideanDistance(float[] from, float[] to)
+        {
+            if (from.Length != to.Length)
+            {
+                throw new ArgumentException("Both arrays must have the same length.");
+            }
+            double sumOfSquares = 0;
+            for (var i = 0; i < from.Length; i++)
+            {
+                var difference = from[i] - to[i];
+                sumOfSquares += difference * difference;
+            }
+            return Math.Sqrt(sumOfSquares);
+        }
         public double CosineSimilarity(float[] from, float[] to)
         {
             var value = (to.Length < from.Length) ? to.Length : from.Length;

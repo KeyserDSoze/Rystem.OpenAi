@@ -24,13 +24,8 @@ Follow these steps to set up `Rystem.PlayFramework`:
 1. Clone or download the repository from [GitHub](https://github.com/KeyserDSoze/Rystem/tree/master/src/PlayFramework).
 2. Add the package to your project using the NuGet package manager:
    ```bash
-   dotnet add package Rystem.PlayFramework --version 6.2.0
+   dotnet add package Rystem.PlayFramework
    ```
-3. Install the required dependencies as outlined in the `.csproj` file:
-   - `Azure.AI.OpenAI`
-   - `Azure.Identity`
-   - `OpenAI`
-   These can be added manually via NuGet or included directly in your project’s `.csproj` file.
 
 ## Project Setup
 
@@ -50,50 +45,70 @@ In your `.NET` application, you will need to configure the services and middlewa
 
    Example setup:
    ```csharp
-   services.AddChat(x =>
-   {
-       x.AddConfiguration("openai", builder =>
-       {
-           builder.ApiKey = configuration["OpenAi:ApiKey"];
-           builder.Uri = configuration["OpenAi:Endpoint"];
-           builder.Model = configuration["OpenAi:ModelName"];
-           builder.ChatClientBuilder = (chatClient) =>
-           {
-               chatClient.AddPriceModel(new ChatPriceSettings
-               {
-                   InputToken = 0.02M,
-                   OutputToken = 0.02M
-               });
-           };
-       });
-   });
-
-   services.AddPlayFramework(scenes =>
-   {
-       scenes.Configure(settings =>
-       {
-           settings.OpenAi.Name = "openai";
-       })
-       .AddScene(scene =>
-       {
-           scene.WithName("Weather")
-               .WithDescription("Get information about the weather")
-               .WithHttpClient("apiDomain")
-               .WithOpenAi("openai")
-               .WithApi(pathBuilder =>
-               {
-                   pathBuilder
-                       .Map(new Regex("Country/*"))
-                       .Map(new Regex("City/*"))
-                       .Map("Weather/");
-               })
-               .WithActors(actors =>
-               {
-                   actors.AddActor("Ensure the country and city exist before requesting weather.")
-                       .AddActor<ActorWithDbRequest>();
-               });
-       });
-   });
+   //setup OpenAi client
+   services.AddOpenAi(x =>
+    {
+        x.ApiKey = configuration["OpenAi2:ApiKey"]!;
+        x.Azure.ResourceName = configuration["OpenAi2:ResourceName"]!;
+        x.Version = "2024-08-01-preview";
+        x.DefaultRequestConfiguration.Chat = chatClient =>
+        {
+            chatClient.WithModel(configuration["OpenAi2:ModelName"]!);
+        };
+        x.PriceBuilder
+        .AddModel(ChatModelName.Gpt4_o,
+        new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+        new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
+        new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
+    }, "playframework");
+    //setup http client to use during play framework integration to call external services
+    services.AddHttpClient("apiDomain", x =>
+    {
+        x.BaseAddress = new Uri(configuration["Api:Uri"]!);
+    });
+    //setup for Play Framework
+    services.AddPlayFramework(scenes =>
+    {
+        scenes.Configure(settings =>
+        {
+            settings.OpenAi.Name = "playframework";
+        })
+        .AddMainActor((context) => $"Oggi è {DateTime.UtcNow}.", true)
+        .AddScene(scene =>
+        {
+            scene
+                .WithName("Weather")
+                .WithDescription("Get information about the weather")
+                .WithHttpClient("apiDomain")
+                .WithOpenAi("playframework")
+                .WithApi(pathBuilder =>
+                {
+                    pathBuilder
+                        .Map(new Regex("Country/*"))
+                        .Map(new Regex("City/*"))
+                        .Map("Weather/");
+                })
+                    .WithActors(actors =>
+                    {
+                        actors
+                            .AddActor("Nel caso non esistesse la città richiesta potresti aggiungerla con il numero dei suoi abitanti.")
+                            .AddActor("Ricordati che va sempre aggiunta anche la nazione, quindi se non c'è la nazione aggiungi anche quella.")
+                            .AddActor("Non chiamare alcun meteo prima di assicurarti che tutto sia stato popolato correttamente.")
+                            .AddActor<ActorWithDbRequest>();
+                    });
+        })
+        .AddScene(scene =>
+        {
+            scene
+            .WithName("Identity")
+            .WithDescription("Get information about the user")
+            .WithOpenAi("openai")
+            .WithService<IdentityManager>(builder =>
+            {
+                builder.WithMethod(x => x.GetNameAsync);
+            });
+        });
+    });
    ```
 
 2. **`UseMiddlewares(IApplicationBuilder app)`**:
