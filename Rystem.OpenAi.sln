@@ -11,17 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE.txt = LICENSE.txt
 		.github\workflows\PackageDeploy.OpenAi.SonarCloud.yml = .github\workflows\PackageDeploy.OpenAi.SonarCloud.yml
 		.github\workflows\PackageDeploy.OpenAi.yml = .github\workflows\PackageDeploy.OpenAi.yml
+		.github\workflows\PackageDeploy.PlayFramework.yml = .github\workflows\PackageDeploy.PlayFramework.yml
 		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
 		README.md = README.md
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.Api", "src\Rystem.OpenAi.Api\Rystem.OpenAi.Api.csproj", "{B3BCBDCC-E610-4A31-87EF-C49E2E3D63BE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.Test", "src\Rystem.OpenAi.Test\Rystem.OpenAi.Test.csproj", "{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rystem.OpenAi.WebApp", "src\Rystem.OpenAi.WebApp\Rystem.OpenAi.WebApp.csproj", "{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{81D7540F-CC23-4DFC-BA00-6B4B63E66696}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IssueTemplates", "IssueTemplates", "{B73DF781-0FF0-422F-A81A-D33AF8790B6F}"
 	ProjectSection(SolutionItems) = preProject
@@ -33,36 +26,46 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{190E37AE-CB9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.OpenAi.UnitTests", "src\Rystem.OpenAi.UnitTests\Rystem.OpenAi.UnitTests.csproj", "{607F39D7-D740-4C8A-8A17-C3913358D755}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.OpenAi", "src\Rystem.OpenAi\Rystem.OpenAi.csproj", "{9DD52F37-D4E1-460C-4C96-4FF33BC23712}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.PlayFramework", "src\Rystem.PlayFramework\Rystem.PlayFramework.csproj", "{09B7063F-5456-A06E-7CE3-787190FB22A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rystem.PlayFramework.Test.Api", "src\Rystem.PlayFramework.Test.Api\Rystem.PlayFramework.Test.Api.csproj", "{844906A9-B6C8-063A-97C9-E818C51E7714}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B3BCBDCC-E610-4A31-87EF-C49E2E3D63BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3BCBDCC-E610-4A31-87EF-C49E2E3D63BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3BCBDCC-E610-4A31-87EF-C49E2E3D63BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3BCBDCC-E610-4A31-87EF-C49E2E3D63BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{607F39D7-D740-4C8A-8A17-C3913358D755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DD52F37-D4E1-460C-4C96-4FF33BC23712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DD52F37-D4E1-460C-4C96-4FF33BC23712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DD52F37-D4E1-460C-4C96-4FF33BC23712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DD52F37-D4E1-460C-4C96-4FF33BC23712}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09B7063F-5456-A06E-7CE3-787190FB22A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09B7063F-5456-A06E-7CE3-787190FB22A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09B7063F-5456-A06E-7CE3-787190FB22A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09B7063F-5456-A06E-7CE3-787190FB22A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{844906A9-B6C8-063A-97C9-E818C51E7714}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{844906A9-B6C8-063A-97C9-E818C51E7714}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{844906A9-B6C8-063A-97C9-E818C51E7714}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{844906A9-B6C8-063A-97C9-E818C51E7714}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{CAD91EDE-103D-4E79-A78F-6B4F4AB5E303} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
-		{6AB35FA5-3A79-465D-BF3A-FED0A4CCD6D1} = {81D7540F-CC23-4DFC-BA00-6B4B63E66696}
-		{607F39D7-D740-4C8A-8A17-C3913358D755} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
+		{607F39D7-D740-4C8A-8A17-C3913358D755} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9DD52F37-D4E1-460C-4C96-4FF33BC23712} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
+		{09B7063F-5456-A06E-7CE3-787190FB22A9} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {190E37AE-CB98-4D0A-BA0D-5DA2707D5270}
+		{844906A9-B6C8-063A-97C9-E818C51E7714} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B777EEAE-3674-4FF8-B32A-5039FFFD6AF0}

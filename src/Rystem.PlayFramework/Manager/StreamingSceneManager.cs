@@ -1,0 +1,303 @@
+﻿using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using Azure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi;
+using Rystem.OpenAi.Chat;
+
+namespace Rystem.PlayFramework
+{
+    internal sealed class StreamingSceneManager : ISceneManager
+    {
+        private readonly HttpContext? _httpContext;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IFactory<IOpenAi> _openAiFactory;
+        private readonly IFactory<IScene> _sceneFactory;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly PlayHandler _playHandler;
+        private readonly FunctionsHandler _functionsHandler;
+        private readonly SceneManagerSettings? _settings;
+
+        public StreamingSceneManager(IServiceProvider serviceProvider,
+            IHttpContextAccessor httpContextAccessor,
+            IFactory<IOpenAi> openAiFactory,
+            IFactory<IScene> sceneFactory,
+            IHttpClientFactory httpClientFactory,
+            PlayHandler playHandler,
+            FunctionsHandler functionsHandler,
+            SceneManagerSettings? settings = null)
+        {
+            _httpContext = httpContextAccessor?.HttpContext;
+            _serviceProvider = serviceProvider;
+            _openAiFactory = openAiFactory;
+            _sceneFactory = sceneFactory;
+            _httpClientFactory = httpClientFactory;
+            _playHandler = playHandler;
+            _functionsHandler = functionsHandler;
+            _settings = settings;
+        }
+        private const string Starting = nameof(Starting);
+        private sealed class InternalFunction
+        {
+            public required string Name { get; set; }
+            public required StringBuilder Arguments { get; set; }
+        }
+        public async IAsyncEnumerable<AiSceneResponse> ExecuteAsync(string message, Action<SceneRequestSettings>? settings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var requestSettings = new SceneRequestSettings();
+            settings?.Invoke(requestSettings);
+            if (requestSettings.Context != null)
+                requestSettings.Context.InputMessage = message;
+            var context = requestSettings.Context ?? new SceneContext { InputMessage = message, Properties = requestSettings.Properties ?? [] };
+            context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
+            var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
+            context.CurrentChatClient = chatClient;
+            var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
+            var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
+            await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
+            await PlayActorsInScene(context, chatClient, mainActors, cancellationToken);
+            chatClient.AddUserMessage(message);
+            await foreach (var response in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+            {
+                context.Responses.Add(response);
+                yield return response;
+            }
+        }
+        private async IAsyncEnumerable<AiSceneResponse> RequestAsync(SceneContext context, SceneRequestSettings requestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var chatClient = context.CurrentChatClient!;
+            var scenes = _playHandler.ScenesChooser(requestSettings.ScenesToAvoid).ToList();
+            foreach (var function in scenes)
+            {
+                function.Invoke(chatClient);
+            }
+            var responses = chatClient.ExecuteAsStreamAsync(true, cancellationToken);
+            await foreach (var response in responses)
+            {
+                if ((response?.Choices?.Count ?? 0) == 0)
+                    continue;
+
+                if (response?.Choices?[0]?.Delta?.ToolCalls?.Count > 0)
+                {
+                    foreach (var toolCall in response.Choices[0].Delta!.ToolCalls!)
+                    {
+                        yield return new AiSceneResponse
+                        {
+                            Name = toolCall.Function!.Name,
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.Starting,
+                        };
+                        var scene = _sceneFactory.Create(toolCall.Function!.Name);
+                        if (scene != null)
+                        {
+                            await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, mainActorsThatPlayEveryScene, cancellationToken))
+                            {
+                                context.Responses.Add(sceneResponse);
+                                yield return sceneResponse;
+                            }
+                        }
+                    }
+                    if (scenes.Count > 0)
+                    {
+                        var director = _serviceProvider.GetService<IDirector>();
+                        if (director != null)
+                        {
+                            var directorResponse = await director.DirectAsync(context, requestSettings, cancellationToken);
+                            if (directorResponse.ExecuteAgain)
+                            {
+                                requestSettings.AvoidScenes(directorResponse.CutScenes ?? []);
+                                context.CurrentChatClient!.ClearTools();
+                                await foreach (var furtherResponse in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                                {
+                                    yield return furtherResponse;
+                                }
+                            }
+                            else
+                            {
+                                yield return new AiSceneResponse
+                                {
+                                    Status = AiResponseStatus.FinishedOk,
+                                    ResponseTime = DateTime.UtcNow,
+                                };
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    yield return new AiSceneResponse
+                    {
+                        Message = response?.Choices?[0]?.Delta?.Content,
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.FinishedNoTool
+                    };
+                }
+            }
+        }
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IScene scene, string message, SceneContext context, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var chatClient = _openAiFactory.Create(scene.OpenAiFactoryName)?.Chat ?? _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
+            context.CurrentChatClient = chatClient;
+            context.CurrentSceneName = scene.Name;
+            var sceneActors = _serviceProvider.GetKeyedServices<IActor>(scene.Name);
+            await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
+            await PlayActorsInScene(context, chatClient, sceneActors, cancellationToken);
+            foreach (var function in _functionsHandler.FunctionsChooser(scene.Name))
+            {
+                function.Invoke(chatClient);
+            }
+            chatClient.AddUserMessage(message);
+            var responses = chatClient.ExecuteAsStreamAsync(true, cancellationToken);
+            await foreach (var result in GetResponseAsync(scene.Name, scene.HttpClientName, chatClient, responses, cancellationToken))
+            {
+                yield return result;
+            }
+        }
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, IOpenAiChat chatClient, IAsyncEnumerable<ChunkChatResult> chatResponses, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var chatFunctions = new List<InternalFunction>();
+            await foreach (var chatResponse in chatResponses)
+            {
+                if ((chatResponse?.Choices?.Count ?? 0) > 0)
+                {
+                    if (chatResponse?.Choices?[0]?.Delta?.ToolCalls?.Count > 0)
+                    {
+                        foreach (var toolCall in chatResponse!.Choices![0]!.Delta!.ToolCalls!)
+                        {
+                            var functionName = toolCall.Function!.Name!;
+                            if (!string.IsNullOrWhiteSpace(functionName))
+                            {
+                                chatFunctions.Add(new InternalFunction { Name = functionName, Arguments = new(toolCall.Function.Arguments ?? string.Empty) });
+                            }
+                            var currentFunction = chatFunctions.Last();
+                            var partialJson = toolCall.Function!.Arguments!;
+                            currentFunction.Arguments.Append(partialJson);
+                            yield return new AiSceneResponse
+                            {
+                                Name = sceneName,
+                                FunctionName = currentFunction.Name,
+                                Arguments = toolCall.Function?.Arguments,
+                                ResponseTime = DateTime.UtcNow,
+                                Status = AiResponseStatus.FunctionStreamRequest
+                            };
+                        }
+                    }
+                    else
+                    {
+                        yield return new AiSceneResponse
+                        {
+                            Name = sceneName,
+                            Message = chatResponse?.Choices?[0]?.Delta?.Content,
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.Running
+                        };
+                    }
+                }
+            }
+            if (chatFunctions.Count > 0)
+            {
+                foreach (var chatFunction in chatFunctions)
+                {
+                    var responseAsJson = string.Empty;
+                    var function = _functionsHandler[chatFunction.Name];
+                    var json = chatFunction.Arguments.ToString();
+                    if (function.HasHttpRequest)
+                    {
+                        responseAsJson = await ExecuteHttpClientAsync(clientName, function.HttpRequest!, json, cancellationToken);
+                    }
+                    else if (function.HasService)
+                    {
+                        responseAsJson = await ExecuteServiceAsync(function.Service!, json, cancellationToken);
+                    }
+                    yield return new AiSceneResponse
+                    {
+                        Name = sceneName,
+                        FunctionName = chatFunction.Name,
+                        Arguments = json.ToJson(),
+                        Response = responseAsJson,
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.FunctionRequest
+                    };
+                    chatClient.AddSystemMessage($"Response for function {chatFunction.Name}: {responseAsJson}");
+                }
+                var responses = chatClient.ExecuteAsStreamAsync(true, cancellationToken);
+                await foreach (var result in GetResponseAsync(sceneName, clientName, chatClient, responses, cancellationToken))
+                {
+                    yield return result;
+                }
+            }
+        }
+        private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, string argumentAsJson, CancellationToken cancellationToken)
+        {
+            var json = ParseJson(argumentAsJson);
+            var serviceBringer = new ServiceBringer() { Parameters = [] };
+            foreach (var input in serviceHandler.Actions)
+            {
+                await input.Value(json, serviceBringer);
+            }
+            var response = await serviceHandler.Call(_serviceProvider, serviceBringer, cancellationToken);
+            return response.ToJson();
+        }
+        private async Task<string?> ExecuteHttpClientAsync(string? clientName, HttpHandler httpHandler, string argumentAsJson, CancellationToken cancellationToken)
+        {
+            var json = ParseJson(argumentAsJson);
+            var httpBringer = new HttpBringer();
+            using var httpClient = clientName == null ? _httpClientFactory.CreateClient() : _httpClientFactory.CreateClient(clientName);
+            await httpHandler.Call(httpBringer);
+            foreach (var actions in httpHandler.Actions)
+            {
+                await actions.Value(json, httpBringer);
+            }
+            var message = new HttpRequestMessage
+            {
+                Content = httpBringer.BodyAsJson != null ? new StringContent(httpBringer.BodyAsJson, Encoding.UTF8, "application/json") : null,
+                Headers = { { "Accept", "application/json" } },
+                RequestUri = new Uri($"{httpClient.BaseAddress}{httpBringer.RewrittenUri ?? httpHandler.Uri}{(httpBringer.Query != null ? (httpHandler.Uri.Contains('?') ? $"&{httpBringer.Query}" : $"?{httpBringer.Query}") : string.Empty)}"),
+                Method = new HttpMethod(httpBringer.Method!.ToString()!)
+            };
+            var authorization = _httpContext?.Request?.Headers?.Authorization.ToString();
+            if (authorization != null)
+            {
+                var bearer = authorization.Split(' ');
+                if (bearer.Length > 1)
+                    message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(bearer[0], bearer[1]);
+            }
+            var request = await httpClient.SendAsync(message, cancellationToken);
+            var responseString = await request.Content.ReadAsStringAsync(cancellationToken);
+            return responseString;
+        }
+        private static Dictionary<string, string> ParseJson(string json)
+        {
+            var result = new Dictionary<string, string>();
+            using (var document = JsonDocument.Parse(json))
+            {
+                foreach (var element in document.RootElement.EnumerateObject())
+                {
+                    if (element.Value.ValueKind == JsonValueKind.Object || element.Value.ValueKind == JsonValueKind.Array)
+                    {
+                        result.Add(element.Name, element.Value.GetRawText());
+                    }
+                    else
+                    {
+                        result.Add(element.Name, element.Value.ToString());
+                    }
+                }
+            }
+            return result;
+        }
+        private static async ValueTask PlayActorsInScene(SceneContext context, IOpenAiChat chatClient, IEnumerable<IPlayableActor>? actors, CancellationToken cancellationToken)
+        {
+            if (actors != null)
+            {
+                foreach (var actor in actors)
+                {
+                    var systemMessage = await actor.PlayAsync(context, cancellationToken);
+                    if (!string.IsNullOrWhiteSpace(systemMessage.Message))
+                        chatClient.AddSystemMessage(systemMessage.Message);
+                }
+            }
+        }
+    }
+}

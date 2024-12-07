@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <DebugSymbols>true</DebugSymbols>
+        <EmbedAllSources>true</EmbedAllSources>
+        <DebugType>portable</DebugType>
+        <Authors>Alessandro Rapiti</Authors>
+        <Company>Alessandro Rapiti</Company>
+        <Product>Rystem.PlayFramework</Product>
+        <Description>Rystem.PlayFramework helps you to use concepts like multi agent and openai.</Description>
+        <Copyright>2024</Copyright>
+        <PackageIcon>rystem.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/KeyserDSoze/Rystem/tree/master/src/PlayFramework</RepositoryUrl>
+        <PackageId>Rystem.PlayFramework</PackageId>
+        <Version>9.0.1-alpha</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    </PropertyGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    <Choose>
+        <When Condition=" '$(Configuration)'=='Debug' ">
+            <ItemGroup>
+                <ProjectReference Include="..\Rystem.OpenAi\Rystem.OpenAi.csproj" />
+            </ItemGroup>
+        </When>
+        <When Condition=" '$(Configuration)'!='Debug' ">
+            <ItemGroup>
+                <PackageReference Include="Rystem.OpenAi" Version="9.0.0" />
+            </ItemGroup>
+        </When>
+    </Choose>
+    <ItemGroup>
+        <None Update="rystem.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Update="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+</Project>
