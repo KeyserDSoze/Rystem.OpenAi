@@ -24,7 +24,6 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <UserSecretsId>b0061d78-060a-4020-9298-82b4fd2c0821</UserSecretsId>
     </PropertyGroup>
-
     <ItemGroup>
         <None Update="openai.png">
             <Pack>True</Pack>
