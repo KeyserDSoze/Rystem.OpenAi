@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -19,7 +19,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/KeyserDSoze/Rystem/tree/master/src/PlayFramework</RepositoryUrl>
         <PackageId>Rystem.PlayFramework</PackageId>
-        <Version>9.0.1-pre.1</Version>
+        <Version>9.0.2-pre.1</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     </PropertyGroup>
