@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.Chat
         {
             _openAiChat = openAiChat;
             _content = [];
-            _openAiChat.AddMessage(new ChatMessage { Content = _content, Role = role });
+            _openAiChat.AddMessage(new ChatMessageRequest { Content = _content, Role = role });
         }
         public ChatMessageContentBuilder AddText(string text)
         {

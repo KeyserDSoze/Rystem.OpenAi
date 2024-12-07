@@ -11,6 +11,6 @@ namespace Rystem.OpenAi.Chat
         /// A part of a message.
         /// </summary>
         [JsonPropertyName("delta")]
-        public ChatMessage? Delta { get; set; }
+        public ChatMessageResponse? Delta { get; set; }
     }
 }

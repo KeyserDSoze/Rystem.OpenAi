@@ -23,20 +23,20 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <param name="message">Prompt</param>
         /// <returns>Builder</returns>
-        IOpenAiChat AddMessage(ChatMessage message);
+        IOpenAiChat AddMessage(ChatMessageRequest message);
 
         /// <summary>
         /// Add some messages to the request
         /// </summary>
         /// <param name="messages">Prompts</param>
         /// <returns>Builder</returns>
-        IOpenAiChat AddMessages(params ChatMessage[] messages);
+        IOpenAiChat AddMessages(params ChatMessageRequest[] messages);
 
         /// <summary>
         /// Get all messages added till now.
         /// </summary>
         /// <returns>List<ChatMessage></returns>
-        List<ChatMessage> GetCurrentMessages();
+        List<ChatMessageRequest> GetCurrentMessages();
 
         /// <summary>
         /// Add a message to the request
@@ -66,6 +66,12 @@ namespace Rystem.OpenAi.Chat
         /// <param name="content"></param>
         /// <returns>Builder</returns>
         IOpenAiChat AddSystemMessage(string content);
+        /// <summary>
+        /// Assistant message is a message used to improve the response from chat API.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        IOpenAiChat AddAssistantMessage(string content);
 
         /// <summary>
         /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or Nucleus sampling but not both.
@@ -184,6 +190,11 @@ namespace Rystem.OpenAi.Chat
         /// <returns></returns>
         IOpenAiChat ForceCallTools();
         /// <summary>
+        /// Remove all functions added until now.
+        /// </summary>
+        /// <returns></returns>
+        IOpenAiChat ClearTools();
+        /// <summary>
         /// Specifying a particular tool via <see cref="ForcedFunctionTool"/> forces the model to call that tool.
         /// </summary>
         /// <param name="forcedFunction"></param>
@@ -210,5 +221,11 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <returns></returns>
         IOpenAiChat WithDefaultServiceTier();
+        /// <summary>
+        /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+        /// </summary>
+        /// <param name="tool"></param>
+        /// <returns></returns>
+        IOpenAiChat AddFunctionTool(FunctionTool tool);
     }
 }

@@ -47,43 +47,43 @@ namespace Rystem.OpenAi.Chat
                 yield return result;
             }
         }
-        public IOpenAiChat AddMessage(ChatMessage message)
+        public IOpenAiChat AddMessage(ChatMessageRequest message)
         {
             Request.Messages ??= [];
             Request.Messages.Add(message);
             return this;
         }
-        public IOpenAiChat AddMessages(params ChatMessage[] messages)
+        public IOpenAiChat AddMessages(params ChatMessageRequest[] messages)
         {
             Request.Messages ??= [];
             foreach (var message in messages)
                 Request.Messages.Add(message);
             return this;
         }
-        public List<ChatMessage> GetCurrentMessages()
+        public List<ChatMessageRequest> GetCurrentMessages()
             => Request.Messages ?? [];
         public IOpenAiChat AddMessage(string content, ChatRole role = ChatRole.User)
-            => AddMessage(new ChatMessage { Content = content, Role = role });
+            => AddMessage(new ChatMessageRequest { Content = content, Role = role });
         public IOpenAiChat AddMessage(ChatMessageContent content, ChatRole role = ChatRole.User)
-            => AddMessage(new ChatMessage { Content = new List<ChatMessageContent> { content }, Role = role });
+            => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = role });
         public ChatMessageContentBuilder AddContent(ChatRole role = ChatRole.User)
             => new(this, role);
         public IOpenAiChat AddUserMessage(string content)
-            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.User });
+            => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.User });
         public IOpenAiChat AddUserMessage(ChatMessageContent content)
-            => AddMessage(new ChatMessage { Content = new List<ChatMessageContent> { content }, Role = ChatRole.User });
+            => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.User });
         public ChatMessageContentBuilder AddUserContent()
             => new(this, ChatRole.User);
         public IOpenAiChat AddSystemMessage(string content)
-            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.System });
+            => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.System });
         public IOpenAiChat AddSystemMessage(ChatMessageContent content)
-            => AddMessage(new ChatMessage { Content = new List<ChatMessageContent> { content }, Role = ChatRole.System });
+            => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.System });
         public ChatMessageContentBuilder AddSystemContent()
             => new ChatMessageContentBuilder(this, ChatRole.System);
         public IOpenAiChat AddAssistantMessage(string content)
-            => AddMessage(new ChatMessage { Content = content, Role = ChatRole.Assistant });
+            => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Assistant });
         public IOpenAiChat AddAssistantMessage(ChatMessageContent content)
-            => AddMessage(new ChatMessage { Content = new List<ChatMessageContent> { content }, Role = ChatRole.Assistant });
+            => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.Assistant });
         public ChatMessageContentBuilder AddAssistantContent()
             => new(this, ChatRole.Assistant);
         public IOpenAiChat WithTemperature(double value)
@@ -232,6 +232,18 @@ namespace Rystem.OpenAi.Chat
         public IOpenAiChat WithDefaultServiceTier()
         {
             Request.ServiceTier = ChatConstants.ServiceTier.Default;
+            return this;
+        }
+
+        public IOpenAiChat ClearTools()
+        {
+            Request.Tools?.Clear();
+            return this;
+        }
+        public IOpenAiChat AddFunctionTool(FunctionTool tool)
+        {
+            Request.Tools ??= [];
+            Request.Tools.Add(new ChatFunctionTool { Function = tool });
             return this;
         }
     }

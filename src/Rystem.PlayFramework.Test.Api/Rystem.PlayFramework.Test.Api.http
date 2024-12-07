@@ -1,0 +1,6 @@
+@Rystem.PlayFramework.Test.Api_HostAddress = http://localhost:5107
+
+GET {{Rystem.PlayFramework.Test.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

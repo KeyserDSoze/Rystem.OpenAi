@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -28,6 +28,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rystem.OpenAi\Rystem.OpenAi.csproj" />
+    <ProjectReference Include="..\Rystem.PlayFramework.Test.Api\Rystem.PlayFramework.Test.Api.csproj" />
+    <ProjectReference Include="..\Rystem.PlayFramework\Rystem.PlayFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
