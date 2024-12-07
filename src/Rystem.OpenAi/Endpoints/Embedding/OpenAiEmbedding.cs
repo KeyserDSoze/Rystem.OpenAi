@@ -8,9 +8,18 @@ namespace Rystem.OpenAi.Embedding
     internal sealed class OpenAiEmbedding : OpenAiBuilder<IOpenAiEmbedding, EmbeddingRequest, EmbeddingModelName>, IOpenAiEmbedding
     {
         private readonly List<string> _inputs = [];
-        public OpenAiEmbedding(IFactory<DefaultServices> factory) : base(factory)
+        public OpenAiEmbedding(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
             Request.Model = EmbeddingModelName.Text_embedding_3_large;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Embeddings != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Embeddings.Invoke(this);
+            }
         }
         public IOpenAiEmbedding WithInputs(params string[] inputs)
         {

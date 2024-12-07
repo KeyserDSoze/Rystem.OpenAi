@@ -14,9 +14,18 @@ namespace Rystem.OpenAi.Image
         private string? _maskName;
         private ImageSize _size;
         private ImageQuality _quality;
-        public OpenAiImage(IFactory<DefaultServices> factory) : base(factory)
+        public OpenAiImage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
             Request.Model = ImageModelName.Dalle3;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Image != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Image.Invoke(this);
+            }
         }
         private void CheckPromptLenght(string prompt)
         {

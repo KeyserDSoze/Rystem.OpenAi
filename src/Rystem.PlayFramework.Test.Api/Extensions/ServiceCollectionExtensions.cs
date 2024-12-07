@@ -21,10 +21,11 @@ namespace Rystem.PlayFramework.Test.Api
             services.AddOpenAi(x =>
             {
                 x.ApiKey = configuration["OpenAi2:ApiKey"]!;
-                x.Azure.ResourceName = configuration["Azure2:ResourceName"]!;
-                x.RequestConfiguration = t =>
+                x.Azure.ResourceName = configuration["OpenAi2:ResourceName"]!;
+                //x.Azure.MapDeployment(configuration["OpenAi2:ModelName"]!, configuration["OpenAi2:ModelName"]!);
+                x.DefaultRequestConfiguration.Chat = chatClient =>
                 {
-                    t.Chat.WithModel(configuration["OpenAi:ModelName"]!);
+                    chatClient.WithModel(configuration["OpenAi2:ModelName"]!);
                 };
             }, "playframework");
             services.AddHttpClient("apiDomain", x =>

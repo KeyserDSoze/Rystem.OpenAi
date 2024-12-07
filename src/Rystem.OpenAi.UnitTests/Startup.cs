@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.UnitTests
     {
         protected override string? AppSettingsFileName => "appsettings.test.json";
 
-        protected override bool HasTestHost => false;
+        protected override bool HasTestHost => true;
 
         protected override Type? TypeToChooseTheRightAssemblyToRetrieveSecretsForConfiguration => typeof(Startup);
 

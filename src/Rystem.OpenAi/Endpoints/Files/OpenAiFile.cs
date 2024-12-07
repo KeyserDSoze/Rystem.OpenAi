@@ -9,11 +9,18 @@ namespace Rystem.OpenAi.Files
 {
     internal sealed class OpenAiFile : OpenAiBuilder<IOpenAiFile>, IOpenAiFile
     {
-        public OpenAiFile(IFactory<DefaultServices> factory)
-            : base(factory)
+        public OpenAiFile(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
         }
-
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.File != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.File.Invoke(this);
+            }
+        }
         public ValueTask<FilesDataResult> AllAsync(CancellationToken cancellationToken = default)
             => DefaultServices.HttpClient.GetAsync<FilesDataResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
         private const string Purpose = "purpose";

@@ -6,8 +6,17 @@ namespace Rystem.OpenAi.Models
 {
     internal sealed class OpenAiModel : OpenAiBuilder<IOpenAiModel>, IOpenAiModel
     {
-        public OpenAiModel(IFactory<DefaultServices> factory) : base(factory)
+        public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Model != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Model.Invoke(this);
+            }
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClient.GetAsync<Model>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);

@@ -10,9 +10,17 @@ namespace Rystem.OpenAi.Chat
 {
     internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest, ChatModelName>, IOpenAiChat
     {
-        public OpenAiChat(IFactory<DefaultServices> factory) : base(factory)
+        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory) : base(factory, configurationFactory)
         {
             Request.Model = ChatModelName.Gpt4_o;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Chat != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Chat.Invoke(this);
+            }
         }
         private void AddUsages(ChatUsage usage)
         {

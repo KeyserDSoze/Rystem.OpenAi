@@ -4,6 +4,7 @@ using System.Text.Json;
 using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
 
 namespace Rystem.PlayFramework
@@ -12,7 +13,7 @@ namespace Rystem.PlayFramework
     {
         private readonly HttpContext? _httpContext;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IFactory<IOpenAiChat> _openAiFactory;
+        private readonly IFactory<IOpenAi> _openAiFactory;
         private readonly IFactory<IScene> _sceneFactory;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly PlayHandler _playHandler;
@@ -21,7 +22,7 @@ namespace Rystem.PlayFramework
 
         public SceneManager(IServiceProvider serviceProvider,
             IHttpContextAccessor httpContextAccessor,
-            IFactory<IOpenAiChat> openAiFactory,
+            IFactory<IOpenAi> openAiFactory,
             IFactory<IScene> sceneFactory,
             IHttpClientFactory httpClientFactory,
             PlayHandler playHandler,
@@ -45,8 +46,8 @@ namespace Rystem.PlayFramework
             if (requestSettings.Context != null)
                 requestSettings.Context.InputMessage = message;
             var context = requestSettings.Context ?? new SceneContext { InputMessage = message, Properties = requestSettings.Properties ?? [] };
-            context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!;
-            var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!;
+            context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
+            var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             context.CurrentChatClient = chatClient;
             var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
@@ -126,7 +127,7 @@ namespace Rystem.PlayFramework
         }
         private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IScene scene, string message, SceneContext context, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var chatClient = _openAiFactory.Create(scene.OpenAiFactoryName)!;
+            var chatClient = _openAiFactory.Create(scene.OpenAiFactoryName)!.Chat;
             context.CurrentChatClient = chatClient;
             context.CurrentSceneName = scene.Name;
             var sceneActors = _serviceProvider.GetKeyedServices<IActor>(scene.Name);

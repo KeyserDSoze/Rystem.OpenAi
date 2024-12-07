@@ -8,12 +8,20 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest, SpeechModelName>, IOpenAiSpeech
     {
-        public OpenAiSpeech(IFactory<DefaultServices> factory)
-            : base(factory)
+        public OpenAiSpeech(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
             Request.Speed = 1;
             Request.Voice = AudioVoice.Alloy.ToString().ToLower();
             Request.Model = SpeechModelName.TtsHd;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Speech != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Speech.Invoke(this);
+            }
         }
         private async ValueTask<Stream> ExecuteAsync(string input, string responseFormat, CancellationToken cancellationToken = default)
         {

@@ -9,10 +9,18 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
-        public OpenAiAudio(IFactory<DefaultServices> factory)
-            : base(factory)
+        public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
             Request.Model = AudioModelName.Whisper;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Audio != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Audio.Invoke(this);
+            }
         }
         internal const string ResponseFormatJson = "json";
         public async ValueTask<AudioResult> TranscriptAsync(CancellationToken cancellationToken = default)

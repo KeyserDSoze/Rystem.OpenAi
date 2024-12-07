@@ -13,7 +13,7 @@ namespace Rystem.OpenAi
         public string? OrganizationName { get; set; }
         public string? ProjectId { get; set; }
         public string? Version { get; set; }
-        public Action<IOpenAi>? RequestConfiguration { get; set; }
+        public DefaultRequestConfiguration DefaultRequestConfiguration { get; set; } = new();
         private OpenAiAzureSettings? _azureSettings;
         public OpenAiAzureSettings Azure => _azureSettings ??= new OpenAiAzureSettings(this);
         /// <summary>

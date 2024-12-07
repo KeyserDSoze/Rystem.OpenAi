@@ -65,7 +65,6 @@ namespace Rystem.OpenAi
         public void SetFactoryName(string name)
         {
             _factoryName = name;
-            Configuration.Settings.RequestConfiguration?.Invoke(this);
         }
     }
 }

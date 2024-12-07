@@ -16,10 +16,18 @@ namespace Rystem.OpenAi.FineTune
     internal sealed class OpenAiFineTune : OpenAiBuilder<IOpenAiFineTune, FineTuneRequest, FineTuningModelName>, IOpenAiFineTune
     {
         private const string WandBLabel = "wandb";
-        public OpenAiFineTune(IFactory<DefaultServices> factory)
-            : base(factory)
+        public OpenAiFineTune(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory)
         {
             Request.Model = FineTuningModelName.Gpt_4o_2024_08_06;
+        }
+        private protected override void ConfigureFactory(string name)
+        {
+            var configuration = _configurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.FineTune != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.FineTune.Invoke(this);
+            }
         }
         public IOpenAiFineTune WithFileId(string trainingFileId)
         {
