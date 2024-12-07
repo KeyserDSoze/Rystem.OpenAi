@@ -19,14 +19,14 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
 
             var response = await openAiApi.Image
                 .WithSize(ImageSize.Large)
                 .GenerateAsync("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.");
 
-            var uri = response.Data.FirstOrDefault();
+            var uri = response.Data?.FirstOrDefault();
             Assert.NotNull(uri);
             Assert.Contains("blob.core.windows.net", uri.Url);
         }
@@ -34,14 +34,14 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateWithBase64Async(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
 
             var response = await openAiApi.Image
                 .WithSize(ImageSize.Large)
                 .GenerateAsBase64Async("Create a captive logo with ice and fire, and thunder with the word Rystem. With a desolated futuristic landscape.");
 
-            var image = response.Data.FirstOrDefault();
+            var image = response.Data?.FirstOrDefault();
             Assert.NotNull(image);
             var imageAsStream = image.ConvertToStream();
             Assert.NotNull(imageAsStream);
@@ -50,7 +50,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask EditAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
 
             var location = Assembly.GetExecutingAssembly().Location;
@@ -66,8 +66,8 @@ namespace Rystem.OpenAi.Test
                 .WithNumberOfResults(2)
                 .EditAsync("A cute baby sea otter wearing a beret", editableFile, "otter.png");
 
-            var uri = response.Data.FirstOrDefault();
-            Assert.Equal(2, response.Data.Count);
+            var uri = response.Data?.FirstOrDefault();
+            Assert.Equal(2, response.Data?.Count);
             Assert.NotNull(uri);
             Assert.Contains("blob.core.windows.net", uri.Url);
         }
@@ -75,7 +75,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask VariateAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
 
             var location = Assembly.GetExecutingAssembly().Location;
@@ -89,8 +89,8 @@ namespace Rystem.OpenAi.Test
                 .WithNumberOfResults(1)
                 .VariateAsync(editableFile, "otter.png");
 
-            var uri = response.Data.FirstOrDefault();
-            Assert.NotEmpty(response.Data);
+            var uri = response.Data?.FirstOrDefault();
+            Assert.NotEmpty(response.Data ?? []);
             Assert.NotNull(uri);
             Assert.Contains("blob.core.windows.net", uri.Url);
         }

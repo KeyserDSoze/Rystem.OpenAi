@@ -20,28 +20,28 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask GetAllModelsAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             await openAiApi.Model.DeleteAsync("dadsadasdasdad");
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
-            foreach (var model in results.Models)
+            foreach (var model in results.Models ?? [])
             {
-                var modelResult = await openAiApi.Model.RetrieveAsync(model.Id);
+                var modelResult = await openAiApi.Model.RetrieveAsync(model.Id!);
                 Assert.NotNull(modelResult);
                 Assert.Equal(model.Id, modelResult.AsString());
                 //if (string.IsNullOrWhiteSpace(name))
                 //    Assert.True(modelResult.Created > new DateTime(2018, 1, 1));
             }
             Assert.NotNull(results);
-            Assert.NotEmpty(results.Models);
-            Assert.Contains(results.Models, c => c.Id.ToLower().StartsWith("text-davinci"));
+            Assert.NotEmpty(results.Models ?? []);
+            Assert.Contains(results.Models ?? [], c => c.Id?.ToLower().StartsWith("text-davinci") == true);
         }
 
         [Theory]
         [InlineData("")]
         public async ValueTask GetModelDetailsAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Model);
 
             var result = await openAiApi.Model.RetrieveAsync(ChatModelName.ChatGpt_4o_latest);
@@ -63,9 +63,9 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask GetEnginesAsync_ShouldReturnTheEngineList(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             var models = await openAiApi.Model.ListAsync();
-            Assert.True(models.Models.Count > 5);
+            Assert.True(models.Models?.Count > 5);
         }
 
         [Theory]
@@ -75,7 +75,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("davinci", "")]
         public async ValueTask RetrieveEngineDetailsAsync_ShouldRetrieveEngineDetails(string modelId, string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             var modelData = await openAiApi.Model.RetrieveAsync(modelId);
             Assert.Equal(modelId, modelData.AsString());
             //Assert.True(modelData.Created > new DateTime(2018, 1, 1));

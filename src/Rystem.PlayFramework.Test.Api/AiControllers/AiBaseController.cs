@@ -1,16 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
-
-namespace Rystem.PlayFramework.Test.Api
+﻿namespace Rystem.PlayFramework.Test.Api
 {
+    /// <summary>
+    /// Base class for all AI controllers.
+    /// </summary>
     public abstract class AiBaseController
     {
-    }
-    [Route("[controller]/[action]")]
-    public class CountryAiController : AiBaseController
-    {
-        public async Task SomethingAsync()
-        {
-
-        }
     }
 }

@@ -161,7 +161,7 @@ namespace Rystem.OpenAi.Chat
                 throw new ArgumentException("Value of bias is greater than 100. Accepted values have range [-100, 100].");
             if (value < -100)
                 throw new ArgumentException("Value of bias is lesser than -100. Accepted values have range [-100, 100].");
-            Request.Bias ??= new Dictionary<string, int>();
+            Request.Bias ??= [];
             if (!Request.Bias.ContainsKey(key))
                 Request.Bias.Add(key, value);
             else

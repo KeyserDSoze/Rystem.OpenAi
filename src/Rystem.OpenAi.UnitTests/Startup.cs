@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rystem.PlayFramework.Test.Api;
 using Rystem.Test.XUnit;
 
 namespace Rystem.OpenAi.UnitTests
@@ -12,7 +14,7 @@ namespace Rystem.OpenAi.UnitTests
 
         protected override Type? TypeToChooseTheRightAssemblyToRetrieveSecretsForConfiguration => typeof(Startup);
 
-        protected override Type? TypeToChooseTheRightAssemblyWithControllersToMap => null;
+        protected override Type? TypeToChooseTheRightAssemblyWithControllersToMap => typeof(CountryController);
 
         protected override IServiceCollection ConfigureClientServices(IServiceCollection services, IConfiguration configuration)
         {
@@ -24,6 +26,10 @@ namespace Rystem.OpenAi.UnitTests
             var tenantId = Environment.GetEnvironmentVariable("AzureADTenantId") ?? configuration["AzureAd:TenantId"];
             var azureApiKey2 = Environment.GetEnvironmentVariable("Azure2ApiKey") ?? configuration["Azure2:ApiKey"];
             var resourceName2 = Environment.GetEnvironmentVariable("Azure2ResourceName") ?? configuration["Azure2:ResourceName"];
+            services.AddHttpClient("client", x =>
+            {
+                x.BaseAddress = new Uri("http://localhost");
+            });
             services
                 .AddOpenAi(settings =>
                 {
@@ -48,6 +54,16 @@ namespace Rystem.OpenAi.UnitTests
                     settings.Azure.ResourceName = resourceName2;
                 }, "Azure2");
             return services;
+        }
+        protected override ValueTask ConfigureServerServicesAsync(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddServices(configuration);
+            return ValueTask.CompletedTask;
+        }
+        protected override ValueTask ConfigureServerMiddlewareAsync(IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider)
+        {
+            applicationBuilder.UseMiddlewares();
+            return ValueTask.CompletedTask;
         }
     }
 }

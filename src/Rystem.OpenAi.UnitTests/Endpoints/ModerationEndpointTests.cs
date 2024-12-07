@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("")]
         public async ValueTask CreateAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Moderation);
 
             var results = await openAiApi.Moderation
@@ -27,10 +27,9 @@ namespace Rystem.OpenAi.Test
                 .WithModel(ModerationModelName.OmniLatest)
                 .ExecuteAsync("I want to kill them and everyone else.");
 
-            var categories = results.Results.First().Categories;
+            var categories = results.Results?.FirstOrDefault()?.Categories;
             Assert.NotNull(categories);
             Assert.True(categories.HateThreatening);
-
         }
     }
 }

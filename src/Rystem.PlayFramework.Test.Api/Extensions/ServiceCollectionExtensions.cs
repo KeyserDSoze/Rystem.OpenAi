@@ -1,34 +1,32 @@
 ﻿using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
 using Rystem.PlayFramework.Test.Api.Services;
-using Scalar.AspNetCore;
 
 namespace Rystem.PlayFramework.Test.Api
 {
+    /// <summary>
+    /// Service collection extensions
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Add services
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
         public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddOpenApi();
-            services.AddChat(x =>
+            services.AddOpenAi(x =>
             {
-                x.AddConfiguration("openai", builder =>
+                x.ApiKey = configuration["OpenAi2:ApiKey"]!;
+                x.Azure.ResourceName = configuration["Azure2:ResourceName"]!;
+                x.RequestConfiguration = t =>
                 {
-                    builder.ApiKey = configuration["OpenAi:ApiKey"]!;
-                    builder.Uri = configuration["OpenAi:Endpoint"]!;
-                    builder.Model = configuration["OpenAi:ModelName"]!;
-                    builder.ChatClientBuilder = (chatClient) =>
-                    {
-                        chatClient.AddPriceModel(new ChatPriceSettings
-                        {
-                            InputToken = 0.02M,
-                            OutputToken = 0.02M
-                        });
-                    };
-                });
-            });
+                    t.Chat.WithModel(configuration["OpenAi:ModelName"]!);
+                };
+            }, "playframework");
             services.AddHttpClient("apiDomain", x =>
             {
                 x.BaseAddress = new Uri(configuration["Api:Uri"]!);
@@ -38,7 +36,7 @@ namespace Rystem.PlayFramework.Test.Api
             {
                 scenes.Configure(settings =>
                 {
-                    settings.OpenAi.Name = "openai";
+                    settings.OpenAi.Name = "playframework";
                 })
                 .AddMainActor((context) => $"Oggi è {DateTime.UtcNow}.", true)
                 .AddScene(scene =>
@@ -77,31 +75,6 @@ namespace Rystem.PlayFramework.Test.Api
                 });
             });
             return services;
-        }
-    }
-    public static class WebApplicationBuilderExtensions
-    {
-        public static IApplicationBuilder UseMiddlewares(this IApplicationBuilder app)
-        {
-            app.UseRouting();
-            app.UseEndpoints(x =>
-            {
-                x.MapOpenApi();
-                x.MapScalarApiReference();
-            });
-            app.UseHttpsRedirection();
-            app.UseAuthorization();
-            app.UseEndpoints(x =>
-            {
-                x.MapPost("api/bestwestern", async ([FromQuery] string file) =>
-                {
-                    return await Task.FromResult("ok");
-                });
-                x.MapControllers();
-            });
-            app.MapOpenApiEndpointsForPlayFramework();
-            app.UseAiEndpoints();
-            return app;
         }
     }
 }

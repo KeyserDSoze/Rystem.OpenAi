@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask AllFlowAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.File);
             var fileName = "data-test-file.jsonl";
             var location = Assembly.GetExecutingAssembly().Location;
@@ -41,12 +41,12 @@ namespace Rystem.OpenAi.Test
             var uploadResult = await openAiApi.File
                 .UploadFileAsync(editableFile, fileName);
 
-            Assert.True(uploadResult.Id.Length > 10);
+            Assert.True(uploadResult.Id?.Length > 10);
             Assert.Contains("file", uploadResult.Id);
 
             results = await openAiApi.File
                 .AllAsync();
-            Assert.NotEmpty(results.Data);
+            Assert.NotEmpty(results.Data ?? []);
 
 
             var retrieve = await openAiApi.File.RetrieveAsync(uploadResult.Id);

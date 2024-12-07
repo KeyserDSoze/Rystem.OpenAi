@@ -2,6 +2,9 @@
 
 namespace Rystem.PlayFramework.Test.Api
 {
+    /// <summary>
+    /// Controller for managing weather forecasts.
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
@@ -12,7 +15,10 @@ namespace Rystem.PlayFramework.Test.Api
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WeatherForecastController"/> class.
+        /// </summary>
+        /// <param name="logger"></param>
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;

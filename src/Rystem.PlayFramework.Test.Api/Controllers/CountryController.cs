@@ -2,20 +2,32 @@
 
 namespace Rystem.PlayFramework.Test.Api
 {
+    /// <summary>
+    /// Controller for managing countries and cities.
+    /// </summary>
     [ApiController]
     [Route("[controller]/[action]")]
     public class CountryController : ControllerBase
     {
         private readonly ILogger<CountryController> _logger;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CountryController"/> class.
+        /// </summary>
+        /// <param name="logger"></param>
         public CountryController(ILogger<CountryController> logger)
         {
             _logger = logger;
         }
+        /// <summary>
+        /// Retrieves a city by its ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("{id?}")]
         public async Task<IActionResult> ReadCityByIdAsync([FromRoute] string id)
         {
+            await Task.Delay(0);
             return Ok(id);
         }
         /// <summary>
@@ -38,6 +50,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpPost]
         public async Task<IActionResult> AddCityAsync([FromBody] City city)
         {
+            await Task.Delay(0);
             return Ok("true");
         }
 
@@ -60,6 +73,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpPost]
         public async Task<IActionResult> AddCountryAsync([FromBody] Country country)
         {
+            await Task.Delay(0);
             return Ok("true");
         }
 
@@ -77,6 +91,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpGet]
         public async IAsyncEnumerable<City> GetCitiesAsync([FromQuery] string country)
         {
+            await Task.Delay(0);
             yield return new City { Country = country, Name = "City1", Population = 1000000 };
         }
 
@@ -119,7 +134,7 @@ namespace Rystem.PlayFramework.Test.Api
             _cityexist = !_cityexist;
             return x;
         }
-        private bool _cityexist = false;
+        private bool _cityexist;
 
         /// <summary>
         /// Retrieves a list of all countries.
@@ -134,6 +149,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpGet]
         public async IAsyncEnumerable<Country> GetCountriesAsync()
         {
+            await Task.Delay(0);
             yield return new Country { Name = "", Population = 32 };
         }
 
@@ -151,6 +167,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpDelete]
         public async Task<IActionResult> DeleteCityAsync(string name)
         {
+            await Task.Delay(0);
             return Ok("true");
         }
 
@@ -168,6 +185,7 @@ namespace Rystem.PlayFramework.Test.Api
         [HttpDelete]
         public async Task<IActionResult> DeleteCountryAsync(string name)
         {
+            await Task.Delay(0);
             return Ok("true");
         }
     }
