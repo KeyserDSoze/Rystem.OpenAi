@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Rystem.OpenAi.Chat;
@@ -15,6 +16,30 @@ namespace Rystem.OpenAi
 {
     public static class HttpClientExtensions
     {
+        private sealed class ErrorResponse
+        {
+            [JsonPropertyName("error")]
+            public required string Error { get; set; }
+            [JsonPropertyName("request")]
+            public required string Request { get; set; }
+            [JsonPropertyName("method")]
+            public required string Method { get; set; }
+            [JsonPropertyName("streaming")]
+            public required bool Streaming { get; set; }
+            [JsonPropertyName("content")]
+            public object? Content { get; set; }
+            public override string ToString()
+            {
+                return $"""
+                
+                Error: {Error}
+                Request: {Request}
+                Method: {Method}
+                Streaming: {Streaming}
+                Content: {Content?.ToJson()}
+                """;
+            }
+        }
         private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -48,7 +73,16 @@ namespace Rystem.OpenAi
             }
             else
             {
-                throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                var error = new ErrorResponse
+                {
+                    Error = errorMessage,
+                    Request = url,
+                    Method = method.Method,
+                    Streaming = isStreaming,
+                    Content = message
+                };
+                throw new HttpRequestException(error.ToString());
             }
         }
         internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClient client,
