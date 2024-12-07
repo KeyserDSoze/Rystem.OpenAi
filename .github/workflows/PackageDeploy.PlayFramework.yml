@@ -9,7 +9,7 @@ jobs:
   publish:
     name: build, pack & publish
     runs-on: ubuntu-latest
-    environment: PlayFramework.Nuget
+    environment: OpenAi.Nuget
     
     steps:
       - name: Publish package
