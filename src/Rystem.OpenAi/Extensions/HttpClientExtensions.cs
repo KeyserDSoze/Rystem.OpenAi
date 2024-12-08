@@ -36,14 +36,13 @@ namespace Rystem.OpenAi
                 Request: {Request}
                 Method: {Method}
                 Streaming: {Streaming}
-                Content: {Content?.ToJson()}
+                Content: {Content?.ToJson(s_options)}
                 """;
             }
         }
         private static readonly JsonSerializerOptions s_options = new()
         {
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
         private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
             string url,
@@ -61,7 +60,7 @@ namespace Rystem.OpenAi
                 }
                 else
                 {
-                    var jsonContent = JsonSerializer.Serialize(message, s_options);
+                    var jsonContent = message.ToJson(s_options);
                     var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                     request.Content = stringContent;
                 }

@@ -28,8 +28,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddFactory<IOpenAi, OpenAi>(integrationName);
             services.AddFactory(new OpenAiConfiguration(openAiSettings, integrationName), integrationName, ServiceLifetime.Singleton);
             services.AddFactory<IOpenAiPriceService>(new PriceService(openAiSettings.PriceBuilder.Prices), integrationName, ServiceLifetime.Singleton);
-            var httpClientBuilder = services.AddHttpClient($"{OpenAiSettings.HttpClientName}-{integrationName}", client =>
+            var httpClientBuilder = services.AddFactory((serviceProvider, context) =>
             {
+                var client = new HttpClient();
                 if (openAiSettings.Azure.HasConfiguration)
                 {
                     if (!openAiSettings.Azure.HasAnotherKindOfAuthentication)
@@ -42,7 +43,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (!string.IsNullOrEmpty(openAiSettings.ProjectId))
                     client.DefaultRequestHeaders.Add("OpenAI-Project", openAiSettings.ProjectId);
                 client.Timeout = TimeSpan.FromMinutes(10);
-            });
+                return client;
+            }, $"{OpenAiSettings.HttpClientName}_{integrationName ?? string.Empty}");
             if (openAiSettings.RetryPolicy)
             {
                 var defaultPolicy = openAiSettings.CustomRetryPolicy ?? Policy<HttpResponseMessage>
