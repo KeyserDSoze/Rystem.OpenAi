@@ -26,7 +26,7 @@ namespace Rystem.OpenAi.Moderation
         public ValueTask<ModerationResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
         {
             Request.Input = input;
-            return DefaultServices.HttpClient.PostAsync<ModerationResult>(DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.PostAsync<ModerationResult>(DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
         }
     }
 }

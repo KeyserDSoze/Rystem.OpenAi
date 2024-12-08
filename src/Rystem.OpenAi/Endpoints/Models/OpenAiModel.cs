@@ -19,13 +19,13 @@ namespace Rystem.OpenAi.Models
             }
         }
         public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClient.GetAsync<Model>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.GetAsync<Model>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);
         public async Task<ModelListResult> ListAsync(CancellationToken cancellationToken = default)
         {
-            var response = await DefaultServices.HttpClient.GetAsync<ModelListResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.GetAsync<ModelListResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-           => DefaultServices.HttpClient.DeleteAsync<FineTuneDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
+           => DefaultServices.HttpClientWrapper.DeleteAsync<FineTuneDeleteResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
     }
 }

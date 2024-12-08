@@ -17,14 +17,14 @@ namespace Rystem.OpenAi
     {
         private const string Forced = nameof(Forced);
         internal OpenaiUriMaker GetUri { get; private set; } = null!;
-        public Func<HttpClient, Task>? BeforeRequest { get; private set; }
+        internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }
         public string Name { get; }
-        public Task EnrichClientAsync(HttpClient client)
+        internal Task EnrichClientAsync(HttpClientWrapper wrapper)
         {
             if (BeforeRequest != null)
-                return BeforeRequest.Invoke(client);
+                return BeforeRequest.Invoke(wrapper);
             else
                 return Task.CompletedTask;
         }
@@ -146,6 +146,9 @@ namespace Rystem.OpenAi
             GetUri = (type, modelId, forceModel, appendBeforeQueryString)
                 => GetUriForAzure(type, modelId, forceModel, appendBeforeQueryString, uriHelper, uris);
         }
+
+        private const string AuthorizationScheme = "Bearer";
+
         private void SetManagedIdentityForAzure()
         {
             var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
@@ -157,10 +160,10 @@ namespace Rystem.OpenAi
                     {
                         ManagedIdentityClientId = Settings.Azure.ManagedIdentity.Id
                     });
-                BeforeRequest = async client =>
+                BeforeRequest = async wrapper =>
                 {
                     var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
+                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.Token);
                 };
             }
             else if (Settings.Azure.HasAppRegistration)
@@ -170,12 +173,12 @@ namespace Rystem.OpenAi
                     .WithAuthority(AadAuthorityAudience.AzureAdMyOrg, true)
                     .WithTenantId(Settings.Azure.AppRegistration.TenantId)
                     .Build();
-                BeforeRequest = async client =>
+                BeforeRequest = async wrapper =>
                 {
                     var accessToken = await credential
                                         .AcquireTokenForClient(scopes)
                                         .ExecuteAsync();
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);
+                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.AccessToken);
                 };
             }
         }

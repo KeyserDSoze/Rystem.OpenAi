@@ -28,7 +28,7 @@ namespace Rystem.OpenAi.Audio
             Request.ResponseFormat = responseFormat;
             Request.Input = input;
             Usages.Add(new OpenAiCost { Units = Request.Input?.Length ?? 0, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Tokens });
-            var response = await DefaultServices.HttpClient.PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public ValueTask<Stream> Mp3Async(string input, CancellationToken cancellationToken = default)

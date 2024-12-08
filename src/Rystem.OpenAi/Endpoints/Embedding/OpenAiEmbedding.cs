@@ -34,7 +34,7 @@ namespace Rystem.OpenAi.Embedding
         public async ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.Input = _inputs;
-            var response = await DefaultServices.HttpClient.PostAsync<EmbeddingResult>(DefaultServices.Configuration.GetUri(OpenAiType.Embedding, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<EmbeddingResult>(DefaultServices.Configuration.GetUri(OpenAiType.Embedding, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             if (response.Usage != null)
                 Usages.Add(new OpenAiCost { Units = response.Usage.TotalTokens, UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.Input });
             return response;
