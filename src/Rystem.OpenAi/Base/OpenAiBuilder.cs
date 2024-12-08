@@ -45,13 +45,16 @@ namespace Rystem.OpenAi
             var modelName = model.Name;
             foreach (var type in Types)
             {
-                if (OpenAiConfiguration.Settings.ModelDeployments.TryGetValue(model, out var value))
+                if (OpenAiConfiguration.Settings.ModelDeployments.ContainsKey(type))
                 {
-                    modelName = value.Name;
-                }
-                else if (OpenAiConfiguration.Settings.ModelDeployments.TryGetValue($"{OpenAiConfiguration.Asterisk}_{type}", out var asteriskValue))
-                {
-                    modelName = asteriskValue.Name;
+                    if (OpenAiConfiguration.Settings.ModelDeployments[type].TryGetValue(model, out var value))
+                    {
+                        modelName = value.Name;
+                    }
+                    else if (OpenAiConfiguration.Settings.ModelDeployments[type].TryGetValue(OpenAiConfiguration.Asterisk, out var asteriskValue))
+                    {
+                        modelName = asteriskValue.Name;
+                    }
                 }
             }
             Request.Model = modelName;

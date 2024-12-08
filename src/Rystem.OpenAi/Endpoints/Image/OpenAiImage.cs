@@ -19,6 +19,7 @@ namespace Rystem.OpenAi.Image
         {
             Request.Model = ImageModelName.Dalle3;
             Request.NumberOfResults = 1;
+            Request.ResponseFormat = FormatResultImage.Url.AsString();
         }
         private protected override void ConfigureFactory(string name)
         {

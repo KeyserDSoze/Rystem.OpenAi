@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -108,52 +109,67 @@ namespace Rystem.OpenAi
 
             var uris = new Dictionary<string, string>();
             Settings.Version ??= "2022-12-01";
-            if (!Settings.Deployments.ContainsKey("{ChatForced}"))
+            foreach (var deployment in Settings.Deployments)
             {
-                Settings.Deployments.Add("{ChatForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Chat });
-                Settings.Deployments.Add("{EmbeddingForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Embedding });
-                Settings.Deployments.Add("{ModerationForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Moderation });
-                Settings.Deployments.Add("{ImageForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Image });
-                Settings.Deployments.Add("{AudioTranscrptionForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioTranscription });
-                Settings.Deployments.Add("{AudioTranslationForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioTranslation });
-                Settings.Deployments.Add("{AudioSpeechForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioSpeech });
+                if (!deployment.Value.ContainsKey("{Forced}"))
+                {
+                    deployment.Value.Add("{Forced}", Forced);
+                }
             }
-
+            Enum.GetValues<OpenAiType>().ForEach(currentType =>
+            {
+                if (!Settings.Deployments.ContainsKey(currentType))
+                {
+                    Settings.Deployments.Add(currentType, []);
+                }
+                if (!Settings.Deployments[currentType].ContainsKey("{Forced}"))
+                {
+                    Settings.Deployments[currentType].Add("{Forced}", Forced);
+                }
+            });
             uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
             uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
             uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
             uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
 
-            foreach (var deployment in Settings.Deployments)
+            foreach (var deployments in Settings.Deployments)
             {
-                var key = deployment.Key.Contains(Forced) ? "{0}" : deployment.Key;
-                uris.TryAdd($"{deployment.Value.Name}_{deployment.Value.Type}",
-                    $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.{GetDeploymentTypeDomain()}/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployment.Value.Type)}")}");
-                string GetDeploymentTypeDomain()
+                foreach (var deployment in deployments.Value)
                 {
-                    return deployment.Value.Type switch
+                    var key = deployment.Key.Contains(Forced) ? "{0}" : deployment.Key;
+                    uris.TryAdd($"{deployment.Value.Name}_{deployments.Key}",
+                        $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.{GetDeploymentTypeDomain()}/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployments.Key)}")}");
+                    string GetDeploymentTypeDomain()
                     {
-                        OpenAiType.Image => CognitiveServicesDomain,
-                        OpenAiType.AudioSpeech => CognitiveServicesDomain,
-                        OpenAiType.AudioTranscription => CognitiveServicesDomain,
-                        OpenAiType.AudioTranslation => CognitiveServicesDomain,
-                        _ => OpenAiDomain
-                    };
-                }
-                string GetDeploymentTypeUri()
-                {
-                    return deployment.Value.Type switch
+                        return deployments.Key switch
+                        {
+                            OpenAiType.Image => CognitiveServicesDomain,
+                            OpenAiType.AudioSpeech => CognitiveServicesDomain,
+                            OpenAiType.AudioTranscription => CognitiveServicesDomain,
+                            OpenAiType.AudioTranslation => CognitiveServicesDomain,
+                            _ => OpenAiDomain
+                        };
+                    }
+                    string GetDeploymentTypeUri()
                     {
-                        OpenAiType.Chat => uriHelper.ChatUri,
-                        OpenAiType.Embedding => uriHelper.EmbeddingUri,
-                        OpenAiType.Moderation => uriHelper.ModerationUri,
-                        OpenAiType.Image => uriHelper.ImageUri,
-                        OpenAiType.AudioTranscription => uriHelper.AudioTranscriptionUri,
-                        OpenAiType.AudioTranslation => uriHelper.AudioTranslationUri,
-                        OpenAiType.AudioSpeech => uriHelper.AudioSpeechUri,
-                        _ => throw new NotImplementedException(),
-                    };
+                        return deployments.Key switch
+                        {
+                            OpenAiType.Chat => uriHelper.ChatUri,
+                            OpenAiType.Embedding => uriHelper.EmbeddingUri,
+                            OpenAiType.Moderation => uriHelper.ModerationUri,
+                            OpenAiType.Image => uriHelper.ImageUri,
+                            OpenAiType.AudioTranscription => uriHelper.AudioTranscriptionUri,
+                            OpenAiType.AudioTranslation => uriHelper.AudioTranslationUri,
+                            OpenAiType.AudioSpeech => uriHelper.AudioSpeechUri,
+                            OpenAiType.File => uriHelper.FileUri,
+                            OpenAiType.FineTuning => uriHelper.FineTuneUri,
+                            OpenAiType.Billing => uriHelper.BillingUri,
+                            OpenAiType.Model => uriHelper.ModelUri,
+                            OpenAiType.Deployment => uriHelper.DeploymentUri,
+                            _ => throw new NotImplementedException(),
+                        };
+                    }
                 }
             }
 

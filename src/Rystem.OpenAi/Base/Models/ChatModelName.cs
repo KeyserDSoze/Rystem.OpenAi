@@ -15,7 +15,7 @@
         public static ChatModelName O1_preview_2024_09_12 { get; } = "o1-preview-2024-09-12";
         public static ChatModelName O1_mini { get; } = "o1-mini";
         public static ChatModelName O1_mini_2024_09_12 { get; } = "o1-mini-2024-09-12";
-        public static ChatModelName ChatGpt_4o_latest { get; } = "ChatGPT-4o-latest";
+        public static ChatModelName Gpt_4o_latest { get; } = "gpt-4o-latest";
         public static ChatModelName Gpt_4_turbo { get; } = "gpt-4-turbo";
         public static ChatModelName Gpt_4_turbo_2024_04_09 { get; } = "gpt-4-turbo-2024-04-09";
         public static ChatModelName Gpt_4 { get; } = "gpt-4";

@@ -70,8 +70,8 @@ namespace Rystem.OpenAi
         public OpenAiSettings UseVersionForEmbedding(string version)
             => UseVersionFor(OpenAiType.Embedding, version);
         public PriceBuilder PriceBuilder { get; } = PriceBuilder.Default;
-        internal Dictionary<string, DeploymentType> Deployments { get; } = [];
-        internal Dictionary<string, ModelName> ModelDeployments { get; } = [];
+        internal Dictionary<OpenAiType, Dictionary<string, ModelName>> Deployments { get; } = [];
+        internal Dictionary<OpenAiType, Dictionary<string, ModelName>> ModelDeployments { get; } = [];
         /// <summary>
         /// Map a deployment name for a type.
         /// </summary>
@@ -81,8 +81,12 @@ namespace Rystem.OpenAi
         /// <returns></returns>
         public OpenAiSettings MapDeployment(OpenAiType type, string newName, ModelName officialName)
         {
-            Deployments.TryAdd(newName, new DeploymentType { Name = officialName, Type = type });
-            ModelDeployments.TryAdd(officialName, newName);
+            if (!Deployments.ContainsKey(type))
+                Deployments.Add(type, []);
+            if (!ModelDeployments.ContainsKey(type))
+                ModelDeployments.Add(type, []);
+            Deployments[type].TryAdd(newName, officialName);
+            ModelDeployments[type].TryAdd(officialName, newName);
             return this;
         }
         /// <summary>
@@ -93,14 +97,13 @@ namespace Rystem.OpenAi
         /// <returns></returns>
         public OpenAiSettings MapDeploymentForEveryRequests(OpenAiType type, string newName)
         {
-            Deployments.TryAdd(newName, new DeploymentType { Name = OpenAiConfiguration.Asterisk, Type = type });
-            ModelDeployments.TryAdd($"{OpenAiConfiguration.Asterisk}_{type}", newName);
+            if (!Deployments.ContainsKey(type))
+                Deployments.Add(type, []);
+            if (!ModelDeployments.ContainsKey(type))
+                ModelDeployments.Add(type, []);
+            Deployments[type].TryAdd(newName, OpenAiConfiguration.Asterisk);
+            ModelDeployments[type].TryAdd(OpenAiConfiguration.Asterisk, newName);
             return this;
-        }
-        internal sealed class DeploymentType
-        {
-            public required ModelName Name { get; init; }
-            public required OpenAiType Type { get; init; }
         }
     }
 }

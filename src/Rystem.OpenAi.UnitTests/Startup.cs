@@ -70,6 +70,9 @@ namespace Rystem.OpenAi.UnitTests
                     settings.UseVersionForAudioSpeech("2024-05-01-preview");
                     settings.UseVersionForAudioTranscription("2024-06-01");
                     settings.UseVersionForAudioTranslation("2024-06-01");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioSpeech, "tts-hd");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranscription, "whisper");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranslation, "whisper");
                     settings.DefaultRequestConfiguration.Chat = chatClient =>
                     {
                         chatClient.ForceModel("gpt-4");
