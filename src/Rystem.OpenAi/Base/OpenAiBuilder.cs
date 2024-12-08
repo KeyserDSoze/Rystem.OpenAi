@@ -1,23 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
 {
     internal abstract class OpenAiBuilder<T> : IServiceForFactory
     {
-        private protected readonly IFactory<DefaultServices> _factory;
-        private protected readonly IFactory<OpenAiConfiguration> _configurationFactory;
+        private protected readonly IFactory<DefaultServices> Factory;
+        private protected readonly IFactory<OpenAiConfiguration> ConfigurationFactory;
+        private protected readonly OpenAiType[] Types;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
         {
-            _factory = factory;
-            _configurationFactory = configurationFactory;
+            Factory = factory;
+            ConfigurationFactory = configurationFactory;
+            Types = types;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         private string? _factoryName;
         private protected bool Forced { get; set; }
         private protected List<OpenAiCost> Usages { get; } = [];
-        private protected DefaultServices DefaultServices => field ??= _factory.Create(_factoryName)!;
+        private protected DefaultServices DefaultServices => field ??= Factory.Create(_factoryName)!;
+        private protected OpenAiConfiguration OpenAiConfiguration => field ??= ConfigurationFactory.Create(_factoryName)!;
         public void SetFactoryName(string name)
         {
             _factoryName = name;
@@ -31,18 +35,34 @@ namespace Rystem.OpenAi
         where TModel : ModelName
     {
         private protected TRequest Request { get; }
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory) : base(factory, configurationFactory)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
+            : base(factory, configurationFactory, types)
         {
             Request = new TRequest();
         }
         public T WithModel(TModel model)
         {
-            Request.Model = model;
+            var modelName = model.Name;
+            foreach (var type in Types)
+            {
+                if (OpenAiConfiguration.Settings.ModelDeployments.ContainsKey(type))
+                {
+                    if (OpenAiConfiguration.Settings.ModelDeployments[type].TryGetValue(model, out var value))
+                    {
+                        modelName = value.Name;
+                    }
+                    else if (OpenAiConfiguration.Settings.ModelDeployments[type].TryGetValue(OpenAiConfiguration.Asterisk, out var asteriskValue))
+                    {
+                        modelName = asteriskValue.Name;
+                    }
+                }
+            }
+            Request.Model = modelName;
             Forced = false;
             var entity = this as T;
             return entity!;
         }
-        public T WithModel(string model)
+        public T ForceModel(string model)
         {
             Request.Model = model;
             Forced = true;

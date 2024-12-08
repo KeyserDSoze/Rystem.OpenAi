@@ -10,13 +10,13 @@ namespace Rystem.OpenAi.Audio
     internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
         public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
         {
             Request.Model = AudioModelName.Whisper;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Audio != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Audio.Invoke(this);
@@ -44,7 +44,7 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClient.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
         internal const string ResponseFormatVerboseJson = "verbose_json";
@@ -69,7 +69,7 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClient.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
@@ -88,7 +88,7 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClient.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public async ValueTask<VerboseAudioResult> VerboseTranslateAsync(CancellationToken cancellationToken = default)
@@ -107,7 +107,7 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClient.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
             return response;
         }
         public IOpenAiAudio WithFile(byte[] file, string fileName = "default")

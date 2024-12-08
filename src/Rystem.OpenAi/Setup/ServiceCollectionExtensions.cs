@@ -17,6 +17,11 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        private const string ApiKeyHeaderNameAzure = "api-key";
+        private const string AuthorizationScheme = "Bearer";
+        private const string OpenAiOrganizationHeader = "OpenAI-Organization";
+        private const string OpenAiProject = "OpenAI-Project";
+
         public static IServiceCollection AddOpenAi(this IServiceCollection services,
             Action<OpenAiSettings> settings,
             string? integrationName = default)
@@ -28,30 +33,32 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddFactory<IOpenAi, OpenAi>(integrationName);
             services.AddFactory(new OpenAiConfiguration(openAiSettings, integrationName), integrationName, ServiceLifetime.Singleton);
             services.AddFactory<IOpenAiPriceService>(new PriceService(openAiSettings.PriceBuilder.Prices), integrationName, ServiceLifetime.Singleton);
-            var httpClientBuilder = services.AddHttpClient($"{OpenAiSettings.HttpClientName}-{integrationName}", client =>
-            {
-                if (openAiSettings.Azure.HasConfiguration)
-                {
-                    if (!openAiSettings.Azure.HasAnotherKindOfAuthentication)
-                        client.DefaultRequestHeaders.Add("api-key", openAiSettings.ApiKey);
-                }
-                else
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", openAiSettings.ApiKey);
-                if (!string.IsNullOrEmpty(openAiSettings.OrganizationName))
-                    client.DefaultRequestHeaders.Add("OpenAI-Organization", openAiSettings.OrganizationName);
-                if (!string.IsNullOrEmpty(openAiSettings.ProjectId))
-                    client.DefaultRequestHeaders.Add("OpenAI-Project", openAiSettings.ProjectId);
-                client.Timeout = TimeSpan.FromMinutes(10);
-            });
+            IAsyncPolicy<HttpResponseMessage>? policy = null;
             if (openAiSettings.RetryPolicy)
             {
-                var defaultPolicy = openAiSettings.CustomRetryPolicy ?? Policy<HttpResponseMessage>
+                policy = openAiSettings.CustomRetryPolicy ?? Policy<HttpResponseMessage>
                    .Handle<HttpRequestException>()
                    .OrTransientHttpError()
                    .WaitAndRetryAsync(3, x => TimeSpan.FromSeconds(0.5));
-                httpClientBuilder
-                     .AddPolicyHandler(defaultPolicy);
             }
+            services.AddFactory((serviceProvider, context) =>
+            {
+                var client = new HttpClient();
+                var clientWrapper = new HttpClientWrapper() { Client = client, Policy = policy };
+                if (openAiSettings.Azure.HasConfiguration)
+                {
+                    if (!openAiSettings.Azure.HasAnotherKindOfAuthentication)
+                        client.DefaultRequestHeaders.Add(ApiKeyHeaderNameAzure, openAiSettings.ApiKey);
+                }
+                else
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, openAiSettings.ApiKey);
+                if (!string.IsNullOrEmpty(openAiSettings.OrganizationName))
+                    client.DefaultRequestHeaders.Add(OpenAiOrganizationHeader, openAiSettings.OrganizationName);
+                if (!string.IsNullOrEmpty(openAiSettings.ProjectId))
+                    client.DefaultRequestHeaders.Add(OpenAiProject, openAiSettings.ProjectId);
+                client.Timeout = TimeSpan.FromMinutes(10);
+                return clientWrapper;
+            }, $"{OpenAiSettings.HttpClientName}_{integrationName ?? string.Empty}");
             services.
                 AddFactory<DefaultServices>(integrationName);
             services

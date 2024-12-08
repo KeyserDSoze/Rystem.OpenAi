@@ -15,7 +15,7 @@ namespace Rystem.OpenAi
         public string? Version { get; set; }
         public DefaultRequestConfiguration DefaultRequestConfiguration { get; set; } = new();
         private OpenAiAzureSettings? _azureSettings;
-        public OpenAiAzureSettings Azure => _azureSettings ??= new OpenAiAzureSettings(this);
+        public OpenAiAzureSettings Azure => _azureSettings ??= new OpenAiAzureSettings();
         /// <summary>
         /// If you not set a retry policy, the dafault value is 3 retries every 0.5 seconds.
         /// </summary>
@@ -70,5 +70,40 @@ namespace Rystem.OpenAi
         public OpenAiSettings UseVersionForEmbedding(string version)
             => UseVersionFor(OpenAiType.Embedding, version);
         public PriceBuilder PriceBuilder { get; } = PriceBuilder.Default;
+        internal Dictionary<OpenAiType, Dictionary<string, ModelName>> Deployments { get; } = [];
+        internal Dictionary<OpenAiType, Dictionary<string, ModelName>> ModelDeployments { get; } = [];
+        /// <summary>
+        /// Map a deployment name for a type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="newName"></param>
+        /// <param name="officialName"></param>
+        /// <returns></returns>
+        public OpenAiSettings MapDeployment(OpenAiType type, string newName, ModelName officialName)
+        {
+            if (!Deployments.ContainsKey(type))
+                Deployments.Add(type, []);
+            if (!ModelDeployments.ContainsKey(type))
+                ModelDeployments.Add(type, []);
+            Deployments[type].TryAdd(newName, officialName);
+            ModelDeployments[type].TryAdd(officialName, newName);
+            return this;
+        }
+        /// <summary>
+        /// Map a deployment name for a type, overwrite every model you use in the application for that type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="newName"></param>
+        /// <returns></returns>
+        public OpenAiSettings MapDeploymentForEveryRequests(OpenAiType type, string newName)
+        {
+            if (!Deployments.ContainsKey(type))
+                Deployments.Add(type, []);
+            if (!ModelDeployments.ContainsKey(type))
+                ModelDeployments.Add(type, []);
+            Deployments[type].TryAdd(newName, OpenAiConfiguration.Asterisk);
+            ModelDeployments[type].TryAdd(OpenAiConfiguration.Asterisk, newName);
+            return this;
+        }
     }
 }

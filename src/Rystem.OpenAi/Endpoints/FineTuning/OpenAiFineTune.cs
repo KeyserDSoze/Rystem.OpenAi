@@ -17,13 +17,13 @@ namespace Rystem.OpenAi.FineTune
     {
         private const string WandBLabel = "wandb";
         public OpenAiFineTune(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.FineTuning)
         {
             Request.Model = FineTuningModelName.Gpt_4o_2024_08_06;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.FineTune != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.FineTune.Invoke(this);
@@ -38,37 +38,37 @@ namespace Rystem.OpenAi.FineTune
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, string.Empty, Forced, string.Empty)}{querystring}";
-            return DefaultServices.HttpClient.GetAsync<FineTuneResults>(uri, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.GetAsync<FineTuneResults>(uri, DefaultServices.Configuration, cancellationToken);
         }
 
         public ValueTask<FineTuneResult> RetrieveAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClient.GetAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.GetAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}"), DefaultServices.Configuration, cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClient.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/cancel"), null, DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/cancel"), null, DefaultServices.Configuration, cancellationToken);
         public ValueTask<FineTuneCheckPointEventsResult> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/checkpoints")}{querystring}";
-            return DefaultServices.HttpClient.GetAsync<FineTuneCheckPointEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.GetAsync<FineTuneCheckPointEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
         }
         public ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/events")}{querystring}";
-            return DefaultServices.HttpClient.GetAsync<FineTuneEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.GetAsync<FineTuneEventsResult>(uri, DefaultServices.Configuration, cancellationToken);
         }
         public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, string.Empty, Forced, string.Empty)}{querystring}";
-            return DefaultServices.HttpClient.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadFineTuneStreamAsync, cancellationToken);
+            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadFineTuneStreamAsync, cancellationToken);
         }
 
         public IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = $"?limit={take}{(skip > 0 ? $"&after={skip}" : string.Empty)}";
             var uri = $"{DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/events")}{querystring}";
-            return DefaultServices.HttpClient.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadEventsStreamAsync, cancellationToken);
+            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadEventsStreamAsync, cancellationToken);
         }
 
         private static IAsyncEnumerable<FineTuneResult> ReadFineTuneStreamAsync(Stream stream, HttpResponseMessage response, CancellationToken cancellationToken)
@@ -133,7 +133,7 @@ namespace Rystem.OpenAi.FineTune
         /// </summary>
         /// <returns>Builder</returns>
         public ValueTask<FineTuneResult> ExecuteAsync(CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClient.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, Request.TrainingFile!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, Request.TrainingFile!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
 
         /// <summary>
         /// The ID of an uploaded file that contains validation data.

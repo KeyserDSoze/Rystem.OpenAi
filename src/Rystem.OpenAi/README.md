@@ -730,29 +730,36 @@ You can think of tokens as pieces of words, where 1,000 tokens is about 750 word
         .WithModel(ChatModelName.Gpt4_o)
         .WithTemperature(1)
         .ExecuteAsync();
+    //calculate cost works only if you added the price during setup.
     var cost = openAiApi.Chat.CalculateCost();
 
 ### Setup price
 [📖 Back to summary](#documentation)\
-During setup of your OpenAi service you may add your custom price table with settings.Price property.
+During setup of your OpenAi service you may add your custom price table with settings.PriceBuilder property.
 
     services.AddOpenAi(settings =>
     {
-        settings.ApiKey = azureApiKey;
+        //custom version for chat endpoint
         settings
-            .UseVersionForChat("2023-03-15-preview");
+            .UseVersionForChat("2024-08-01-preview");
+        //resource name for Azure
         settings.Azure.ResourceName = resourceName;
+        //app registration configuration for Azure authentication
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
-        settings.Azure
-            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
+        //map deployment for Azure for every request for chat endpoint with gpt-4 model.
+        settings
+            .MapDeploymentForEveryRequests(OpenAiType.Chat, "gpt-4");
+        //default request configuration for chat endpoint, this method is ran during the creation of the chat service.
+        settings.DefaultRequestConfiguration.Chat = chatClient =>
+        {
+            chatClient.ForceModel("gpt-4");
+        };
+        //add a price for kind of cost for model you want to add. Here an example with gpt-4 model.
         settings.PriceBuilder
-            .AddModel(ChatModelName.Gpt4_o,
-            new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+            .AddModel("gpt-4",
+            new OpenAiCost { Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.0000025m },
             new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
             new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
     }, "Azure");

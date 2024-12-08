@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -16,14 +18,14 @@ namespace Rystem.OpenAi
     {
         private const string Forced = nameof(Forced);
         internal OpenaiUriMaker GetUri { get; private set; } = null!;
-        public Func<HttpClient, Task>? BeforeRequest { get; private set; }
+        internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }
         public string Name { get; }
-        public Task EnrichClientAsync(HttpClient client)
+        internal Task EnrichClientAsync(HttpClientWrapper wrapper)
         {
             if (BeforeRequest != null)
-                return BeforeRequest.Invoke(client);
+                return BeforeRequest.Invoke(wrapper);
             else
                 return Task.CompletedTask;
         }
@@ -95,6 +97,10 @@ namespace Rystem.OpenAi
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
         }
+
+        private const string CognitiveServicesDomain = "cognitiveservices.azure.com";
+        private const string OpenAiDomain = "openai.azure.com";
+
         private void ConfigureEndpointsForAzure()
         {
             var uriHelper = new UriHelperConfigurator();
@@ -103,28 +109,76 @@ namespace Rystem.OpenAi
 
             var uris = new Dictionary<string, string>();
             Settings.Version ??= "2022-12-01";
-            if (!Settings.Azure.Deployments.ContainsKey("{0}"))
-                Settings.Azure.Deployments.Add("{0}", Forced);
-
-            uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
-            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
-            uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
-            uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
-            uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
-
-            foreach (var deployment in Settings.Azure.Deployments)
+            foreach (var deployment in Settings.Deployments)
             {
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(uriHelper.ChatUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Chat)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(uriHelper.EmbeddingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Embedding)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(uriHelper.ModerationUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Moderation)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(uriHelper.ImageUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Image)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(uriHelper.AudioTranscriptionUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.AudioTranscription)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(uriHelper.AudioTranslationUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.AudioTranslation)}")}");
+                if (!deployment.Value.ContainsKey("{Forced}"))
+                {
+                    deployment.Value.Add("{Forced}", Forced);
+                }
+            }
+            Enum.GetValues<OpenAiType>().ForEach(currentType =>
+            {
+                if (!Settings.Deployments.ContainsKey(currentType))
+                {
+                    Settings.Deployments.Add(currentType, []);
+                }
+                if (!Settings.Deployments[currentType].ContainsKey("{Forced}"))
+                {
+                    Settings.Deployments[currentType].Add("{Forced}", Forced);
+                }
+            });
+            uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
+            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
+            uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
+            uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
+            uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
+
+            foreach (var deployments in Settings.Deployments)
+            {
+                foreach (var deployment in deployments.Value)
+                {
+                    var key = deployment.Key.Contains(Forced) ? "{0}" : deployment.Key;
+                    uris.TryAdd($"{deployment.Value.Name}_{deployments.Key}",
+                        $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.{GetDeploymentTypeDomain()}/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployments.Key)}")}");
+                    string GetDeploymentTypeDomain()
+                    {
+                        return deployments.Key switch
+                        {
+                            OpenAiType.Image => CognitiveServicesDomain,
+                            OpenAiType.AudioSpeech => CognitiveServicesDomain,
+                            OpenAiType.AudioTranscription => CognitiveServicesDomain,
+                            OpenAiType.AudioTranslation => CognitiveServicesDomain,
+                            _ => OpenAiDomain
+                        };
+                    }
+                    string GetDeploymentTypeUri()
+                    {
+                        return deployments.Key switch
+                        {
+                            OpenAiType.Chat => uriHelper.ChatUri,
+                            OpenAiType.Embedding => uriHelper.EmbeddingUri,
+                            OpenAiType.Moderation => uriHelper.ModerationUri,
+                            OpenAiType.Image => uriHelper.ImageUri,
+                            OpenAiType.AudioTranscription => uriHelper.AudioTranscriptionUri,
+                            OpenAiType.AudioTranslation => uriHelper.AudioTranslationUri,
+                            OpenAiType.AudioSpeech => uriHelper.AudioSpeechUri,
+                            OpenAiType.File => uriHelper.FileUri,
+                            OpenAiType.FineTuning => uriHelper.FineTuneUri,
+                            OpenAiType.Billing => uriHelper.BillingUri,
+                            OpenAiType.Model => uriHelper.ModelUri,
+                            OpenAiType.Deployment => uriHelper.DeploymentUri,
+                            _ => throw new NotImplementedException(),
+                        };
+                    }
+                }
             }
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString)
                 => GetUriForAzure(type, modelId, forceModel, appendBeforeQueryString, uriHelper, uris);
         }
+
+        private const string AuthorizationScheme = "Bearer";
+
         private void SetManagedIdentityForAzure()
         {
             var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
@@ -136,10 +190,10 @@ namespace Rystem.OpenAi
                     {
                         ManagedIdentityClientId = Settings.Azure.ManagedIdentity.Id
                     });
-                BeforeRequest = async client =>
+                BeforeRequest = async wrapper =>
                 {
                     var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
+                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.Token);
                 };
             }
             else if (Settings.Azure.HasAppRegistration)
@@ -149,12 +203,12 @@ namespace Rystem.OpenAi
                     .WithAuthority(AadAuthorityAudience.AzureAdMyOrg, true)
                     .WithTenantId(Settings.Azure.AppRegistration.TenantId)
                     .Build();
-                BeforeRequest = async client =>
+                BeforeRequest = async wrapper =>
                 {
                     var accessToken = await credential
                                         .AcquireTokenForClient(scopes)
                                         .ExecuteAsync();
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);
+                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.AccessToken);
                 };
             }
         }
@@ -180,15 +234,18 @@ namespace Rystem.OpenAi
             if (forceModel)
                 return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);
             var key = $"{modelId}_{type}";
-            if (uris.ContainsKey(key))
-                return string.Format(uris[key], string.Empty, appendBeforeQueryString);
+            if (uris.TryGetValue(key, out var value))
+                return string.Format(value, string.Empty, appendBeforeQueryString);
+            else if (uris.TryGetValue($"{Asterisk}_{type}", out var asteriskValue))
+                return string.Format(asteriskValue, string.Empty, appendBeforeQueryString);
             else
-                throw new ArgumentException($"Model {modelId} of {type} is not installed during startup phase. In services.AddOpenAi configure the Azure environment with the correct DeploymentModel.");
+                return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);
         }
-        private string? GetVersion(OpenAiSettings settings, OpenAiType type)
+        internal const string Asterisk = "*";
+        private static string? GetVersion(OpenAiSettings settings, OpenAiType type)
         {
-            if (settings.Versions.ContainsKey(type))
-                return settings.Versions[type];
+            if (settings.Versions.TryGetValue(type, out var value))
+                return value;
             else
                 return settings.Version;
         }

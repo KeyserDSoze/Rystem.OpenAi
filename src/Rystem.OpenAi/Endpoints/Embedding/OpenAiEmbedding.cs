@@ -9,13 +9,13 @@ namespace Rystem.OpenAi.Embedding
     {
         private readonly List<string> _inputs = [];
         public OpenAiEmbedding(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.Embedding)
         {
             Request.Model = EmbeddingModelName.Text_embedding_3_large;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Embeddings != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Embeddings.Invoke(this);
@@ -34,7 +34,7 @@ namespace Rystem.OpenAi.Embedding
         public async ValueTask<EmbeddingResult> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.Input = _inputs;
-            var response = await DefaultServices.HttpClient.PostAsync<EmbeddingResult>(DefaultServices.Configuration.GetUri(OpenAiType.Embedding, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<EmbeddingResult>(DefaultServices.Configuration.GetUri(OpenAiType.Embedding, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
             if (response.Usage != null)
                 Usages.Add(new OpenAiCost { Units = response.Usage.TotalTokens, UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.Input });
             return response;

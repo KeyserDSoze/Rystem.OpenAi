@@ -30,6 +30,10 @@ namespace Rystem.OpenAi.UnitTests
             {
                 x.BaseAddress = new Uri("http://localhost");
             });
+            OpenAiServiceLocator.Configuration.AddOpenAi(settings =>
+                {
+                    settings.ApiKey = apiKey;
+                }, "NoDI");
             services
                 .AddOpenAi(settings =>
                 {
@@ -37,21 +41,42 @@ namespace Rystem.OpenAi.UnitTests
                 });
             services.AddOpenAi(settings =>
             {
-                settings.ApiKey = azureApiKey;
+                //settings.ApiKey = azureApiKey;
+                settings.Version = "2024-08-01-preview";
                 settings
                     .UseVersionForChat("2024-08-01-preview");
                 settings.Azure.ResourceName = resourceName;
                 settings.Azure.AppRegistration.ClientId = clientId;
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;
                 settings.Azure.AppRegistration.TenantId = tenantId;
-                settings.Azure
-                    .MapDeployment("text-curie-001", "");
+                settings
+                    .MapDeploymentForEveryRequests(OpenAiType.Chat, "gpt-4");
+                settings.DefaultRequestConfiguration.Chat = chatClient =>
+                {
+                    chatClient.ForceModel("gpt-4");
+                };
+                settings.PriceBuilder
+                    .AddModel("gpt-4",
+                    new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+                    new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
+                    new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
             }, "Azure");
             services
                 .AddOpenAi(settings =>
                 {
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
+                    settings.Version = "2024-02-01";
+                    settings.UseVersionForAudioSpeech("2024-05-01-preview");
+                    settings.UseVersionForAudioTranscription("2024-06-01");
+                    settings.UseVersionForAudioTranslation("2024-06-01");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioSpeech, "tts-hd");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranscription, "whisper");
+                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranslation, "whisper");
+                    settings.DefaultRequestConfiguration.Chat = chatClient =>
+                    {
+                        chatClient.ForceModel("gpt-4");
+                    };
                 }, "Azure2");
             return services;
         }

@@ -27,7 +27,7 @@ namespace Rystem.PlayFramework.Test.Api
                 //x.Azure.MapDeployment(configuration["OpenAi2:ModelName"]!, configuration["OpenAi2:ModelName"]!);
                 x.DefaultRequestConfiguration.Chat = chatClient =>
                 {
-                    chatClient.WithModel(configuration["OpenAi2:ModelName"]!);
+                    chatClient.ForceModel(configuration["OpenAi2:ModelName"]!);
                 };
                 x.PriceBuilder
                 .AddModel(ChatModelName.Gpt4_o,

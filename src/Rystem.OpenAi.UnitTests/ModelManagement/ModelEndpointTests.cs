@@ -21,7 +21,6 @@ namespace Rystem.OpenAi.Test
         public async ValueTask GetAllModelsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
-            await openAiApi.Model.DeleteAsync("dadsadasdasdad");
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
             foreach (var model in results.Models ?? [])
@@ -44,7 +43,7 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Model);
 
-            var result = await openAiApi.Model.RetrieveAsync(ChatModelName.ChatGpt_4o_latest);
+            var result = await openAiApi.Model.RetrieveAsync(ChatModelName.Gpt4_o);
             Assert.NotNull(result);
 
             //Assert.NotNull(result.CreatedUnixTime);

@@ -1,15 +1,14 @@
-﻿using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
 {
     internal sealed class DefaultServices : IServiceForFactory
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IFactory<HttpClientWrapper> _httpClientFactory;
         private readonly IFactory<OpenAiConfiguration> _configurationFactory;
         private readonly IFactory<IOpenAiPriceService> _priceService;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
-        public DefaultServices(IHttpClientFactory httpClientFactory,
+        public DefaultServices(IFactory<HttpClientWrapper> httpClientFactory,
             IFactory<OpenAiConfiguration> configurationFactory,
             IFactory<IOpenAiPriceService> priceService,
             IOpenAiUtility utility)
@@ -20,7 +19,7 @@ namespace Rystem.OpenAi
             Utility = utility;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
-        public HttpClient HttpClient => field ??= _httpClientFactory.CreateClient($"{OpenAiSettings.HttpClientName}-{_factoryName}" ?? string.Empty);
+        public HttpClientWrapper HttpClientWrapper => _httpClientFactory.Create($"{OpenAiSettings.HttpClientName}_{_factoryName}")!;
         public IOpenAiUtility Utility { get; }
         public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;
         public IOpenAiPriceService Price => field ??= _priceService.Create(_factoryName)!;

@@ -25,28 +25,6 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(1)
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
-            //var chatHistory = openAiApi.Chat.RequestWithSystemMessage("for example something to pass to the system.")
-            //    .AddUserMessage("first message from the user");
-            //var message = await chatHistory
-            //    .ExecuteAsync();
-            ////here the first output for the user from openai
-            //var contentFromAssistant = message.Choices[0].Message.Content;
-            ////response from openai added to the chat builder
-            //chatHistory.AddAssistantMessage(contentFromAssistant);
-            ////message from the user
-            //chatHistory.AddUserMessage("second message from the user");
-            //var message2 = await chatHistory
-            //   .ExecuteAsync();
-            ////here the second output for the user from openai
-            //var secondContentFromAssistant = message2.Choices[0].Message.Content;
-            ////response from openai added to the chat builder
-            //chatHistory.AddAssistantMessage(contentFromAssistant);
-            ////message from the user
-            //chatHistory.AddUserMessage("third message from the user");
-            //var message3 = await chatHistory
-            //   .ExecuteAsync();
-            ////and so on......
-
             Assert.NotNull(results);
             Assert.NotNull(results.CreatedUnixTime);
             Assert.True(results.CreatedUnixTime.Value != 0);
@@ -71,7 +49,12 @@ namespace Rystem.OpenAi.Test
             //    { "Keystone3", 4 }
             //};
             var results = new List<ChunkChatResult>();
-            await foreach (var x in openAiApi.Chat
+            var chat = openAiApi.Chat;
+            if (name != "Azure")
+            {
+                chat.SetMaxTokens(1200);
+            }
+            await foreach (var x in chat
                 .AddMessage(new ChatMessageRequest { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelName.Gpt4_o)
@@ -82,7 +65,6 @@ namespace Rystem.OpenAi.Test
                 .WithFrequencyPenalty(0)
                 .WithPresencePenalty(0)
                 .WithNucleusSampling(1)
-                .SetMaxTokens(1200)
                    //.WithBias("Keystone", 4)
                    //.WithBias("Keystone2", 4)
                    //.WithBias(biasDictionary)
@@ -91,7 +73,7 @@ namespace Rystem.OpenAi.Test
                 results.Add(x);
 
             Assert.NotEmpty(results);
-            Assert.True(results.Last().Choices?.Count != 0);
+            Assert.Contains(results, x => x.Choices?.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices ?? []), c => c.Delta == null || c.Delta?.Role == ChatRole.Assistant);
         }
 

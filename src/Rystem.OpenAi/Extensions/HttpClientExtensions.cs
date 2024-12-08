@@ -14,7 +14,7 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi
 {
-    public static class HttpClientExtensions
+    public static class HttpClientWrapperExtensions
     {
         private sealed class ErrorResponse
         {
@@ -36,16 +36,15 @@ namespace Rystem.OpenAi
                 Request: {Request}
                 Method: {Method}
                 Streaming: {Streaming}
-                Content: {Content?.ToJson()}
+                Content: {Content?.ToJson(s_options)}
                 """;
             }
         }
         private static readonly JsonSerializerOptions s_options = new()
         {
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
-        private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClient client,
+        private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClientWrapper wrapper,
             string url,
             HttpMethod method,
             object? message,
@@ -61,12 +60,14 @@ namespace Rystem.OpenAi
                 }
                 else
                 {
-                    var jsonContent = JsonSerializer.Serialize(message, s_options);
+                    var jsonContent = message.ToJson(s_options);
                     var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                     request.Content = stringContent;
                 }
             }
-            var response = await client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken);
+            var response = wrapper.Policy == null ?
+                await wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken) :
+                await wrapper.Policy.ExecuteAsync(ct => wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, ct), cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 return response;
@@ -85,7 +86,7 @@ namespace Rystem.OpenAi
                 throw new HttpRequestException(error.ToString());
             }
         }
-        internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClient client,
+        internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClientWrapper wrapper,
             string url,
             HttpMethod method,
             object? message,
@@ -94,38 +95,38 @@ namespace Rystem.OpenAi
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            return await PrivatedExecuteAsync(client, url, method, message, isStreaming, cancellationToken);
+                await configuration.EnrichClientAsync(wrapper);
+            return await PrivatedExecuteAsync(wrapper, url, method, message, isStreaming, cancellationToken);
         }
-        internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClient client,
+        internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(client, url, null, HttpMethod.Delete, configuration, cancellationToken);
-        internal static ValueTask<TResponse> GetAsync<TResponse>(this HttpClient client,
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Delete, configuration, cancellationToken);
+        internal static ValueTask<TResponse> GetAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(client, url, null, HttpMethod.Get, configuration, cancellationToken);
-        internal static ValueTask<TResponse> PatchAsync<TResponse>(this HttpClient client,
-            string url,
-            object? message,
-            OpenAiConfiguration configuration,
-            CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Patch, configuration, cancellationToken);
-        internal static ValueTask<TResponse> PutAsync<TResponse>(this HttpClient client,
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Get, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PatchAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Put, configuration, cancellationToken);
-        internal static ValueTask<TResponse> PostAsync<TResponse>(this HttpClient client,
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Patch, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PutAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(client, url, message, HttpMethod.Post, configuration, cancellationToken);
-        internal static async ValueTask<TResponse> ExecuteWithResponseAsync<TResponse>(this HttpClient client,
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Put, configuration, cancellationToken);
+        internal static ValueTask<TResponse> PostAsync<TResponse>(this HttpClientWrapper wrapper,
+            string url,
+            object? message,
+            OpenAiConfiguration configuration,
+            CancellationToken cancellationToken)
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Post, configuration, cancellationToken);
+        internal static async ValueTask<TResponse> ExecuteWithResponseAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
@@ -133,18 +134,18 @@ namespace Rystem.OpenAi
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
+                await configuration.EnrichClientAsync(wrapper);
+            var response = await wrapper.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
-        internal static ValueTask<Stream> PostAsync(this HttpClient client,
+        internal static ValueTask<Stream> PostAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteAndResponseAsStreamAsync(client, url, message, HttpMethod.Post, configuration, cancellationToken);
-        internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClient client,
+            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, configuration, cancellationToken);
+        internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
@@ -152,15 +153,15 @@ namespace Rystem.OpenAi
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
+                await configuration.EnrichClientAsync(wrapper);
+            var response = await wrapper.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
             var responseAsStream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var memoryStream = new MemoryStream();
             await responseAsStream.CopyToAsync(memoryStream, cancellationToken);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
-        internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClient client,
+        internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod httpMethod,
@@ -169,8 +170,8 @@ namespace Rystem.OpenAi
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
-                await configuration.EnrichClientAsync(client);
-            var response = await client.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
+                await configuration.EnrichClientAsync(wrapper);
+            var response = await wrapper.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
             await foreach (var item in items)
