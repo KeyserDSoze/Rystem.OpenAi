@@ -18,6 +18,7 @@ namespace Rystem.OpenAi.Image
             : base(factory, configurationFactory, OpenAiType.Image)
         {
             Request.Model = ImageModelName.Dalle3;
+            Request.NumberOfResults = 1;
         }
         private protected override void ConfigureFactory(string name)
         {

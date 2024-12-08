@@ -11,20 +11,21 @@ using Rystem.OpenAi.Moderation;
 
 namespace Rystem.OpenAi
 {
-    public sealed class OpenAiServiceLocator
+    public sealed class OpenAiServiceLocator : IOpenAiServiceLocatorConfigurator, IOpenAiServiceLocator
     {
         private static readonly OpenAiServiceLocator s_openAiService = new();
-        public static OpenAiServiceLocator Instance => s_openAiService;
+        public static IOpenAiServiceLocator Instance => s_openAiService;
+        public static IOpenAiServiceLocatorConfigurator Configuration => s_openAiService;
         private OpenAiServiceLocator() { }
         private readonly IServiceCollection _services = new ServiceCollection();
         public IServiceCollection Services => _services;
         private IServiceProvider? _serviceProvider;
-        public OpenAiServiceLocator AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
+        public IOpenAiServiceLocatorConfigurator AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
         {
             _services.AddOpenAi(settings, integrationName);
             return this;
         }
-        public OpenAiServiceLocator AddFurtherService<TService, TImplementation>(ServiceLifetime lifetime)
+        public IOpenAiServiceLocatorConfigurator AddFurtherService<TService, TImplementation>(ServiceLifetime lifetime)
             where TService : class
             where TImplementation : class, TService
         {

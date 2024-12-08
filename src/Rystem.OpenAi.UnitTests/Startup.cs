@@ -30,6 +30,10 @@ namespace Rystem.OpenAi.UnitTests
             {
                 x.BaseAddress = new Uri("http://localhost");
             });
+            OpenAiServiceLocator.Configuration.AddOpenAi(settings =>
+                {
+                    settings.ApiKey = apiKey;
+                }, "NoDI");
             services
                 .AddOpenAi(settings =>
                 {

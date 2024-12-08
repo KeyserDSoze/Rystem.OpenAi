@@ -59,7 +59,7 @@ namespace Rystem.OpenAi.Test
                 .AddPrompt("with message")
                 .WithUser("KeyserDSoze")
                 .ForceModel("testModel")
-                .WithModel(EmbeddingModelName.Text_embedding_3_small)
+                .WithModel(EmbeddingModelName.Text_embedding_3_large)
                 .ExecuteAsync();
             Assert.NotNull(results);
 
