@@ -209,7 +209,7 @@ namespace Rystem.OpenAi
             else if (uris.TryGetValue($"{Asterisk}_{type}", out var asteriskValue))
                 return string.Format(asteriskValue, string.Empty, appendBeforeQueryString);
             else
-                throw new ArgumentException($"Model {modelId} of {type} is not installed during startup phase. In services.AddOpenAi configure the Azure environment with the correct DeploymentModel.");
+                return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);
         }
         internal const string Asterisk = "*";
         private static string? GetVersion(OpenAiSettings settings, OpenAiType type)

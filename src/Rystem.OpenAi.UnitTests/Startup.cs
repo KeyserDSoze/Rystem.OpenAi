@@ -38,6 +38,7 @@ namespace Rystem.OpenAi.UnitTests
             services.AddOpenAi(settings =>
             {
                 //settings.ApiKey = azureApiKey;
+                settings.Version = "2024-08-01-preview";
                 settings
                     .UseVersionForChat("2024-08-01-preview");
                 settings.Azure.ResourceName = resourceName;
@@ -51,10 +52,10 @@ namespace Rystem.OpenAi.UnitTests
                     chatClient.ForceModel("gpt-4");
                 };
                 settings.PriceBuilder
-                .AddModel("gpt-4",
-                new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
-                new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
-                new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
+                    .AddModel("gpt-4",
+                    new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+                    new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
+                    new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
             }, "Azure");
             services
                 .AddOpenAi(settings =>

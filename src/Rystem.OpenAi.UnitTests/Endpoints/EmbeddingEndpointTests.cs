@@ -40,7 +40,7 @@ namespace Rystem.OpenAi.Test
             }
             Assert.NotNull(results.Object);
             Assert.True(results.Data?.Count != 0);
-            Assert.True(results.Data?.FirstOrDefault()?.Embedding?.Length == 1536);
+            Assert.True(results.Data?.FirstOrDefault()?.Embedding?.Length == 3072);
             var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding!, results.Data.First().Embedding!);
             Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }
