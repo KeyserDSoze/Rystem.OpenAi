@@ -10,13 +10,13 @@ namespace Rystem.OpenAi.Audio
     internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
         public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
         {
             Request.Model = AudioModelName.Whisper;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Audio != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Audio.Invoke(this);

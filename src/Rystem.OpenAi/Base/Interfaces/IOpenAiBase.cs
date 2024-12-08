@@ -10,11 +10,11 @@
         /// <returns> <see cref="T"/></returns>
         T WithModel(TModel model);
         /// <summary>
-        /// ID of the model to use.
+        /// Force the value ID of the model to use.
         /// </summary>
         /// <param name="model">Model</param>
         /// <returns> <see cref="TClass"/></returns>
-        T WithModel(string model);
+        T ForceModel(string model);
         /// <summary>
         /// Calculate the cost for this request based on configurated price during startup.
         /// </summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -103,23 +104,43 @@ namespace Rystem.OpenAi
 
             var uris = new Dictionary<string, string>();
             Settings.Version ??= "2022-12-01";
-            if (!Settings.Azure.Deployments.ContainsKey("{0}"))
-                Settings.Azure.Deployments.Add("{0}", Forced);
-
-            uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
-            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
-            uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
-            uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
-            uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
-
-            foreach (var deployment in Settings.Azure.Deployments)
+            if (!Settings.Deployments.ContainsKey("{ChatForced}"))
             {
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Chat}", $"{string.Format(uriHelper.ChatUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Chat)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Embedding}", $"{string.Format(uriHelper.EmbeddingUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Embedding)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Moderation}", $"{string.Format(uriHelper.ModerationUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Moderation)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.Image}", $"{string.Format(uriHelper.ImageUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.Image)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.AudioTranscription}", $"{string.Format(uriHelper.AudioTranscriptionUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.AudioTranscription)}")}");
-                uris.TryAdd($"{deployment.Value}_{OpenAiType.AudioTranslation}", $"{string.Format(uriHelper.AudioTranslationUri, $"https://{Settings.Azure.ResourceName}.OpenAi.Azure.com/openai/deployments/{deployment.Key}", "{1}", $"?api-version={GetVersion(Settings, OpenAiType.AudioTranslation)}")}");
+                Settings.Deployments.Add("{ChatForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Chat });
+                Settings.Deployments.Add("{EmbeddingForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Embedding });
+                Settings.Deployments.Add("{ModerationForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Moderation });
+                Settings.Deployments.Add("{ImageForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.Image });
+                Settings.Deployments.Add("{AudioTranscrptionForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioTranscription });
+                Settings.Deployments.Add("{AudioTranslationForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioTranslation });
+                Settings.Deployments.Add("{AudioSpeechForced}", new OpenAiSettings.DeploymentType { Name = Forced, Type = OpenAiType.AudioSpeech });
+            }
+
+            uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
+            uriHelper.FineTuneUri = string.Format(uriHelper.FineTuneUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.FineTuning)}");
+            uriHelper.FileUri = string.Format(uriHelper.FileUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.File)}");
+            uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
+            uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
+
+            foreach (var deployment in Settings.Deployments)
+            {
+                var key = deployment.Key.Contains(Forced) ? "{0}" : deployment.Key;
+                uris.TryAdd($"{deployment.Value.Name}_{deployment.Value.Type}",
+                    $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployment.Value.Type)}")}");
+
+                string GetDeploymentTypeUri()
+                {
+                    return deployment.Value.Type switch
+                    {
+                        OpenAiType.Chat => uriHelper.ChatUri,
+                        OpenAiType.Embedding => uriHelper.EmbeddingUri,
+                        OpenAiType.Moderation => uriHelper.ModerationUri,
+                        OpenAiType.Image => uriHelper.ImageUri,
+                        OpenAiType.AudioTranscription => uriHelper.AudioTranscriptionUri,
+                        OpenAiType.AudioTranslation => uriHelper.AudioTranslationUri,
+                        OpenAiType.AudioSpeech => uriHelper.AudioSpeechUri,
+                        _ => throw new NotImplementedException(),
+                    };
+                }
             }
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString)
@@ -180,15 +201,18 @@ namespace Rystem.OpenAi
             if (forceModel)
                 return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);
             var key = $"{modelId}_{type}";
-            if (uris.ContainsKey(key))
-                return string.Format(uris[key], string.Empty, appendBeforeQueryString);
+            if (uris.TryGetValue(key, out var value))
+                return string.Format(value, string.Empty, appendBeforeQueryString);
+            else if (uris.TryGetValue($"{Asterisk}_{type}", out var asteriskValue))
+                return string.Format(asteriskValue, string.Empty, appendBeforeQueryString);
             else
                 throw new ArgumentException($"Model {modelId} of {type} is not installed during startup phase. In services.AddOpenAi configure the Azure environment with the correct DeploymentModel.");
         }
-        private string? GetVersion(OpenAiSettings settings, OpenAiType type)
+        internal const string Asterisk = "*";
+        private static string? GetVersion(OpenAiSettings settings, OpenAiType type)
         {
-            if (settings.Versions.ContainsKey(type))
-                return settings.Versions[type];
+            if (settings.Versions.TryGetValue(type, out var value))
+                return value;
             else
                 return settings.Version;
         }

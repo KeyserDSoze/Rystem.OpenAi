@@ -9,13 +9,13 @@ namespace Rystem.OpenAi.Embedding
     {
         private readonly List<string> _inputs = [];
         public OpenAiEmbedding(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.Embedding)
         {
             Request.Model = EmbeddingModelName.Text_embedding_3_large;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Embeddings != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Embeddings.Invoke(this);

@@ -10,12 +10,12 @@ namespace Rystem.OpenAi.Files
     internal sealed class OpenAiFile : OpenAiBuilder<IOpenAiFile>, IOpenAiFile
     {
         public OpenAiFile(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.File)
         {
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.File != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.File.Invoke(this);

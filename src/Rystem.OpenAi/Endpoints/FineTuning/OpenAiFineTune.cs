@@ -17,13 +17,13 @@ namespace Rystem.OpenAi.FineTune
     {
         private const string WandBLabel = "wandb";
         public OpenAiFineTune(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.FineTuning)
         {
             Request.Model = FineTuningModelName.Gpt_4o_2024_08_06;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.FineTune != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.FineTune.Invoke(this);

@@ -25,28 +25,6 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(1)
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
-            //var chatHistory = openAiApi.Chat.RequestWithSystemMessage("for example something to pass to the system.")
-            //    .AddUserMessage("first message from the user");
-            //var message = await chatHistory
-            //    .ExecuteAsync();
-            ////here the first output for the user from openai
-            //var contentFromAssistant = message.Choices[0].Message.Content;
-            ////response from openai added to the chat builder
-            //chatHistory.AddAssistantMessage(contentFromAssistant);
-            ////message from the user
-            //chatHistory.AddUserMessage("second message from the user");
-            //var message2 = await chatHistory
-            //   .ExecuteAsync();
-            ////here the second output for the user from openai
-            //var secondContentFromAssistant = message2.Choices[0].Message.Content;
-            ////response from openai added to the chat builder
-            //chatHistory.AddAssistantMessage(contentFromAssistant);
-            ////message from the user
-            //chatHistory.AddUserMessage("third message from the user");
-            //var message3 = await chatHistory
-            //   .ExecuteAsync();
-            ////and so on......
-
             Assert.NotNull(results);
             Assert.NotNull(results.CreatedUnixTime);
             Assert.True(results.CreatedUnixTime.Value != 0);

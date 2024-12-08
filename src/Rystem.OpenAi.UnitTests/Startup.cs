@@ -37,21 +37,29 @@ namespace Rystem.OpenAi.UnitTests
                 });
             services.AddOpenAi(settings =>
             {
-                settings.ApiKey = azureApiKey;
+                //settings.ApiKey = azureApiKey;
                 settings
                     .UseVersionForChat("2024-08-01-preview");
                 settings.Azure.ResourceName = resourceName;
                 settings.Azure.AppRegistration.ClientId = clientId;
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;
                 settings.Azure.AppRegistration.TenantId = tenantId;
-                settings.Azure
-                    .MapDeployment("text-curie-001", "");
+                settings
+                    .MapDeploymentForEveryRequests(OpenAiType.Chat, "gpt-4");
+                settings.DefaultRequestConfiguration.Chat = chatClient =>
+                {
+                    chatClient.ForceModel("gpt-4");
+                };
             }, "Azure");
             services
                 .AddOpenAi(settings =>
                 {
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
+                    settings.DefaultRequestConfiguration.Chat = chatClient =>
+                    {
+                        chatClient.ForceModel("gpt-4");
+                    };
                 }, "Azure2");
             return services;
         }

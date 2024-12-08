@@ -7,12 +7,12 @@ namespace Rystem.OpenAi.Models
     internal sealed class OpenAiModel : OpenAiBuilder<IOpenAiModel>, IOpenAiModel
     {
         public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.Model)
         {
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Model != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Model.Invoke(this);

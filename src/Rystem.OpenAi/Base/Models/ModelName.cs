@@ -12,5 +12,7 @@
             => name.Name;
         public static implicit operator ModelName(string name)
             => new(name);
+        public override string ToString()
+            => Name;
     }
 }

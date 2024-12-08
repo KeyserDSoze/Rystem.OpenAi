@@ -58,7 +58,7 @@ namespace Rystem.OpenAi.Test
                 .WithInputs("A test text for embedding")
                 .AddPrompt("with message")
                 .WithUser("KeyserDSoze")
-                .WithModel("testModel")
+                .ForceModel("testModel")
                 .WithModel(EmbeddingModelName.Text_embedding_3_small)
                 .ExecuteAsync();
             Assert.NotNull(results);
@@ -79,7 +79,7 @@ namespace Rystem.OpenAi.Test
 
             var results = await openAiApi.Embeddings
                 .AddPrompt("A test text for embedding")
-                .WithModel("text-embedding-3-large")
+                .ForceModel("text-embedding-3-large")
                 .WithDimensions(999)
                 .ExecuteAsync();
 

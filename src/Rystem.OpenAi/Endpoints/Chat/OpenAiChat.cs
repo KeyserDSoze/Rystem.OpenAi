@@ -10,13 +10,14 @@ namespace Rystem.OpenAi.Chat
 {
     internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest, ChatModelName>, IOpenAiChat
     {
-        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory) : base(factory, configurationFactory)
+        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
+            : base(factory, configurationFactory, OpenAiType.Chat)
         {
             Request.Model = ChatModelName.Gpt4_o;
         }
         private protected override void ConfigureFactory(string name)
         {
-            var configuration = _configurationFactory.Create(name);
+            var configuration = ConfigurationFactory.Create(name);
             if (configuration?.Settings?.DefaultRequestConfiguration?.Chat != null)
             {
                 configuration.Settings.DefaultRequestConfiguration.Chat.Invoke(this);
@@ -87,7 +88,7 @@ namespace Rystem.OpenAi.Chat
         public IOpenAiChat AddSystemMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.System });
         public ChatMessageContentBuilder AddSystemContent()
-            => new ChatMessageContentBuilder(this, ChatRole.System);
+            => new(this, ChatRole.System);
         public IOpenAiChat AddAssistantMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Assistant });
         public IOpenAiChat AddAssistantMessage(ChatMessageContent content)
