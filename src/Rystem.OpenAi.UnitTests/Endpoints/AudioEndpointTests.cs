@@ -39,6 +39,7 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
+        [InlineData("Azure2")]
         public async ValueTask CreateTranslationAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -63,6 +64,7 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
+        [InlineData("Azure2")]
         public async ValueTask CreateVerboseTranslationAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -89,6 +91,7 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
+        [InlineData("Azure2")]
         public async ValueTask CreateTranscriptionAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -114,6 +117,7 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
+        [InlineData("Azure2")]
         public async ValueTask CreateVerboseTranscriptionAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -139,6 +143,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("", "Hello world!")]
+        [InlineData("Azure2", "Hello world!")]
         public async ValueTask CreateSpeechAsync(string name, string text)
         {
             var openAiApi = _openAiFactory.Create(name)!;

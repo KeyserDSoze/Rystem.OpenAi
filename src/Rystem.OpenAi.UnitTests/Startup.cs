@@ -66,6 +66,10 @@ namespace Rystem.OpenAi.UnitTests
                 {
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
+                    settings.Version = "2024-02-01";
+                    settings.UseVersionForAudioSpeech("2024-05-01-preview");
+                    settings.UseVersionForAudioTranscription("2024-06-01");
+                    settings.UseVersionForAudioTranslation("2024-06-01");
                     settings.DefaultRequestConfiguration.Chat = chatClient =>
                     {
                         chatClient.ForceModel("gpt-4");

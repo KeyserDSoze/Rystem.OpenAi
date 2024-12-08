@@ -96,6 +96,10 @@ namespace Rystem.OpenAi
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
         }
+
+        private const string CognitiveServicesDomain = "cognitiveservices.azure.com";
+        private const string OpenAiDomain = "openai.azure.com";
+
         private void ConfigureEndpointsForAzure()
         {
             var uriHelper = new UriHelperConfigurator();
@@ -125,8 +129,18 @@ namespace Rystem.OpenAi
             {
                 var key = deployment.Key.Contains(Forced) ? "{0}" : deployment.Key;
                 uris.TryAdd($"{deployment.Value.Name}_{deployment.Value.Type}",
-                    $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployment.Value.Type)}")}");
-
+                    $"{string.Format(GetDeploymentTypeUri(), $"https://{Settings.Azure.ResourceName}.{GetDeploymentTypeDomain()}/openai/deployments/{key}", "{1}", $"?api-version={GetVersion(Settings, deployment.Value.Type)}")}");
+                string GetDeploymentTypeDomain()
+                {
+                    return deployment.Value.Type switch
+                    {
+                        OpenAiType.Image => CognitiveServicesDomain,
+                        OpenAiType.AudioSpeech => CognitiveServicesDomain,
+                        OpenAiType.AudioTranscription => CognitiveServicesDomain,
+                        OpenAiType.AudioTranslation => CognitiveServicesDomain,
+                        _ => OpenAiDomain
+                    };
+                }
                 string GetDeploymentTypeUri()
                 {
                     return deployment.Value.Type switch

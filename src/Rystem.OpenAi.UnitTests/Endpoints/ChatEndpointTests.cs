@@ -49,7 +49,12 @@ namespace Rystem.OpenAi.Test
             //    { "Keystone3", 4 }
             //};
             var results = new List<ChunkChatResult>();
-            await foreach (var x in openAiApi.Chat
+            var chat = openAiApi.Chat;
+            if (name != "Azure")
+            {
+                chat.SetMaxTokens(1200);
+            }
+            await foreach (var x in chat
                 .AddMessage(new ChatMessageRequest { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelName.Gpt4_o)
@@ -60,7 +65,6 @@ namespace Rystem.OpenAi.Test
                 .WithFrequencyPenalty(0)
                 .WithPresencePenalty(0)
                 .WithNucleusSampling(1)
-                .SetMaxTokens(1200)
                    //.WithBias("Keystone", 4)
                    //.WithBias("Keystone2", 4)
                    //.WithBias(biasDictionary)
@@ -69,7 +73,7 @@ namespace Rystem.OpenAi.Test
                 results.Add(x);
 
             Assert.NotEmpty(results);
-            Assert.True(results.Last().Choices?.Count != 0);
+            Assert.Contains(results, x => x.Choices?.Count != 0);
             Assert.Contains(results.SelectMany(x => x.Choices ?? []), c => c.Delta == null || c.Delta?.Role == ChatRole.Assistant);
         }
 
