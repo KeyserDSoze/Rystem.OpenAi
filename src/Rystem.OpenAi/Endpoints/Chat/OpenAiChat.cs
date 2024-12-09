@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace Rystem.OpenAi.Chat
 {
     internal sealed class OpenAiChat : OpenAiBuilder<IOpenAiChat, ChatRequest, ChatModelName>, IOpenAiChat
     {
+        private const string FunctionType = "function";
+
         public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
             : base(factory, configurationFactory, OpenAiType.Chat)
         {
@@ -193,14 +196,36 @@ namespace Rystem.OpenAi.Chat
             Request.Seed = seed;
             return this;
         }
-        public IOpenAiChat WithFunction(FunctionTool function)
+        public IOpenAiChat ForceResponseFormat(FunctionTool function)
         {
-            Request.ToolChoice = ChatConstants.ToolChoice.Auto;
+            Request.ResponseFormat = new()
+            {
+                Content = function,
+                Type = ChatConstants.ResponseFormat.JsonSchema
+            };
             Request.Tools ??= [];
             Request.Tools.Add(new ChatFunctionTool
             {
                 Function = function
             });
+            return this;
+        }
+        public IOpenAiChat ForceResponseFormat(MethodInfo function)
+            => ForceResponseFormat(function.ToFunctionTool());
+        public IOpenAiChat ForceResponseAsJsonFormat()
+        {
+            Request.ResponseFormat = new()
+            {
+                Type = ChatConstants.ResponseFormat.JsonObject
+            };
+            return this;
+        }
+        public IOpenAiChat ForceResponseAsText()
+        {
+            Request.ResponseFormat = new()
+            {
+                Type = ChatConstants.ResponseFormat.Text
+            };
             return this;
         }
         public IOpenAiChat AvoidCallingTools()
@@ -213,14 +238,21 @@ namespace Rystem.OpenAi.Chat
             Request.ToolChoice = ChatConstants.ToolChoice.Required;
             return this;
         }
-        public IOpenAiChat ForceCallFunction()
+        public IOpenAiChat CanCallTools()
         {
-            Request.ToolChoice = ChatConstants.ToolChoice.Required;
+            Request.ToolChoice = ChatConstants.ToolChoice.Auto;
             return this;
         }
-        public IOpenAiChat ForceCallFunction(ForcedFunctionTool forcedFunction)
+        public IOpenAiChat ForceCallFunction(string name)
         {
-            Request.ToolChoice = forcedFunction;
+            Request.ToolChoice = new ForcedFunctionTool
+            {
+                Type = FunctionType,
+                Function = new ForcedFunctionToolName
+                {
+                    Name = name
+                }
+            };
             return this;
         }
         public IOpenAiChat AvoidParallelToolCall()
@@ -251,8 +283,18 @@ namespace Rystem.OpenAi.Chat
         }
         public IOpenAiChat AddFunctionTool(FunctionTool tool)
         {
+            if (Request.ToolChoice?.ToString() == ChatConstants.ToolChoice.None)
+                Request.ToolChoice = ChatConstants.ToolChoice.Auto;
             Request.Tools ??= [];
             Request.Tools.Add(new ChatFunctionTool { Function = tool });
+            return this;
+        }
+        public IOpenAiChat AddFunctionTool(MethodInfo function)
+        {
+            if (Request.ToolChoice?.ToString() == ChatConstants.ToolChoice.None)
+                Request.ToolChoice = ChatConstants.ToolChoice.Auto;
+            Request.Tools ??= [];
+            Request.Tools.Add(new ChatFunctionTool { Function = function.ToFunctionTool() });
             return this;
         }
     }

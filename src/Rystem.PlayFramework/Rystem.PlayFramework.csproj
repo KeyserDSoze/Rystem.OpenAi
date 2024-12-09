@@ -19,7 +19,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/KeyserDSoze/Rystem/tree/master/src/PlayFramework</RepositoryUrl>
         <PackageId>Rystem.PlayFramework</PackageId>
-        <Version>9.0.1-pre.3</Version>
+        <Version>9.0.1-pre.4</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     </PropertyGroup>
@@ -34,7 +34,7 @@
         </When>
         <When Condition=" '$(Configuration)'!='Debug' ">
             <ItemGroup>
-                <PackageReference Include="Rystem.OpenAi" Version="4.0.0-pre.3" />
+                <PackageReference Include="Rystem.OpenAi" Version="4.0.0-pre.4" />
             </ItemGroup>
         </When>
     </Choose>
