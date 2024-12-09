@@ -40,5 +40,11 @@
             public const string Auto = "auto";
             public const string Default = "default";
         }
+        public static class ResponseFormat
+        {
+            public const string JsonObject = "json_object";
+            public const string Text = "text";
+            public const string JsonSchema = "json_schema";
+        }
     }
 }

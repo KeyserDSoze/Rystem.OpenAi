@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -173,12 +174,31 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         ChatMessageContentBuilder AddAssistantContent();
         /// <summary>
-        /// Developers can describe functions to gpt-4-snapshot and gpt-3.5-turbo-snapshot, and have the model intelligently choose to output a JSON object containing arguments to call those functions. This is a new way to more reliably connect GPT's capabilities with external tools and APIs.
-        /// These models have been fine-tuned to both detect when a function needs to be called(depending on the user’s input) and to respond with JSON that adheres to the function signature.Function calling allows developers to more reliably get structured data back from the model.
+        /// Structured Outputs are available in our latest large language models, starting with GPT-4o:
+        /// gpt-4o-mini-2024-07-18 and later
+        /// gpt-4o-2024-08-06 and later
         /// </summary>
-        /// <param name="chatFunction"></param>
+        /// <param name="function"></param>
         /// <returns>Builder</returns>
-        IOpenAiChat WithFunction(FunctionTool function);
+        IOpenAiChat ForceResponseFormat(FunctionTool function);
+        /// <summary>
+        /// Structured Outputs are available in our latest large language models, starting with GPT-4o:
+        /// gpt-4o-mini-2024-07-18 and later
+        /// gpt-4o-2024-08-06 and later
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns>Builder</returns>
+        IOpenAiChat ForceResponseFormat(MethodInfo function);
+        /// <summary>
+        /// When JSON mode is turned on, the model's output is ensured to be valid JSON, except for in some edge cases that you should detect and handle appropriately.
+        /// </summary>
+        /// <returns></returns>
+        IOpenAiChat ForceResponseAsJsonFormat();
+        /// <summary>
+        /// Classic response as text.
+        /// </summary>
+        /// <returns></returns>
+        IOpenAiChat ForceResponseAsText();
         /// <summary>
         /// It means the model will not call any tool and instead generates a message.
         /// </summary>
@@ -190,16 +210,21 @@ namespace Rystem.OpenAi.Chat
         /// <returns></returns>
         IOpenAiChat ForceCallTools();
         /// <summary>
+        /// It means the model may call one or more tools.
+        /// </summary>
+        /// <returns></returns>
+        IOpenAiChat CanCallTools();
+        /// <summary>
         /// Remove all functions added until now.
         /// </summary>
         /// <returns></returns>
         IOpenAiChat ClearTools();
         /// <summary>
-        /// Specifying a particular tool via <see cref="ForcedFunctionTool"/> forces the model to call that tool.
+        /// Specifying a particular tool via its name forces the model to call that tool.
         /// </summary>
-        /// <param name="forcedFunction"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        IOpenAiChat ForceCallFunction(ForcedFunctionTool forcedFunction);
+        IOpenAiChat ForceCallFunction(string name);
         /// <summary>
         /// Remove the default behavior that generates multiple function calls in a single response, indicating that they should be called in parallel.
         /// </summary>
@@ -227,5 +252,11 @@ namespace Rystem.OpenAi.Chat
         /// <param name="tool"></param>
         /// <returns></returns>
         IOpenAiChat AddFunctionTool(FunctionTool tool);
+        /// <summary>
+        /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns></returns>
+        IOpenAiChat AddFunctionTool(MethodInfo function);
     }
 }
