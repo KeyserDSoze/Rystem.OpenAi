@@ -116,6 +116,7 @@ You may install with Dependency Injection one or more than on integrations at th
 
 ### Add to service collection the OpenAi service in your DI
 
+```csharp
     var apiKey = configuration["Azure:ApiKey"];
     services.AddOpenAi(settings =>
     {
@@ -126,25 +127,31 @@ You may install with Dependency Injection one or more than on integrations at th
         {
             chatClient.WithModel(configuration["OpenAi2:ModelName"]!);
         };
-    });
+    }, "custom integration name");
+
+    var openAiApi = serviceProvider.GetRequiredService<IFactory<IOpenAi>>();
+    var firstInstanceOfChatClient = openAiApi.Create("custom integration name").Chat;
+    var openAiChatApi = serviceProvider.GetRequiredService<IFactory<IOpenAiChat>>();
+    var anotherInstanceOfChatClient = openAiChatApi.Create("custom integration name");
+```
 
 ## Dependency Injection With Azure
 
 ### Add to service collection the OpenAi service in your DI with Azure integration
-When you want to use the integration with Azure, you need to specify all the models you're going to use. In the example you may find the model name for DavinciText3.
-You still may add a custom model, with MapDeploymentCustomModel.
+When you want to use the integration with Azure.
 
+```csharp
     builder.Services.AddOpenAi(settings =>
     {
         settings.ApiKey = apiKey;
         settings.Azure.ResourceName = "AzureResourceName (Name of your deployed service on Azure)";
-        settings.Azure
-            .MapDeploymentTextModel("Test (The name from column 'Model deployment name' in Model deployments blade in your Azure service)", TextModelType.DavinciText3);
     });
+```
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and app registration
 See how to create an app registration [here](https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app).
 
+```csharp
     var resourceName = builder.Configuration["Azure:ResourceName"];
     var clientId = builder.Configuration["AzureAd:ClientId"];
     var clientSecret = builder.Configuration["AzureAd:ClientSecret"];
@@ -155,54 +162,51 @@ See how to create an app registration [here](https://learn.microsoft.com/en-us/a
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
-        settings.Azure
-            .MapDeploymentTextModel("Test", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
+```
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and system assigned managed identity
 See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).\
 [System Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/automation/enable-managed-identity-for-automation)
 
+```csharp
     var resourceName = builder.Configuration["Azure:ResourceName"];
     builder.Services.AddOpenAi(settings =>
     {
         settings.Azure.ResourceName = resourceName;
         settings.Azure.ManagedIdentity.UseDefault = true;
-        settings.Azure
-            .MapDeploymentTextModel("Test", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
+```
 
 ### Add to service collection the OpenAi service in your DI with Azure integration and user assigned managed identity
 See how to create a managed identity [here](https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).\
 [User Assigned Managed Identity](https://learn.microsoft.com/en-us/azure/automation/add-user-assigned-identity)
 
+```csharp
     var resourceName = builder.Configuration["Azure:ResourceName"];
     var managedIdentityId = builder.Configuration["ManagedIdentity:ClientId"];
     builder.Services.AddOpenAi(settings =>
     {
         settings.Azure.ResourceName = resourceName;
         settings.Azure.ManagedIdentity.Id = managedIdentityId;
-        settings.Azure
-            .MapDeploymentTextModel("Test", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-002", TextModelType.DavinciText2)
-            .MapDeploymentEmbeddingModel("Test", EmbeddingModelType.AdaTextEmbedding);
     });
+```
 
 ## Use different version
 [📖 Back to summary](#documentation)\
 You may install different version for each endpoint.
 
+```csharp
      services.AddOpenAi(settings =>
             {
                 settings.ApiKey = azureApiKey;
+                //default version for all endpoints
                 settings.Version = "2024-08-01-preview";
+                //different version for chat endpoint
                 settings
                     .UseVersionForChat("2023-03-15-preview");
             });
+```
 
 In this example We are adding a different version only for chat, and all the other endpoints will use the same (in this case the default version).
 
@@ -211,6 +215,7 @@ In this example We are adding a different version only for chat, and all the oth
 You may install more than one OpenAi integration, using name parameter in configuration.
 In the next example we have two different configurations, one with OpenAi and a default name and with Azure OpenAi and name "Azure"
 
+```csharp
     var apiKey = context.Configuration["OpenAi:ApiKey"];
     services
         .AddOpenAi(settings =>
@@ -231,15 +236,12 @@ In the next example we have two different configurations, one with OpenAi and a 
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
-        settings.Azure
-            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301);
     }, "Azure");
+```
 
 I can retrieve the integration with IFactory<> interface (from Rystem) and the name of the integration.
 
+```csharp
     private readonly IFactory<IOpenAi> _openAiFactory;
 
     public CompletionEndpointTests(IFactory<IOpenAi> openAiFactory)
@@ -258,9 +260,11 @@ I can retrieve the integration with IFactory<> interface (from Rystem) and the n
         var openAiApi = _openAiFactory.Create("Azure");
         openAiApi.Chat.........
     }
+```
 
 or get the more specific service
 
+```csharp
     private readonly IFactory<IOpenAiChat> _chatFactory;
     public Constructor(IFactory<IOpenAiChat> chatFactory)
     {
@@ -271,6 +275,7 @@ or get the more specific service
         var chat = _chatFactory.Create(name);
         chat.ExecuteRequestAsync(....);
     }
+```
 
 ## Without Dependency Injection
 [📖 Back to summary](#documentation)\
