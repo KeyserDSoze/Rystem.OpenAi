@@ -36,6 +36,9 @@
     <None Update="appsettings.test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Files\cuteotter.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Files\data-test-file.jsonl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

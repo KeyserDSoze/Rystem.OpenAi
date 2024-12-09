@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Models
         /// </summary>
         /// <param name="id">The id/name of the model to get more details about</param>
         /// <returns>Asynchronously returns the <see cref="Model"/> with all available properties</returns>
-        ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<ModelResult> RetrieveAsync(string id, CancellationToken cancellationToken = default);
         /// <summary>
         /// List all models via the API
         /// </summary>

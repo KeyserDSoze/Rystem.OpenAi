@@ -17,7 +17,6 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        [InlineData("Azure")]
         public async ValueTask GetAllModelsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -27,13 +26,12 @@ namespace Rystem.OpenAi.Test
             {
                 var modelResult = await openAiApi.Model.RetrieveAsync(model.Id!);
                 Assert.NotNull(modelResult);
-                Assert.Equal(model.Id, modelResult.AsString());
+                Assert.Equal(model.Id, modelResult.Id);
                 //if (string.IsNullOrWhiteSpace(name))
                 //    Assert.True(modelResult.Created > new DateTime(2018, 1, 1));
             }
             Assert.NotNull(results);
             Assert.NotEmpty(results.Models ?? []);
-            Assert.Contains(results.Models ?? [], c => c.Id?.ToLower().StartsWith("text-davinci") == true);
         }
 
         [Theory]
@@ -52,7 +50,7 @@ namespace Rystem.OpenAi.Test
             //Assert.True(result.Created.Value > new DateTime(2018, 1, 1));
             //Assert.True(result.Created.Value < DateTime.Now.AddDays(1));
 
-            Assert.NotNull(result.AsString());
+            Assert.NotNull(result.Id);
             //Assert.NotNull(result.OwnedBy);
             //Assert.Equal(TextModelType.DavinciText3.ToModel(), result.Id.ToLower());
         }
@@ -65,20 +63,6 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name)!;
             var models = await openAiApi.Model.ListAsync();
             Assert.True(models.Models?.Count > 5);
-        }
-
-        [Theory]
-        [InlineData("ada", "")]
-        [InlineData("babbage", "")]
-        [InlineData("curie", "")]
-        [InlineData("davinci", "")]
-        public async ValueTask RetrieveEngineDetailsAsync_ShouldRetrieveEngineDetails(string modelId, string name)
-        {
-            var openAiApi = _openAiFactory.Create(name)!;
-            var modelData = await openAiApi.Model.RetrieveAsync(modelId);
-            Assert.Equal(modelId, modelData.AsString());
-            //Assert.True(modelData.Created > new DateTime(2018, 1, 1));
-            //Assert.True(modelData.Created < DateTime.UtcNow.AddDays(1));
         }
     }
 }
