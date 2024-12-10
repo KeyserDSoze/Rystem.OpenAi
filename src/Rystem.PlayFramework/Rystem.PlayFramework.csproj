@@ -39,6 +39,10 @@
         </When>
     </Choose>
     <ItemGroup>
+        <None Update="DefaultServices\README.md">
+          <PackagePath>\</PackagePath>
+          <Pack>true</Pack>
+        </None>
         <None Update="rystem.png">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
