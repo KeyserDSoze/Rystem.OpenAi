@@ -161,60 +161,60 @@ namespace Rystem.OpenAi.Test
             [Description("Unit Measure of temperature. e.g. Celsius or Fahrenheit")]
             public string? Unit { get; set; }
         }
-        //[Theory]
-        //[InlineData("")]
-        //[InlineData("Azure")]
-        //public async ValueTask CreateChatCompletionWithFunctionsAsStreamAsync(string name)
-        //{
-        //    var openAiApi = _openAiFactory.Create(name);
-        //    Assert.NotNull(openAiApi.Chat);
-        //    var functionName = "get_current_weather";
-        //    var request = openAiApi.Chat
-        //        .RequestWithUserMessage("What is the weather like in Boston?")
-        //        .WithModel(ChatModelType.Gpt35Turbo)
-        //        .WithFunction(new JsonFunction
-        //        {
-        //            Name = functionName,
-        //            Description = "Get the current weather in a given location",
-        //            Parameters = new JsonFunctionNonPrimitiveProperty()
-        //                .AddPrimitive("location", new JsonFunctionProperty
-        //                {
-        //                    Type = "string",
-        //                    Description = "The city and state, e.g. San Francisco, CA"
-        //                })
-        //                .AddEnum("unit", new JsonFunctionEnumProperty
-        //                {
-        //                    Type = "string",
-        //                    Enums = new List<string> { "celsius", "fahrenheit" }
-        //                })
-        //                .AddRequired("location")
-        //        });
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithFunctionsAsStreamAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name);
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .AddUserMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelName.Gpt4_o)
+                .AddFunctionTool(new FunctionTool
+                {
+                    Name = functionName,
+                    Description = "Get the current weather in a given location",
+                    Parameters = new FunctionToolMainProperty()
+                        .AddPrimitive("location", new FunctionToolPrimitiveProperty
+                        {
+                            Type = "string",
+                            Description = "The city and state, e.g. San Francisco, CA"
+                        })
+                        .AddEnum("unit", new FunctionToolEnumProperty
+                        {
+                            Type = "string",
+                            Enums = new List<string> { "celsius", "fahrenheit" }
+                        })
+                        .AddRequired("location")
+                });
 
-        //    var response = await request
-        //        .ExecuteAndCalculateCostAsync();
+            var response = await request
+                .ExecuteAsync();
 
-        //    var function = response.Result.Choices[0].Message.ToolCalls.First().Function;
-        //    Assert.NotNull(function);
-        //    Assert.Equal(function.Name, functionName);
-        //    var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
-        //    Assert.NotNull(weatherRequest?.Location);
+            var function = response.Choices?[0]?.Message?.ToolCalls?.First().Function;
+            Assert.NotNull(function);
+            Assert.Equal(function.Name, functionName);
+            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+            Assert.NotNull(weatherRequest?.Location);
 
-        //    request
-        //        .AddToolMessage(functionName, "{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
-        //    var results = new List<ChatResult>();
-        //    ChatResult check = null;
-        //    await foreach (var x in request
-        //        .ExecuteAsStreamAndCalculateCostAsync())
-        //    {
-        //        results.Add(x.Result.LastChunk);
-        //        //check = x.Result.Composed;
-        //    }
+            request
+                .AddSystemMessage("{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            var results = new List<ChunkChatResult>();
+            ChatResult check = null;
+            await foreach (var x in request
+                .ExecuteAsStreamAsync())
+            {
+                results.Add(x);
+                //check = x.Result.Composed;
+            }
 
-        //    var content = check.Choices[0].Message.Content;
-        //    var finishReason = check.Choices[0].FinishReason;
-        //    Assert.Equal("functionExecuted", finishReason);
-        //    Assert.NotNull(content);
-        //}
+            var content = check?.Choices?[0]?.Message?.Content;
+            var finishReason = check?.Choices?[0].FinishReason;
+            Assert.Equal("stop", finishReason);
+            Assert.NotNull(content);
+        }
         //[Theory]
         //[InlineData("")]
         //[InlineData("Azure")]
