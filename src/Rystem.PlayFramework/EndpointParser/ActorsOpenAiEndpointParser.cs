@@ -101,8 +101,6 @@ namespace Rystem.PlayFramework
                                 ToolPropertyHelper.Add(name, type, jsonFunctionObject);
                                 if (!parameterInfo.IsNullable())
                                     jsonFunctionObject.AddRequired(name);
-                                else
-                                    jsonFunctionObject.AdditionalProperties = true;
                                 return true;
                             }
                             return false;

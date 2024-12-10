@@ -124,8 +124,6 @@ namespace Rystem.PlayFramework
                     ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
                     if (!parameter.IsNullable())
                         jsonFunctionObject.AddRequired(parameterName);
-                    else
-                        jsonFunctionObject.AdditionalProperties = true;
                     var parametersFiller = function.Service.Actions;
                     if (!parametersFiller.ContainsKey(parameterName))
                         parametersFiller.Add(parameterName, (value, bringer) =>

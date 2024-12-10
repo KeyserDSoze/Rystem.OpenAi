@@ -33,8 +33,6 @@ namespace Rystem.OpenAi
                 ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
                 if (!parameter.IsNullable())
                     jsonFunctionObject.AddRequired(parameterName);
-                else
-                    jsonFunctionObject.AdditionalProperties = true;
             }
             return jsonFunction;
         }
