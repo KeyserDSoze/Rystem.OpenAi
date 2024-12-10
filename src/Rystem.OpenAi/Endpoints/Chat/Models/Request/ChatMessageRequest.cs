@@ -17,5 +17,7 @@ namespace Rystem.OpenAi.Chat
         public string? Name { get; set; }
         [JsonPropertyName("content")]
         public object? Content { get; set; }
+        [JsonPropertyName("tool_call_id")]
+        public string? ToolCallId { get; set; }
     }
 }

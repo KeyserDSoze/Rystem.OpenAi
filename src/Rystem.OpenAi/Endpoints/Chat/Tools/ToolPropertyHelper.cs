@@ -9,12 +9,13 @@ namespace Rystem.OpenAi
     {
         public static void Add(string? parameterName, Type type, FunctionToolNonPrimitiveProperty jsonFunction)
         {
-            var description = type.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute;
+            var description = type.GetCustomAttribute<DescriptionAttribute>();
             if (type.IsPrimitive())
             {
-                jsonFunction.AddPrimitive(parameterName ?? type.Name, new FunctionToolProperty
+                jsonFunction.AddPrimitive(parameterName ?? type.Name, new FunctionToolPrimitiveProperty
                 {
-                    Type = type.IsNumeric() ? "number" : "string"
+                    Type = type.IsNumeric() ? "number" : "string",
+                    Description = description?.Description
                 });
             }
             else

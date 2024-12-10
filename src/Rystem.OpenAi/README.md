@@ -281,61 +281,76 @@ or get the more specific service
 [📖 Back to summary](#documentation)\
 You may configure in a static constructor or during startup your integration without the dependency injection pattern.
 
-      OpenAiService.Instance.AddOpenAi(settings =>
+```csharp
+      OpenAiServiceLocator.Configuration.AddOpenAi(settings =>
         {
             settings.ApiKey = apiKey;
         }, "NoDI");
+```
 
-and you can use it with the same static class OpenAiService and the static Create method
+and you can use it with the same static class OpenAiServiceLocator and the static Create method
 
-    var openAiApi = OpenAiService.Instance.Create(name);
+```csharp
+    var openAiApi = OpenAiServiceLocator.Instance.Create(name);
     openAiApi.Embedding......
+```
 
 or get the more specific service
 
-    var openAiEmbeddingApi = OpenAiService.Instance.CreateEmbedding(name);
+```csharp
+    var openAiEmbeddingApi = OpenAiServiceLocator.Instance.CreateEmbedding(name);
     openAiEmbeddingApi.Request(....);
+```
 
 ## Models
 [📖 Back to summary](#documentation)\
 List and describe the various models available in the API. You can refer to the [Models documentation](https://platform.openai.com/docs/models/overview) to understand what models are available and the differences between them.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/models),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ModelEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/ModelEndpointTests.cs) samples from unit test.
 
 ### List Models
 Lists the currently available models, and provides basic information about each one such as the owner and availability.
 
+```csharp
     var openAiApi = _openAiFactory.Create(name);
     var results = await openAiApi.Model.ListAsync();
+```
 
 ### Retrieve Models
 Retrieves a model instance, providing basic information about the model such as the owner and permissioning.
 
+```csharp
     var openAiApi = _openAiFactory.Create(name);
-    var result = await openAiApi.Model.RetrieveAsync(TextModelType.DavinciText3.ToModelId());
+    var result = await openAiApi.Model.RetrieveAsync("insert here the model name you need to retrieve");
+```
 
 ### Delete fine-tune model
 Delete a fine-tuned model. You must have the Owner role in your organization.
 
+```csharp
     var openAiApi = _openAiFactory.Create(name);
     var deleteResult = await openAiApi.Model
         .DeleteAsync(fineTuneModelId);
+```
 
 ## Chat
 [📖 Back to summary](#documentation)\
 Given a chat conversation, the model will return a chat completion response.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/chat),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ChatEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/ChatEndpointTests.cs) samples from unit test.
 
+```csharp
     var openAiApi = _openAiFactory.Create(name)!;
     var results = await openAiApi.Chat
         .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
         .WithModel(ChatModelName.Gpt4_o)
         .WithTemperature(1)
         .ExecuteAsync();
+```
 
 ### Chat Streaming
 
+```csharp
     var openAiApi = _openAiFactory.Create(name)!;
     var results = new List<ChunkChatResult>();
     await foreach (var x in openAiApi.Chat
@@ -355,7 +370,7 @@ and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.O
         {
             results.Add(x);
         }
-
+```
 
 ### Chat functions
 You may find the update [here](https://openai.com/blog/function-calling-and-other-api-updates)
@@ -363,26 +378,27 @@ You may find the update [here](https://openai.com/blog/function-calling-and-othe
 #### Simple function configuration
 Here an example based on the link, you may find it in unit test.
 
+```csharp
     var request = openAiApi.Chat
-                .RequestWithUserMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelType.Gpt35Turbo)
-                .WithFunction(new JsonFunction
+        .RequestWithUserMessage("What is the weather like in Boston?")
+        .WithModel(ChatModelType.Gpt35Turbo)
+        .WithFunction(new JsonFunction
+        {
+            Name = functionName,
+            Description = "Get the current weather in a given location",
+            Parameters = new JsonFunctionNonPrimitiveProperty()
+                .AddPrimitive("location", new JsonFunctionProperty
                 {
-                    Name = functionName,
-                    Description = "Get the current weather in a given location",
-                    Parameters = new JsonFunctionNonPrimitiveProperty()
-                        .AddPrimitive("location", new JsonFunctionProperty
-                        {
-                            Type = "string",
-                            Description = "The city and state, e.g. San Francisco, CA"
-                        })
-                        .AddEnum("unit", new JsonFunctionEnumProperty
-                        {
-                            Type = "string",
-                            Enums = new List<string> { "celsius", "fahrenheit" }
-                        })
-                        .AddRequired("location")
-                });
+                    Type = "string",
+                    Description = "The city and state, e.g. San Francisco, CA"
+                })
+                .AddEnum("unit", new JsonFunctionEnumProperty
+                {
+                    Type = "string",
+                    Enums = new List<string> { "celsius", "fahrenheit" }
+                })
+                .AddRequired("location")
+        });
     var response = await request
         .ExecuteAndCalculateCostAsync();
     var function = response.Result.Choices[0].Message.Function;
@@ -392,6 +408,7 @@ Here an example based on the link, you may find it in unit test.
     response = await request
         .ExecuteAndCalculateCostAsync();
     var content = response.Result.Choices[0].Message.Content;
+```
 
 In this case you receive as finish reason instead of "stop" the word "functionExecuted".
 
@@ -426,7 +443,7 @@ You may find the PlayFramework [here](https://github.com/KeyserDSoze/Rystem.Open
 [📖 Back to summary](#documentation)\
 Given a prompt and/or an input image, the model will generate a new image.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/images),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ImageEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/ImageEndpointTests.cs) samples from unit test.
 
 ### Create Image
 Creates an image given a prompt.
@@ -488,13 +505,13 @@ Creates a variation of a given image.
 [📖 Back to summary](#documentation)\
 Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/embeddings),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/EmbeddingEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/EmbeddingEndpointTests.cs) samples from unit test.
 
 
 ### Create Embedding
 Creates an embedding vector representing the input text.
 
-    var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
+    var openAiApi = name == "NoDI" ? OpenAiServiceLocatorLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
 
     var results = await openAiApi.Embeddings
         .WithInputs("A test text for embedding")
@@ -506,7 +523,7 @@ Creates an embedding vector representing the input text.
 Creates an embedding with custom dimensions vector representing the input text.
 Only supported in text-embedding-3 and later models.
 
-    var openAiApi = name == "NoDI" ? OpenAiServiceLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
+    var openAiApi = name == "NoDI" ? OpenAiServiceLocatorLocator.Instance.Create(name) : _openAiFactory.Create(name)!;
 
     var results = await openAiApi.Embeddings
         .AddPrompt("A test text for embedding")
@@ -538,7 +555,7 @@ You may use the utility service in this repository to calculate in C# the distan
 ## Audio
 [📖 Back to summary](#documentation)\
 You may find more details [here](https://platform.openai.com/docs/api-reference/audio),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/AudioEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/AudioEndpointTests.cs) samples from unit test.
 
 ### Create Transcription
 Transcribes audio into the input language.
@@ -582,7 +599,7 @@ Translates audio into English.
 [📖 Back to summary](#documentation)\
 Files are used to upload documents that can be used with features like Fine-tuning.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/files),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/FileEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/FileEndpointTests.cs) samples from unit test.
 
 ### List files
 Returns a list of files that belong to the user's organization.
@@ -623,7 +640,7 @@ Returns the contents of the specified file
 [📖 Back to summary](#documentation)\
 Manage fine-tuning jobs to tailor a model to your specific training data.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/fine-tunes),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/FineTuneEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/FineTuneEndpointTests.cs) samples from unit test.
 
 ### Create fine-tune
 Creates a job that fine-tunes a specified model from a given dataset.
@@ -680,7 +697,7 @@ Delete a fine-tuned model. You must have the Owner role in your organization.
 [📖 Back to summary](#documentation)\
 Given a input text, outputs if the model classifies it as violating OpenAI's content policy.\
 You may find more details [here](https://platform.openai.com/docs/api-reference/moderations),
-and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.Test/Tests/ModerationEndpointTests.cs) samples from unit test.
+and [here](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.OpenAi.UnitTests/Endpoints/ModerationEndpointTests.cs) samples from unit test.
 
 ### Create moderation
 Classifies if text violates OpenAI's Content Policy
@@ -709,9 +726,9 @@ Here an example from Unit test.
     var resultOfEuclideanDinstance = _openAiUtility.EuclideanDistance(results.Data.First().Embedding, results.Data.First().Embedding);
     Assert.True(resultOfCosineSimilarity >= 1);
 
-Without DI, you need to setup an OpenAiService [without Dependency Injection](#without-dependency-injection) and after that you can use
+Without DI, you need to setup an OpenAiServiceLocator [without Dependency Injection](#without-dependency-injection) and after that you can use
 
-    IOpenAiUtility openAiUtility = OpenAiService.Instance.Utility();
+    IOpenAiUtility openAiUtility = OpenAiServiceLocator.Instance.Utility();
 
 ### Tokens
 [📖 Back to summary](#documentation)\

@@ -5,6 +5,7 @@ namespace Rystem.OpenAi
 {
     public class FunctionToolNonPrimitiveProperty : FunctionToolProperty
     {
+        internal int NumberOfProperties;
         internal const string DefaultTypeName = "object";
         public FunctionToolNonPrimitiveProperty()
         {
@@ -13,22 +14,34 @@ namespace Rystem.OpenAi
         }
         [JsonPropertyName("properties")]
         public Dictionary<string, FunctionToolProperty> Properties { get; }
-        public FunctionToolNonPrimitiveProperty AddEnum(string key, FunctionToolEnumProperty property)
-            => AddProperty(key, property);
-        public FunctionToolNonPrimitiveProperty AddObject(string key, FunctionToolNonPrimitiveProperty property)
-            => AddProperty(key, property);
-        public FunctionToolNonPrimitiveProperty AddPrimitive(string key, FunctionToolProperty property)
-            => AddProperty(key, property);
-        public FunctionToolNonPrimitiveProperty AddNumber(string key, FunctionToolNumberProperty property)
-            => AddProperty(key, property);
-        public FunctionToolNonPrimitiveProperty AddArray(string key, FunctionToolArrayProperty property)
-            => AddProperty(key, property);
-        internal FunctionToolNonPrimitiveProperty AddProperty<T>(string key, T property)
+    }
+    public static class FunctionToolNonPrimitivePropertyExtensions
+    {
+        public static T AddEnum<T>(this T functionTool, string key, FunctionToolEnumProperty property)
+            where T : FunctionToolNonPrimitiveProperty
+            => functionTool.AddProperty(key, property);
+        public static T AddObject<T>(this T functionTool, string key, FunctionToolNonPrimitiveProperty property)
+            where T : FunctionToolNonPrimitiveProperty
+            => functionTool.AddProperty(key, property);
+        public static T AddPrimitive<T>(this T functionTool, string key, FunctionToolPrimitiveProperty property)
+            where T : FunctionToolNonPrimitiveProperty
+            => functionTool.AddProperty(key, property);
+        public static T AddNumber<T>(this T functionTool, string key, FunctionToolNumberProperty property)
+            where T : FunctionToolNonPrimitiveProperty
+            => functionTool.AddProperty(key, property);
+        public static T AddArray<T>(this T functionTool, string key, FunctionToolArrayProperty property)
+            where T : FunctionToolNonPrimitiveProperty
+            => functionTool.AddProperty(key, property);
+        private static TOut AddProperty<T, TOut>(this TOut functionTool, string key, T property)
             where T : FunctionToolProperty
+            where TOut : FunctionToolNonPrimitiveProperty
         {
-            if (!Properties.ContainsKey(key))
-                Properties.Add(key, property);
-            return this;
+            if (!functionTool.Properties.ContainsKey(key))
+            {
+                functionTool.Properties.Add(key, property);
+                functionTool.NumberOfProperties++;
+            }
+            return functionTool;
         }
     }
 }

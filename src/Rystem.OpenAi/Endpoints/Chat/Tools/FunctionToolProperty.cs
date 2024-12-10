@@ -6,7 +6,8 @@ namespace Rystem.OpenAi
     [JsonDerivedType(typeof(FunctionToolNumberProperty))]
     [JsonDerivedType(typeof(FunctionToolNonPrimitiveProperty))]
     [JsonDerivedType(typeof(FunctionToolArrayProperty))]
-    public class FunctionToolProperty
+    [JsonDerivedType(typeof(FunctionToolPrimitiveProperty))]
+    public abstract class FunctionToolProperty
     {
         [JsonPropertyName("type")]
         public string Type { get; set; }
