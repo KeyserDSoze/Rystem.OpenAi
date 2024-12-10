@@ -30,7 +30,7 @@ namespace Rystem.PlayFramework
             {
                 if (endpoint.RoutePattern.RawText == null)
                     continue;
-                var jsonFunctionObject = new ToolMainProperty();
+                var jsonFunctionObject = new FunctionToolMainProperty();
                 var relativePath = endpoint.RoutePattern.RawText.Trim('/');
                 var regexToNormalizePath = new Regex($"\\{{[a-zA-Z0-9_@]+\\??(:[a-zA-Z0-9]+)?\\}}");
                 var basedFunctionName = endpoint.RoutePattern.RawText;
@@ -101,8 +101,6 @@ namespace Rystem.PlayFramework
                                 ToolPropertyHelper.Add(name, type, jsonFunctionObject);
                                 if (!parameterInfo.IsNullable())
                                     jsonFunctionObject.AddRequired(name);
-                                else
-                                    jsonFunctionObject.AdditionalProperties = true;
                                 return true;
                             }
                             return false;

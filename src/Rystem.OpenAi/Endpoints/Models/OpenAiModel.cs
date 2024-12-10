@@ -18,8 +18,8 @@ namespace Rystem.OpenAi.Models
                 configuration.Settings.DefaultRequestConfiguration.Model.Invoke(this);
             }
         }
-        public ValueTask<Model> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClientWrapper.GetAsync<Model>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);
+        public ValueTask<ModelResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
+            => DefaultServices.HttpClientWrapper.GetAsync<ModelResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}"), DefaultServices.Configuration, cancellationToken);
         public async Task<ModelListResult> ListAsync(CancellationToken cancellationToken = default)
         {
             var response = await DefaultServices.HttpClientWrapper.GetAsync<ModelListResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);

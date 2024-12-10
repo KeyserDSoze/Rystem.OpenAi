@@ -50,24 +50,28 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
         public async ValueTask EditAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
 
-            var location = Assembly.GetExecutingAssembly().Location;
-            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
-            using var readableStream = File.OpenRead($"{location}\\Files\\otter.png");
+            //var location = Assembly.GetExecutingAssembly().Location;
+            //location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            //using var readableStream = File.OpenRead($"{location}\\Files\\cuteotter.png");
             var editableFile = new MemoryStream();
-            await readableStream.CopyToAsync(editableFile);
+            //await readableStream.CopyToAsync(editableFile);
+            var creation = await openAiApi.Image
+                .WithModel(ImageModelName.Dalle2)
+                .WithSize(ImageSize.Small)
+                .GenerateAsBase64Async("A cute baby sea otter.");
+            await creation!.Data!.First().ConvertToStream()!.CopyToAsync(editableFile);
             editableFile.Position = 0;
-
             var response = await openAiApi.Image
-                //.WithMask()new ImageRange(new System.Range(1, 3), new System.Range(4, 6))
+                //.WithMask()//new ImageRange(new System.Range(1, 3), new System.Range(4, 6))
+                .WithModel(ImageModelName.Dalle2)
                 .WithSize(ImageSize.Small)
                 .WithNumberOfResults(2)
-                .EditAsync("A cute baby sea otter wearing a beret", editableFile, "otter.png");
+                .EditAsync("A cute baby sea otter wearing a beret", editableFile, "cuteotter.png");
 
             var uri = response.Data?.FirstOrDefault();
             Assert.Equal(2, response.Data?.Count);
@@ -76,7 +80,6 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
         public async ValueTask VariateAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -89,6 +92,7 @@ namespace Rystem.OpenAi.Test
             await readableStream.CopyToAsync(editableFile);
             editableFile.Position = 0;
             var response = await openAiApi.Image
+                .WithModel(ImageModelName.Dalle2)
                 .WithSize(ImageSize.Small)
                 .WithNumberOfResults(1)
                 .VariateAsync(editableFile, "otter.png");

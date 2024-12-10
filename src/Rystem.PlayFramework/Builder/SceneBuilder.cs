@@ -75,7 +75,7 @@ namespace Rystem.PlayFramework
                 var functionName = $"{serviceName}_{currentType.Name}_{method.Name}";
                 _playHander[Scene.Name].Functions.Add(functionName);
                 var description = method.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute;
-                var jsonFunctionObject = new ToolMainProperty();
+                var jsonFunctionObject = new FunctionToolMainProperty();
                 var jsonFunction = new FunctionTool
                 {
                     Name = functionName,
@@ -124,8 +124,6 @@ namespace Rystem.PlayFramework
                     ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
                     if (!parameter.IsNullable())
                         jsonFunctionObject.AddRequired(parameterName);
-                    else
-                        jsonFunctionObject.AdditionalProperties = true;
                     var parametersFiller = function.Service.Actions;
                     if (!parametersFiller.ContainsKey(parameterName))
                         parametersFiller.Add(parameterName, (value, bringer) =>

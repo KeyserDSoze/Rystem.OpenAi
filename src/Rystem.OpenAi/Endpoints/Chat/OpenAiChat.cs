@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -82,6 +83,8 @@ namespace Rystem.OpenAi.Chat
             => new(this, role);
         public IOpenAiChat AddUserMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.User });
+        public IOpenAiChat AddToolMessage(string functionName, string content)
+            => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Tool, ToolCallId = functionName });
         public IOpenAiChat AddUserMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.User });
         public ChatMessageContentBuilder AddUserContent()

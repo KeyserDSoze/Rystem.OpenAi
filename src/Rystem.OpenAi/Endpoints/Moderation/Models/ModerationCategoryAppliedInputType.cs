@@ -44,5 +44,4 @@ namespace Rystem.OpenAi.Moderation
         [JsonPropertyName("violence/graphic")]
         public List<string>? ViolenceGraphic { get; set; }
     }
-
 }

@@ -73,6 +73,13 @@ namespace Rystem.OpenAi.Chat
         /// <param name="content"></param>
         /// <returns>Builder</returns>
         IOpenAiChat AddAssistantMessage(string content);
+        ///// <summary>
+        ///// Tool message is a message used to improve the response from chat API.
+        ///// </summary>
+        ///// <param name="functionName"></param>
+        ///// <param name="content"></param>
+        ///// <returns></returns>
+        //IOpenAiChat AddToolMessage(string functionName, string content);
 
         /// <summary>
         /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or Nucleus sampling but not both.

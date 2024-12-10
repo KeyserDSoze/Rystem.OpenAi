@@ -18,7 +18,7 @@ namespace Rystem.OpenAi
         {
             var functionName = $"{prefix}{method.Name}";
             var description = method.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute;
-            var jsonFunctionObject = new ToolMainProperty();
+            var jsonFunctionObject = new FunctionToolMainProperty();
             var jsonFunction = new FunctionTool
             {
                 Name = functionName,
@@ -33,8 +33,6 @@ namespace Rystem.OpenAi
                 ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
                 if (!parameter.IsNullable())
                     jsonFunctionObject.AddRequired(parameterName);
-                else
-                    jsonFunctionObject.AdditionalProperties = true;
             }
             return jsonFunction;
         }

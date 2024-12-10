@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Rystem.OpenAi
 {
@@ -10,7 +9,7 @@ namespace Rystem.OpenAi
         [JsonPropertyName("description")]
         public string Description { get; set; } = null!;
         [JsonPropertyName("parameters")]
-        public FunctionToolNonPrimitiveProperty Parameters { get; set; } = null!;
+        public FunctionToolMainProperty Parameters { get; set; } = null!;
         [JsonPropertyName("strict")]
         public bool Strict { get; set; }
     }
