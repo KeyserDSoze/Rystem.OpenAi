@@ -5,7 +5,7 @@ namespace Rystem.OpenAi
 {
     public class FunctionToolNonPrimitiveProperty : FunctionToolProperty
     {
-        internal int NumberOfProperties;
+        internal int _numberOfProperties;
         internal const string DefaultTypeName = "object";
         public FunctionToolNonPrimitiveProperty()
         {
@@ -39,7 +39,7 @@ namespace Rystem.OpenAi
             if (!functionTool.Properties.ContainsKey(key))
             {
                 functionTool.Properties.Add(key, property);
-                functionTool.NumberOfProperties++;
+                functionTool._numberOfProperties++;
             }
             return functionTool;
         }

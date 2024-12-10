@@ -166,7 +166,7 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure")]
         public async ValueTask CreateChatCompletionWithFunctionsAsStreamAsync(string name)
         {
-            var openAiApi = _openAiFactory.Create(name);
+            var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Chat);
             var functionName = "get_current_weather";
             var request = openAiApi.Chat
@@ -196,24 +196,23 @@ namespace Rystem.OpenAi.Test
             var function = response.Choices?[0]?.Message?.ToolCalls?.First().Function;
             Assert.NotNull(function);
             Assert.Equal(function.Name, functionName);
-            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments);
+            var weatherRequest = JsonSerializer.Deserialize<WeatherRequest>(function.Arguments!);
             Assert.NotNull(weatherRequest?.Location);
 
             request
                 .AddSystemMessage("{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
             var results = new List<ChunkChatResult>();
-            ChatResult check = null;
+            ChunkChatResult? check = null;
             await foreach (var x in request
                 .ExecuteAsStreamAsync())
             {
                 results.Add(x);
-                //check = x.Result.Composed;
+                check = x;
             }
-
-            var content = check?.Choices?[0]?.Message?.Content;
-            var finishReason = check?.Choices?[0].FinishReason;
+            var finishReason = results.FirstOrDefault(x => x.Choices?.Count > 0 && x.Choices![0].FinishReason != null)?.Choices?[0].FinishReason;
+            Assert.Contains(results, x => x.Choices?.Count > 0 && x.Choices![0].Delta?.Content != null);
+            Assert.Contains(results, x => x.Choices?.Count > 0 && x.Choices![0].FinishReason != null);
             Assert.Equal("stop", finishReason);
-            Assert.NotNull(content);
         }
         //[Theory]
         //[InlineData("")]

@@ -11,7 +11,7 @@ namespace Rystem.OpenAi
         [JsonPropertyName("required")]
         public List<string>? RequiredParameters { get; set; }
         [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties => NumberOfProperties != (RequiredParameters?.Count ?? 0);
+        public bool AdditionalProperties => _numberOfProperties != (RequiredParameters?.Count ?? 0);
     }
     public static class FunctionToolStartPropertyExtensions
     {
