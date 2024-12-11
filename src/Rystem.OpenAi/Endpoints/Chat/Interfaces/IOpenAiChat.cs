@@ -197,6 +197,14 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         IOpenAiChat ForceResponseFormat(MethodInfo function);
         /// <summary>
+        /// Structured Outputs are available in our latest large language models, starting with GPT-4o:
+        /// gpt-4o-mini-2024-07-18 and later
+        /// gpt-4o-2024-08-06 and later
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns>Builder</returns>
+        IOpenAiChat ForceResponseFormat<T>();
+        /// <summary>
         /// When JSON mode is turned on, the model's output is ensured to be valid JSON, except for in some edge cases that you should detect and handle appropriately.
         /// </summary>
         /// <returns></returns>
@@ -259,6 +267,15 @@ namespace Rystem.OpenAi.Chat
         /// <param name="tool"></param>
         /// <returns></returns>
         IOpenAiChat AddFunctionTool(FunctionTool tool);
+        /// <summary>
+        /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
+        /// You can add a class T as a function tool.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        IOpenAiChat AddFunctionTool<T>(string name, string? description = null);
         /// <summary>
         /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
         /// </summary>

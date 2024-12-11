@@ -151,6 +151,67 @@ namespace Rystem.OpenAi.Test
             Assert.Equal("stop", response.Choices?[0]?.FinishReason);
             Assert.NotNull(content);
         }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateChatCompletionWithFunctionsAsTAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .AddMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelName.Gpt4_o)
+                .AddFunctionTool<WeatherRequest>(functionName, "Get the current weather in a given location");
+
+            var response = await request
+                .ExecuteAsync();
+
+            var tool = response.Choices?[0]?.Message?.ToolCalls?.First();
+            Assert.NotNull(tool?.Function);
+            Assert.Equal(tool?.Function.Name, functionName);
+            var weatherRequest = tool?.Function.Arguments?.FromJson<WeatherRequest>();
+            Assert.NotNull(weatherRequest?.Location);
+
+            request
+                .AddSystemMessage("{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            response = await request
+                .ExecuteAsync();
+
+            var content = response.Choices?[0]?.Message?.Content;
+            Assert.Equal("stop", response.Choices?[0]?.FinishReason);
+            Assert.NotNull(content);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask ForceResponseFormatAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.Chat);
+            var functionName = "get_current_weather";
+            var request = openAiApi.Chat
+                .AddMessage("What is the weather like in Boston?")
+                .WithModel(ChatModelName.Gpt4_o)
+                .ForceResponseFormat<WeatherRequest>();
+
+            var response = await request
+                .ExecuteAsync();
+
+            var tool = response.Choices?[0]?.Message?.ToolCalls?.First();
+            Assert.Null(tool?.Function);
+            var weatherRequest = response.Choices?[0]?.Message?.Content?.FromJson<WeatherRequest>();
+            Assert.NotNull(weatherRequest?.Location);
+
+            request
+                .AddSystemMessage("{\"temperature\": \"22\", \"unit\": \"celsius\", \"description\": \"Sunny\"}");
+            response = await request
+                .ExecuteAsync();
+
+            var content = response.Choices?[0]?.Message?.Content;
+            Assert.Equal("stop", response.Choices?[0]?.FinishReason);
+            Assert.NotNull(content);
+        }
         private sealed class WeatherRequest
         {
             [JsonPropertyName("location")]

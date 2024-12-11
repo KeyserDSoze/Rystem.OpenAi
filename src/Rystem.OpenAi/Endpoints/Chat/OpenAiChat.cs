@@ -215,6 +215,8 @@ namespace Rystem.OpenAi.Chat
         }
         public IOpenAiChat ForceResponseFormat(MethodInfo function)
             => ForceResponseFormat(function.ToFunctionTool());
+        public IOpenAiChat ForceResponseFormat<T>()
+            => ForceResponseFormat(typeof(T).ToFunctionTool(typeof(T).Name, null));
         public IOpenAiChat ForceResponseAsJsonFormat()
         {
             Request.ResponseFormat = new()
@@ -298,6 +300,14 @@ namespace Rystem.OpenAi.Chat
                 Request.ToolChoice = ChatConstants.ToolChoice.Auto;
             Request.Tools ??= [];
             Request.Tools.Add(new ChatFunctionTool { Function = function.ToFunctionTool() });
+            return this;
+        }
+        public IOpenAiChat AddFunctionTool<T>(string name, string? description = null)
+        {
+            if (Request.ToolChoice?.ToString() == ChatConstants.ToolChoice.None)
+                Request.ToolChoice = ChatConstants.ToolChoice.Auto;
+            Request.Tools ??= [];
+            Request.Tools.Add(new ChatFunctionTool { Function = typeof(T).ToFunctionTool(name, description) });
             return this;
         }
     }

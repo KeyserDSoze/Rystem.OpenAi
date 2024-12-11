@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi
@@ -38,7 +39,13 @@ namespace Rystem.OpenAi
         {
             if (!functionTool.Properties.ContainsKey(key))
             {
-                functionTool.Properties.Add(key, property);
+                if (property != null)
+                {
+                    var name = property.GetType().GetCustomAttribute<JsonPropertyNameAttribute>();
+                    if (name?.Name != null)
+                        key = name.Name;
+                }
+                functionTool.Properties.Add(key, property!);
                 functionTool._numberOfProperties++;
             }
             return functionTool;
