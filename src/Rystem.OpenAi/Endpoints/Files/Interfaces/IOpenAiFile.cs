@@ -51,12 +51,8 @@ namespace Rystem.OpenAi.Files
         /// Creates an intermediate Upload object that you can add Parts to. Currently, an Upload can accept at most 8 GB in total and expires after an hour after you create it.
         /// Once you complete the Upload, we will create a File object that contains all the parts you uploaded.This File is usable in the rest of our platform as a regular File object.
         /// </summary>
-        /// <param name="bytes">The number of bytes in the file you are uploading.</param>
-        /// <param name="fileName">The name of the file to upload.</param>
-        /// <param name="contentType">The MIME type of the file.</param>
-        /// <param name="purpose">The intended purpose of the uploaded file.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="fileName"></param>
         /// <returns></returns>
-        ValueTask<IOpenAiUploadFile> CreateUploadAsync(long bytes, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default);
+        IOpenAiUploadFile CreateUpload(string fileName);
     }
 }

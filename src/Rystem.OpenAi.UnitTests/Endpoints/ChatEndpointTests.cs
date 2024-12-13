@@ -189,7 +189,7 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Chat);
-            var functionName = "get_current_weather";
+            //var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .AddMessage("What is the weather like in Boston?")
                 .WithModel(ChatModelName.Gpt4_o)

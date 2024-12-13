@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi.Files;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -15,7 +16,7 @@ namespace Rystem.OpenAi.Test
             _openAiUtility = openAiUtility;
         }
         [Theory]
-        //[InlineData("")]
+        [InlineData("")]
         [InlineData("Azure")]
         public async ValueTask AllFlowAsync(string name)
         {
@@ -65,6 +66,44 @@ namespace Rystem.OpenAi.Test
             await Task.Delay(5_000);
             results = await openAiApi.File.AllAsync();
             Assert.Empty(results?.Data!);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask PartialUploadAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.File);
+            var fileName = "data-test-file.jsonl";
+            var location = Assembly.GetExecutingAssembly().Location;
+            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            using var readableStream = File.OpenRead($"{location}\\Files\\data-test-file.jsonl");
+            var editableFile = new MemoryStream();
+            await readableStream.CopyToAsync(editableFile);
+            editableFile.Position = 0;
+
+            var results = await openAiApi.File
+                .AllAsync();
+            foreach (var result in results?.Data!)
+                await openAiApi.File.DeleteAsync(result.Id!);
+            results = await openAiApi.File
+               .AllAsync();
+
+            Assert.Empty(results?.Data!);
+
+            var upload = openAiApi.File
+                .CreateUpload(fileName)
+                .WithPurpose(PurposeFileUpload.FineTune)
+                .WithContentType("application/json")
+                .WithSize(editableFile.Length);
+
+            var execution = await upload.ExecuteAsync();
+            var partResult = await execution.AddPartAsync(editableFile);
+            Assert.True(partResult.Id?.Length > 7);
+            var completeResult = await execution.CompleteAsync();
+
+            Assert.True(completeResult.Id?.Length > 10);
+            Assert.Contains("file", completeResult.Id);
         }
     }
 }

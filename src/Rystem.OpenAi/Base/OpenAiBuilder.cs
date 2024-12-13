@@ -20,8 +20,8 @@ namespace Rystem.OpenAi
         private string? _factoryName;
         private protected bool Forced { get; set; }
         private protected List<OpenAiCost> Usages { get; } = [];
-        private protected DefaultServices DefaultServices => field ??= Factory.Create(_factoryName)!;
-        private protected OpenAiConfiguration OpenAiConfiguration => field ??= ConfigurationFactory.Create(_factoryName)!;
+        internal DefaultServices DefaultServices => field ??= Factory.Create(_factoryName)!;
+        internal OpenAiConfiguration OpenAiConfiguration => field ??= ConfigurationFactory.Create(_factoryName)!;
         public void SetFactoryName(string name)
         {
             _factoryName = name;

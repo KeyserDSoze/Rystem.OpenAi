@@ -25,27 +25,9 @@ namespace Rystem.OpenAi.Files
             => DefaultServices.HttpClientWrapper.GetAsync<FilesDataResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
         private const string Purpose = "purpose";
         private const string FileContent = "file";
-        private const string AssistantsLabel = "assistants";
-        private const string AssistantsOutputLabel = "assistants_output";
-        private const string BatchLabel = "batch";
-        private const string BatchOutputLabel = "batch_output";
-        private const string FineTuneResultsLabel = "fine-tune-results";
-        private const string VisionLabel = "vision";
-        private const string FineTuneLabel = "fine-tune";
-
         public ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
         {
-            var currentPurpose = purpose switch
-            {
-                PurposeFileUpload.Assistants => AssistantsLabel,
-                PurposeFileUpload.AssistantsOutput => AssistantsOutputLabel,
-                PurposeFileUpload.Batch => BatchLabel,
-                PurposeFileUpload.BatchOutput => BatchOutputLabel,
-                PurposeFileUpload.FineTuneResults => FineTuneResultsLabel,
-                PurposeFileUpload.Vision => VisionLabel,
-                _ => FineTuneLabel
-            };
-
+            var currentPurpose = purpose.ToLabel();
             var memoryStream = new MemoryStream();
             file.CopyTo(memoryStream);
             var fileContent = new ByteArrayContent(memoryStream.ToArray());
@@ -74,5 +56,7 @@ namespace Rystem.OpenAi.Files
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
+        public IOpenAiUploadFile CreateUpload(string fileName)
+            => new OpenAiUploadFile(this, fileName);
     }
 }

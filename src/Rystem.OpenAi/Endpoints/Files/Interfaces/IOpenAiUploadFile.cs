@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Files
@@ -7,23 +6,29 @@ namespace Rystem.OpenAi.Files
     public interface IOpenAiUploadFile
     {
         /// <summary>
-        /// Complete the upload.
+        /// The number of bytes in the file you are uploading.
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="bytes"></param>
         /// <returns></returns>
-        ValueTask<FileResult> CompleteAsync(CancellationToken cancellationToken = default);
+        IOpenAiUploadFile WithSize(long bytes);
         /// <summary>
-        /// Add a part to the uploaded file.
+        /// The MIME type of the file.
         /// </summary>
-        /// <param name="part">part of the file as stream.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="contentType"></param>
         /// <returns></returns>
-        ValueTask<FilePartResult> AddPartAsync(Stream part, CancellationToken cancellationToken = default);
+        IOpenAiUploadFile WithContentType(string contentType = "application/json");
         /// <summary>
-        /// Cancel the upload.
+        /// The intended purpose of the uploaded file.
+        /// </summary>
+        /// <param name="purpose"></param>
+        /// <returns></returns>
+        IOpenAiUploadFile WithPurpose(PurposeFileUpload purpose);
+        /// <summary>
+        /// Creates an intermediate Upload object that you can add Parts to. Currently, an Upload can accept at most 8 GB in total and expires after an hour after you create it.
+        /// Once you complete the Upload, we will create a File object that contains all the parts you uploaded.This File is usable in the rest of our platform as a regular File object.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        ValueTask<FileResult> CancelAsync(CancellationToken cancellationToken = default);
+        ValueTask<IOpenAiPartUploadFile> ExecuteAsync(CancellationToken cancellationToken = default);
     }
 }

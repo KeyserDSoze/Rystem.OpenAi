@@ -5,6 +5,7 @@
         Chat,
         Embedding,
         File,
+        Upload,
         FineTuning,
         Model,
         Moderation,
