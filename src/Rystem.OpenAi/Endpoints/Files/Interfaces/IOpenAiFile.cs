@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,5 +47,16 @@ namespace Rystem.OpenAi.Files
         /// <param name="file">The stream for the file to use for this request</param>
         /// <param name="purpose">The intendend purpose of the uploaded documents. Use "fine-tune" for Fine-tuning. This allows us to validate the format of the uploaded file.</param>
         ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Creates an intermediate Upload object that you can add Parts to. Currently, an Upload can accept at most 8 GB in total and expires after an hour after you create it.
+        /// Once you complete the Upload, we will create a File object that contains all the parts you uploaded.This File is usable in the rest of our platform as a regular File object.
+        /// </summary>
+        /// <param name="bytes">The number of bytes in the file you are uploading.</param>
+        /// <param name="fileName">The name of the file to upload.</param>
+        /// <param name="contentType">The MIME type of the file.</param>
+        /// <param name="purpose">The intended purpose of the uploaded file.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        ValueTask<IOpenAiUploadFile> CreateUploadAsync(long bytes, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default);
     }
 }
