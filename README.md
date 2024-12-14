@@ -20,7 +20,7 @@ A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API
 
 ## Requirements
 
-This library targets .NET 9 and above.
+This library targets .NET 9 or above.
 
 ### Adv
 Watch out my Rystem framework to be able to do .Net webapp faster (easy integration with repository pattern or CQRS for your Azure services).
