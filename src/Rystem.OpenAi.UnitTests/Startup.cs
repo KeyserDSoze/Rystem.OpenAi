@@ -26,6 +26,8 @@ namespace Rystem.OpenAi.UnitTests
             var tenantId = Environment.GetEnvironmentVariable("AzureADTenantId") ?? configuration["AzureAd:TenantId"];
             var azureApiKey2 = Environment.GetEnvironmentVariable("Azure2ApiKey") ?? configuration["Azure2:ApiKey"];
             var resourceName2 = Environment.GetEnvironmentVariable("Azure2ResourceName") ?? configuration["Azure2:ResourceName"];
+            var azureApiKey3 = Environment.GetEnvironmentVariable("Azure3ApiKey") ?? configuration["Azure3:ApiKey"];
+            var resourceName3 = Environment.GetEnvironmentVariable("Azure3ResourceName") ?? configuration["Azure3:ResourceName"];
             services.AddHttpClient("client", x =>
             {
                 x.BaseAddress = new Uri("http://localhost");
@@ -78,6 +80,23 @@ namespace Rystem.OpenAi.UnitTests
                         chatClient.ForceModel("gpt-4");
                     };
                 }, "Azure2");
+            services
+               .AddOpenAi(settings =>
+               {
+                   settings.ApiKey = azureApiKey3;
+                   settings.Azure.ResourceName = resourceName3;
+                   settings.Version = "2024-02-01";
+                   settings.UseVersionForAudioSpeech("2024-05-01-preview");
+                   settings.UseVersionForAudioTranscription("2024-06-01");
+                   settings.UseVersionForAudioTranslation("2024-06-01");
+                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioSpeech, "tts-hd");
+                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranscription, "whisper");
+                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranslation, "whisper");
+                   settings.DefaultRequestConfiguration.Chat = chatClient =>
+                   {
+                       chatClient.ForceModel("gpt-4");
+                   };
+               }, "Azure3");
             return services;
         }
         protected override ValueTask ConfigureServerServicesAsync(IServiceCollection services, IConfiguration configuration)

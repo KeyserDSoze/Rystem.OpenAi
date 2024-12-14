@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
+        [InlineData("Azure3")]
         public async ValueTask CreateTranslationAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -64,8 +64,8 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
-        public async ValueTask CreateVerboseTranslationAsync(string name)
+        [InlineData("Azure3")]
+        public async ValueTask CreateVerboseTranslationAsSegmentsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Audio);
@@ -81,17 +81,41 @@ namespace Rystem.OpenAi.Test
                 .WithFile(editableFile.ToArray(), "default.mp3")
                 .WithTemperature(1)
                 .WithPrompt("sample")
-                .VerboseTranslateAsync();
+                .VerboseTranslateAsSegmentsAsync();
 
             Assert.NotNull(results);
             Assert.True(results.Text?.Length > 100);
             Assert.NotEmpty(results.Segments ?? []);
         }
 
-
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
+        [InlineData("Azure3")]
+        public async ValueTask CreateVerboseTranslationAsWordsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.Audio);
+
+            var location = Assembly.GetExecutingAssembly().Location;
+            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+            var editableFile = new MemoryStream();
+            await readableStream.CopyToAsync(editableFile);
+            editableFile.Position = 0;
+
+            var results = await openAiApi.Audio
+                .WithFile(editableFile.ToArray(), "default.mp3")
+                .WithTemperature(1)
+                .WithPrompt("sample")
+                .VerboseTranslateAsWordsAsync();
+
+            Assert.NotNull(results);
+            Assert.True(results.Text?.Length > 100);
+            Assert.NotEmpty(results.Words ?? []);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure3")]
         public async ValueTask CreateTranscriptionAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -117,8 +141,8 @@ namespace Rystem.OpenAi.Test
 
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
-        public async ValueTask CreateVerboseTranscriptionAsync(string name)
+        [InlineData("Azure3")]
+        public async ValueTask CreateVerboseTranscriptionAsSegmentsAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             var location = Assembly.GetExecutingAssembly().Location;
@@ -134,7 +158,7 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(1)
                 .WithLanguage(Language.Italian)
                 .WithPrompt("Incidente")
-                .VerboseTranscriptAsync();
+                .VerboseTranscriptAsSegmentsAsync();
 
             Assert.NotNull(results);
             Assert.True(results.Text?.Length > 100);
@@ -142,8 +166,34 @@ namespace Rystem.OpenAi.Test
             Assert.NotEmpty(results.Segments ?? []);
         }
         [Theory]
+        [InlineData("")]
+        [InlineData("Azure3")]
+        public async ValueTask CreateVerboseTranscriptionAsWordsAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            var location = Assembly.GetExecutingAssembly().Location;
+            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+
+            var editableFile = new MemoryStream();
+            readableStream.CopyTo(editableFile);
+            editableFile.Position = 0;
+
+            var results = await openAiApi.Audio
+                .WithFile(editableFile.ToArray(), "default.mp3")
+                .WithTemperature(1)
+                .WithLanguage(Language.Italian)
+                .WithPrompt("Incidente")
+                .VerboseTranscriptAsWordsAsync();
+
+            Assert.NotNull(results);
+            Assert.True(results.Text?.Length > 100);
+            Assert.StartsWith("Incidente tra due aerei di addestramento", results.Text);
+            Assert.NotEmpty(results.Words ?? []);
+        }
+        [Theory]
         [InlineData("", "Hello world!")]
-        [InlineData("Azure2", "Hello world!")]
+        [InlineData("Azure3", "Hello world!")]
         public async ValueTask CreateSpeechAsync(string name, string text)
         {
             var openAiApi = _openAiFactory.Create(name)!;

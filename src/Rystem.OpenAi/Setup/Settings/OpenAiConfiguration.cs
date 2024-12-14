@@ -149,9 +149,6 @@ namespace Rystem.OpenAi
                         return deployments.Key switch
                         {
                             OpenAiType.Image => CognitiveServicesDomain,
-                            OpenAiType.AudioSpeech => CognitiveServicesDomain,
-                            OpenAiType.AudioTranscription => CognitiveServicesDomain,
-                            OpenAiType.AudioTranslation => CognitiveServicesDomain,
                             _ => OpenAiDomain
                         };
                     }
