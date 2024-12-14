@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi
 {
@@ -32,6 +33,32 @@ namespace Rystem.OpenAi
                 var parameterName = parameter.Name ?? parameter.ParameterType.Name;
                 ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
                 if (!parameter.IsNullable())
+                    jsonFunctionObject.AddRequired(parameterName);
+            }
+            return jsonFunction;
+        }
+        /// <summary>
+        /// Converts a class to a FunctionTool
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
+        public static FunctionTool ToFunctionTool(this Type type, string name, string? description)
+        {
+            var jsonFunctionObject = new FunctionToolMainProperty();
+            var jsonFunction = new FunctionTool
+            {
+                Name = name,
+                Description = description ?? name,
+                Parameters = jsonFunctionObject
+            };
+            foreach (var property in type.GetProperties())
+            {
+                var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
+                var parameterName = attribute?.Name ?? property.Name ?? property.PropertyType.Name;
+                ToolPropertyHelper.Add(parameterName, property.PropertyType, jsonFunctionObject);
+                if (!property.IsNullable() || property.GetCustomAttribute<JsonRequiredAttribute>() != null)
                     jsonFunctionObject.AddRequired(parameterName);
             }
             return jsonFunction;

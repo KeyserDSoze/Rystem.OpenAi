@@ -31,8 +31,14 @@ namespace Rystem.OpenAi.Audio
         /// Transcribes audio into a verbose representation in the input language
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>VerboseAudioResult</returns>
-        ValueTask<VerboseAudioResult> VerboseTranscriptAsync(CancellationToken cancellationToken = default);
+        /// <returns>VerboseSegmentAudioResult</returns>
+        ValueTask<VerboseSegmentAudioResult> VerboseTranscriptAsSegmentsAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Transcribes audio into a verbose representation in the input language
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>VerboseWordAudioResult</returns>
+        ValueTask<VerboseWordAudioResult> VerboseTranscriptAsWordsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Translates audio into English.
@@ -45,8 +51,14 @@ namespace Rystem.OpenAi.Audio
         /// Translates audio into a verbose representation in English.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>VerboseAudioResult</returns>
-        ValueTask<VerboseAudioResult> VerboseTranslateAsync(CancellationToken cancellationToken = default);
+        /// <returns>VerboseSegmentAudioResult</returns>
+        ValueTask<VerboseSegmentAudioResult> VerboseTranslateAsSegmentsAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Translates audio into a verbose representation in English.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>VerboseWordAudioResult</returns>
+        ValueTask<VerboseWordAudioResult> VerboseTranslateAsWordsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.

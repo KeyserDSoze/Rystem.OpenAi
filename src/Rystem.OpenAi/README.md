@@ -831,9 +831,14 @@ The `IOpenAiAudio` interface provides methods to handle audio processing tasks s
 - **Returns**: An `AudioResult` containing the transcription details.
 - **Usage**: Extract text content from audio in its original language.
 
-#### `VerboseTranscriptAsync(CancellationToken cancellationToken = default)`
+#### `VerboseTranscriptAsSegmentsAsync(CancellationToken cancellationToken = default)`
 - **Description**: Transcribes the audio into a verbose representation in the input language.
-- **Returns**: A `VerboseAudioResult` with detailed transcription data.
+- **Returns**: A `VerboseSegmentAudioResult` with detailed transcription data.
+- **Usage**: Suitable for scenarios requiring detailed transcriptions with additional context or metadata.
+
+#### `VerboseTranscriptAsWordsAsync(CancellationToken cancellationToken = default)`
+- **Description**: Transcribes the audio into a verbose representation in the input language.
+- **Returns**: A `VerboseWordAudioResult` with detailed transcription data.
 - **Usage**: Suitable for scenarios requiring detailed transcriptions with additional context or metadata.
 
 ### 3. **Translation**
@@ -842,9 +847,14 @@ The `IOpenAiAudio` interface provides methods to handle audio processing tasks s
 - **Returns**: An `AudioResult` containing the translated text.
 - **Usage**: Convert audio content from any supported language to English.
 
-#### `VerboseTranslateAsync(CancellationToken cancellationToken = default)`
+#### `VerboseTranslateAsSegmentsAsync(CancellationToken cancellationToken = default)`
 - **Description**: Translates audio into a verbose representation in English.
-- **Returns**: A `VerboseAudioResult` with detailed translation data.
+- **Returns**: A `VerboseSegmentAudioResult` with detailed translation data.
+- **Usage**: Obtain comprehensive translation output with additional metadata.
+
+#### `VerboseTranslateAsWordsAsync(CancellationToken cancellationToken = default)`
+- **Description**: Translates audio into a verbose representation in English.
+- **Returns**: A `VerboseWordAudioResult` with detailed translation data.
 - **Usage**: Obtain comprehensive translation output with additional metadata.
 
 ### 4. **Customization**
@@ -899,6 +909,31 @@ Transcribes audio into the input language.
         .TranscriptAsync();
 ```
 
+example for verbose transcription in segments
+
+```csharp
+    var openAiApi = _openAiFactory.Create(name)!;
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+
+    var editableFile = new MemoryStream();
+    readableStream.CopyTo(editableFile);
+    editableFile.Position = 0;
+
+    var results = await openAiApi.Audio
+        .WithFile(editableFile.ToArray(), "default.mp3")
+        .WithTemperature(1)
+        .WithLanguage(Language.Italian)
+        .WithPrompt("Incidente")
+        .VerboseTranscriptAsSegmentsAsync();
+
+    Assert.NotNull(results);
+    Assert.True(results.Text?.Length > 100);
+    Assert.StartsWith("Incidente tra due aerei di addestramento", results.Text);
+    Assert.NotEmpty(results.Segments ?? []);
+```
+
 ### Create Translation
 Translates audio into English.
 
@@ -917,6 +952,30 @@ Translates audio into English.
         .WithPrompt("sample")
         .WithFile(editableFile.ToArray(), "default.mp3")
         .TranslateAsync();
+```
+
+example for verbose translation in segments
+
+```csharp
+    var openAiApi = _openAiFactory.Create(name)!;
+    Assert.NotNull(openAiApi.Audio);
+
+    var location = Assembly.GetExecutingAssembly().Location;
+    location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+    using var readableStream = File.OpenRead($"{location}\\Files\\test.mp3");
+    var editableFile = new MemoryStream();
+    await readableStream.CopyToAsync(editableFile);
+    editableFile.Position = 0;
+
+    var results = await openAiApi.Audio
+        .WithFile(editableFile.ToArray(), "default.mp3")
+        .WithTemperature(1)
+        .WithPrompt("sample")
+        .VerboseTranslateAsSegmentsAsync();
+
+    Assert.NotNull(results);
+    Assert.True(results.Text?.Length > 100);
+    Assert.NotEmpty(results.Segments ?? []);
 ```
 
 ## Speech
@@ -1114,6 +1173,26 @@ Returns the contents of the specified file
     var openAiApi = _openAiFactory.Create(name);
     var contentRetrieve = await openAiApi.File
             .RetrieveFileContentAsStringAsync(uploadResult.Id);
+```
+
+### Upload large files
+You can upload large files by splitting them into parts.
+Upload a file that can be used across various endpoints. Individual files can be up to 512 MB, and the size of all files uploaded by one organization can be up to 100 GB.
+The Assistants API supports files up to 2 million tokens and of specific file types. See the Assistants Tools guide for details.
+The Fine-tuning API only supports .jsonl files. The input also has certain required formats for fine-tuning chat or completions models.
+The Batch API only supports .jsonl files up to 200 MB in size. The input also has a specific required format.
+
+```csharp
+     var upload = openAiApi.File
+                .CreateUpload(fileName)
+                .WithPurpose(PurposeFileUpload.FineTune)
+                .WithContentType("application/json")
+                .WithSize(editableFile.Length);
+
+    var execution = await upload.ExecuteAsync();
+    var partResult = await execution.AddPartAsync(editableFile);
+    Assert.True(partResult.Id?.Length > 7);
+    var completeResult = await execution.CompleteAsync();
 ```
 
 ## Fine-Tunes
