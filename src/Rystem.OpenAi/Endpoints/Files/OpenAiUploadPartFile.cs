@@ -9,7 +9,7 @@ namespace Rystem.OpenAi.Files
 {
     internal sealed class OpenAiUploadPartFile : IOpenAiPartUploadFile
     {
-        public readonly OpenAiFile _openAiFile;
+        private readonly OpenAiFile _openAiFile;
         private readonly string _uploadId;
         private readonly PartIds _parts = new();
         public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId)
@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Files
         public async ValueTask<FilePartResult> AddPartAsync(Stream part, CancellationToken cancellationToken = default)
         {
             var memoryStream = new MemoryStream();
-            await part.CopyToAsync(memoryStream);
+            await part.CopyToAsync(memoryStream, cancellationToken);
             var fileContent = new ByteArrayContent(memoryStream.ToArray());
             var content = new MultipartFormDataContent
             {
