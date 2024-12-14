@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("instructions")]
         public string? Instructions { get => InstructionsBuilder?.ToString(); set => InstructionsBuilder = new(value); }
         [JsonPropertyName("metadata")]
-        public object? Metadata { get; set; }
+        public Dictionary<string, string>? Metadata { get; set; }
         [JsonPropertyName("response_format")]
         public ResponseFormatChatRequest? ResponseFormat { get; set; }
         [JsonPropertyName("temperature")]
