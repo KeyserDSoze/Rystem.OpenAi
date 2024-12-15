@@ -140,15 +140,15 @@ namespace Rystem.OpenAi.Assistant
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        ValueTask<bool> CreateAsync(CancellationToken cancellationToken = default);
+        ValueTask<AssistantRequest> CreateAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// Delete the assistant.
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        ValueTask<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
-        ValueTask<bool> ListAsync(CancellationToken cancellationToken = default);
-        ValueTask<bool> RetrieveAsync(string id, CancellationToken cancellationToken = default);
-        ValueTask<bool> UpdateAsync(string id, CancellationToken cancellationToken = default);
+        /// <returns>AssistantDeleteResponse</returns>
+        ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<AssistantListRequest> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
+        ValueTask<AssistantRequest> RetrieveAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<AssistantRequest> UpdateAsync(string id, CancellationToken cancellationToken = default);
     }
 }

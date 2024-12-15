@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +16,11 @@ namespace Rystem.OpenAi.Assistant
         }
         private protected override void ConfigureFactory(string name)
         {
+            var configuration = ConfigurationFactory.Create(name);
+            if (configuration?.Settings?.DefaultRequestConfiguration?.Assistant != null)
+            {
+                configuration.Settings.DefaultRequestConfiguration.Assistant.Invoke(this);
+            }
         }
         public IOpenAiAssistant ForceResponseFormat(FunctionTool function)
         {
@@ -171,27 +175,72 @@ namespace Rystem.OpenAi.Assistant
 
         public IOpenAiToolResourcesAssistant WithToolResources()
             => new OpenAiToolResourcesAssistant(this);
-
-        public ValueTask<bool> CreateAsync(CancellationToken cancellationToken = default)
+        private static readonly Dictionary<string, string> s_betaHeaders = new()
         {
-            throw new System.NotImplementedException();
+            { "OpenAI-Beta", "assistants=v2" }
+        };
+        public ValueTask<AssistantRequest> CreateAsync(CancellationToken cancellationToken = default)
+        {
+            return DefaultServices.HttpClientWrapper.
+                PostAsync<AssistantRequest>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Assistant, string.Empty, Forced, string.Empty, null),
+                        Request,
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
         }
 
-        public ValueTask<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            return DefaultServices.HttpClientWrapper.
+                DeleteAsync<AssistantDeleteResponse>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
         }
-        public ValueTask<bool> ListAsync(CancellationToken cancellationToken = default)
+        public ValueTask<AssistantListRequest> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var querystring = new Dictionary<string, string>
+            {
+                { "limit", take.ToString() },
+                { "order", order == AssistantOrder.Descending ? "desc" : "asc" },
+            };
+            if (elementId != null && getAfterTheElementId)
+                querystring.Add("after", elementId);
+            else if (elementId != null && !getAfterTheElementId)
+                querystring.Add("before", elementId);
+            return DefaultServices.HttpClientWrapper.
+                GetAsync<AssistantListRequest>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Assistant, string.Empty, Forced, string.Empty, querystring),
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
         }
-        public ValueTask<bool> RetrieveAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<AssistantRequest> RetrieveAsync(string id, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            return DefaultServices.HttpClientWrapper.
+                GetAsync<AssistantRequest>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
         }
-        public ValueTask<bool> UpdateAsync(string id, CancellationToken cancellationToken = default)
+
+        public ValueTask<AssistantRequest> UpdateAsync(string id, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            return DefaultServices.HttpClientWrapper.
+                PostAsync<AssistantRequest>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        Request,
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
         }
     }
 }

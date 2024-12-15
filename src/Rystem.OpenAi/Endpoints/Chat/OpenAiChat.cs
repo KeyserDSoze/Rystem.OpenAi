@@ -37,7 +37,7 @@ namespace Rystem.OpenAi.Chat
         {
             Request.Stream = false;
             Request.StreamOptions = null;
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, null, DefaultServices.Configuration, cancellationToken);
             if (response.Usage != null)
                 AddUsages(response.Usage);
             return response;
@@ -52,7 +52,7 @@ namespace Rystem.OpenAi.Chat
                 {
                     IncludeUsage = true
                 };
-            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
+            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
             {
                 if (result.Usage != null)
                     AddUsages(result.Usage);

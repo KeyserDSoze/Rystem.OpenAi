@@ -27,19 +27,19 @@ namespace Rystem.OpenAi.Files
             {
                 { fileContent, PartialFileContent }
             };
-            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FilePartResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/parts"), content, _openAiFile.DefaultServices.Configuration, cancellationToken);
+            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FilePartResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/parts", null), content, null, _openAiFile.DefaultServices.Configuration, cancellationToken);
             _parts.Parts.Add(result.Id!);
             return result;
         }
         private static readonly object s_default = new();
         public async ValueTask<FileResult> CancelAsync(CancellationToken cancellationToken = default)
         {
-            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FileResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/cancel"), s_default, _openAiFile.DefaultServices.Configuration, cancellationToken);
+            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FileResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/cancel", null), s_default, null, _openAiFile.DefaultServices.Configuration, cancellationToken);
             return result;
         }
         public async ValueTask<FileResult> CompleteAsync(CancellationToken cancellationToken = default)
         {
-            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FileResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/complete"), _parts, _openAiFile.DefaultServices.Configuration, cancellationToken);
+            var result = await _openAiFile.DefaultServices.HttpClientWrapper.PostAsync<FileResult>(_openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/complete", null), _parts, null, _openAiFile.DefaultServices.Configuration, cancellationToken);
             return result;
         }
         private sealed class PartIds

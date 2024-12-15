@@ -50,8 +50,7 @@ namespace Rystem.OpenAi.Assistant
 
         public IOpenAiAssistant UseFileSearch(params string[] filesId)
         {
-            if (_assistantFileSearchToolResources.VectorStores == null)
-                _assistantFileSearchToolResources.VectorStores = new AssistantVectorStoresFileSearchToolResources();
+            _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
             if (_assistantFileSearchToolResources.VectorStores.Files == null)
                 _assistantFileSearchToolResources.VectorStores.Files = [];
             _assistantFileSearchToolResources.VectorStores.Files.AddRange(filesId);
@@ -59,8 +58,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public IOpenAiFileSearchToolResourcesAssistant WithStaticChunkingStrategy(int maxChunkSize, int chunkOverlap)
         {
-            if (_assistantFileSearchToolResources.VectorStores == null)
-                _assistantFileSearchToolResources.VectorStores = new AssistantVectorStoresFileSearchToolResources();
+            _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
             _assistantFileSearchToolResources.VectorStores.ChunkingStrategy = new AssistantChunkingStrategyVectorStoresFileSearchToolResources
             {
                 Type = ChunkingStrategyTypeAsStatic,

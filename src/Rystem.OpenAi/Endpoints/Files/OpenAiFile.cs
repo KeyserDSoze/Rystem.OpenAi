@@ -22,7 +22,7 @@ namespace Rystem.OpenAi.Files
             }
         }
         public ValueTask<FilesDataResult> AllAsync(CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClientWrapper.GetAsync<FilesDataResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, string.Empty, Forced, string.Empty), DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.GetAsync<FilesDataResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, string.Empty, Forced, string.Empty, null), null, DefaultServices.Configuration, cancellationToken);
         private const string Purpose = "purpose";
         private const string FileContent = "file";
         public async ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
@@ -42,24 +42,24 @@ namespace Rystem.OpenAi.Files
                 { new StringContent(currentPurpose), Purpose },
                 { fileContent, FileContent, fileName }
             };
-            return DefaultServices.HttpClientWrapper.PostAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileName, Forced, string.Empty), content, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.PostAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileName, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
         }
         public ValueTask<FileResult> UploadFileAsync(byte[] file, string fileName, MimeType mimeType, PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
             => UploadFileAsync(file, fileName, mimeType.Name, purpose, cancellationToken);
         public ValueTask<FileResult> UploadFileAsync(Stream file, string fileName, MimeType mimeType, PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
             => UploadFileAsync(file, fileName, mimeType.Name, purpose, cancellationToken);
         public ValueTask<FileResult> DeleteAsync(string fileId, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClientWrapper.DeleteAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}"), DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.DeleteAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}", null), null, DefaultServices.Configuration, cancellationToken);
         public ValueTask<FileResult> RetrieveAsync(string fileId, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClientWrapper.GetAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}"), DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper.GetAsync<FileResult>(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}", null), null, DefaultServices.Configuration, cancellationToken);
         public async Task<string> RetrieveFileContentAsStringAsync(string fileId, CancellationToken cancellationToken = default)
         {
-            var response = await DefaultServices.HttpClientWrapper.ExecuteAsync(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}/content"), HttpMethod.Get, null, false, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.ExecuteAsync(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}/content", null), HttpMethod.Get, null, false, DefaultServices.Configuration, cancellationToken);
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
         public async Task<Stream> RetrieveFileContentAsStreamAsync(string fileId, CancellationToken cancellationToken = default)
         {
-            var response = await DefaultServices.HttpClientWrapper.ExecuteAsync(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}/content"), HttpMethod.Get, null, false, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.ExecuteAsync(DefaultServices.Configuration.GetUri(OpenAiType.File, fileId, Forced, $"/{fileId}/content", null), HttpMethod.Get, null, false, DefaultServices.Configuration, cancellationToken);
             var memoryStream = new MemoryStream();
             await response.Content.CopyToAsync(memoryStream, cancellationToken).NoContext();
             memoryStream.Seek(0, SeekOrigin.Begin);
