@@ -112,11 +112,11 @@ namespace Rystem.OpenAi
                 var query = string.Join("&", querystring.Select(current => $"{current.Key}={current.Value}"));
                 if (uri.Contains(QuestionMark))
                 {
-                    uri = $"{uri}?{query}";
+                    uri = $"{uri}&{query}";
                 }
                 else
                 {
-                    uri = $"{uri}&{query}";
+                    uri = $"{uri}?{query}";
                 }
             }
             return uri;

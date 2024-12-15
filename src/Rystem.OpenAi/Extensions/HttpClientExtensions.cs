@@ -65,33 +65,27 @@ namespace Rystem.OpenAi
                     request.Content = stringContent;
                 }
             }
-            try
+            var response = wrapper.Policy == null ?
+                await wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken) :
+                await wrapper.Policy.ExecuteAsync(ct => wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, ct), cancellationToken);
+            if (response.IsSuccessStatusCode)
             {
-                var response = wrapper.Policy == null ?
-                    await wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken) :
-                    await wrapper.Policy.ExecuteAsync(ct => wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, ct), cancellationToken);
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
-                }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
-                    var error = new ErrorResponse
-                    {
-                        Error = errorMessage,
-                        Request = url,
-                        Method = method.Method,
-                        Streaming = isStreaming,
-                        Content = message
-                    };
-                    throw new HttpRequestException(error.ToString());
-                }
+                return response;
             }
-            catch (Exception e)
+            else
             {
-                throw new HttpRequestException($"Error in request: {e.Message}");
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+                var error = new ErrorResponse
+                {
+                    Error = errorMessage,
+                    Request = url,
+                    Method = method.Method,
+                    Streaming = isStreaming,
+                    Content = message
+                };
+                throw new HttpRequestException(error.ToString());
             }
+
         }
         internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClientWrapper wrapper,
             string url,

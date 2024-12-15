@@ -11,7 +11,7 @@ namespace Rystem.OpenAi.Assistant
     internal sealed class OpenAiAssistant : OpenAiBuilder<IOpenAiAssistant, AssistantRequest, ChatModelName>, IOpenAiAssistant
     {
         public OpenAiAssistant(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.AudioSpeech)
+            : base(factory, configurationFactory, OpenAiType.Assistant)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public IOpenAiAssistant ForceResponseFormat(FunctionTool function)
         {
-            Request.ResponseFormat = new()
+            Request.ResponseFormat = new ResponseFormatChatRequest()
             {
                 Content = function,
                 Type = ChatConstants.ResponseFormat.JsonSchema
@@ -42,7 +42,7 @@ namespace Rystem.OpenAi.Assistant
             => ForceResponseFormat(typeof(T).ToFunctionTool(typeof(T).Name, null, true));
         public IOpenAiAssistant ForceResponseAsJsonFormat()
         {
-            Request.ResponseFormat = new()
+            Request.ResponseFormat = new ResponseFormatChatRequest()
             {
                 Type = ChatConstants.ResponseFormat.JsonObject
             };
@@ -50,7 +50,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public IOpenAiAssistant ForceResponseAsText()
         {
-            Request.ResponseFormat = new()
+            Request.ResponseFormat = new ResponseFormatChatRequest()
             {
                 Type = ChatConstants.ResponseFormat.Text
             };
@@ -196,7 +196,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<AssistantDeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
@@ -225,7 +225,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
@@ -236,7 +236,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, id, null),
+                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
                         Request,
                         s_betaHeaders,
                         DefaultServices.Configuration,

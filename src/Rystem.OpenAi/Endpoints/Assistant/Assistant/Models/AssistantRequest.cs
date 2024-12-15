@@ -12,7 +12,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("object")]
         public string? Object { get; set; }
         [JsonPropertyName("created_at")]
-        public long CreatedAt { get; set; }
+        public long? CreatedAt { get; set; }
         [JsonPropertyName("name")]
         public string? Name { get; set; }
         [JsonPropertyName("description")]
@@ -26,7 +26,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("metadata")]
         public Dictionary<string, string>? Metadata { get; set; }
         [JsonPropertyName("response_format")]
-        public ResponseFormatChatRequest? ResponseFormat { get; set; }
+        public object? ResponseFormat { get; set; }
         [JsonPropertyName("temperature")]
         public double? Temperature { get; set; }
         [JsonPropertyName("top_p")]

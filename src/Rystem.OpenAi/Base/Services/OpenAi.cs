@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi.Assistant;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
@@ -23,6 +24,7 @@ namespace Rystem.OpenAi
         private readonly IFactory<IOpenAiModel> _openAiModelFactory;
         private readonly IFactory<IOpenAiModeration> _openAiModerationFactory;
         private readonly IFactory<IOpenAiManagement> _openAiManagementFactory;
+        private readonly IFactory<IOpenAiAssistant> _openAiAssistantFactory;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public OpenAi(
             IFactory<OpenAiConfiguration> configurationFactory,
@@ -35,7 +37,8 @@ namespace Rystem.OpenAi
             IFactory<IOpenAiImage> openAiImageFactory,
             IFactory<IOpenAiModel> openAiModelFactory,
             IFactory<IOpenAiModeration> openAiModerationFactory,
-            IFactory<IOpenAiManagement> openAiManagementFactory)
+            IFactory<IOpenAiManagement> openAiManagementFactory,
+            IFactory<IOpenAiAssistant> openAiAssistantFactory)
         {
             _configurationFactory = configurationFactory;
             _openAiAudioFactory = openAiAudioFactory;
@@ -48,6 +51,7 @@ namespace Rystem.OpenAi
             _openAiModelFactory = openAiModelFactory;
             _openAiModerationFactory = openAiModerationFactory;
             _openAiManagementFactory = openAiManagementFactory;
+            _openAiAssistantFactory = openAiAssistantFactory;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public IOpenAiAudio Audio => field ??= _openAiAudioFactory.Create(_factoryName)!;
@@ -60,6 +64,7 @@ namespace Rystem.OpenAi
         public IOpenAiModel Model => field ??= _openAiModelFactory.Create(_factoryName)!;
         public IOpenAiModeration Moderation => field ??= _openAiModerationFactory.Create(_factoryName)!;
         public IOpenAiManagement Management => field ??= _openAiManagementFactory.Create(_factoryName)!;
+        public IOpenAiAssistant Assistant => field ??= _openAiAssistantFactory.Create(_factoryName)!;
         public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;
         private string? _factoryName;
         public void SetFactoryName(string name)
