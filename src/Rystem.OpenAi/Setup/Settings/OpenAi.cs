@@ -14,6 +14,7 @@
         AudioTranslation,
         AudioSpeech,
         Billing,
-        Deployment
+        Deployment,
+        Assistant
     }
 }

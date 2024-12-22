@@ -272,13 +272,15 @@ namespace Rystem.OpenAi.Chat
         /// <typeparam name="T"></typeparam>
         /// <param name="name"></param>
         /// <param name="description"></param>
+        /// <param name="strict"></param>
         /// <returns></returns>
-        IOpenAiChat AddFunctionTool<T>(string name, string? description = null);
+        IOpenAiChat AddFunctionTool<T>(string name, string? description = null, bool? strict = null);
         /// <summary>
         /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
         /// </summary>
         /// <param name="function"></param>
+        /// <param name="strict"></param>
         /// <returns></returns>
-        IOpenAiChat AddFunctionTool(MethodInfo function);
+        IOpenAiChat AddFunctionTool(MethodInfo function, bool? strict = null);
     }
 }

@@ -65,33 +65,27 @@ namespace Rystem.OpenAi
                     request.Content = stringContent;
                 }
             }
-            try
+            var response = wrapper.Policy == null ?
+                await wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken) :
+                await wrapper.Policy.ExecuteAsync(ct => wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, ct), cancellationToken);
+            if (response.IsSuccessStatusCode)
             {
-                var response = wrapper.Policy == null ?
-                    await wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, cancellationToken) :
-                    await wrapper.Policy.ExecuteAsync(ct => wrapper.Client.SendAsync(request, isStreaming ? HttpCompletionOption.ResponseHeadersRead : HttpCompletionOption.ResponseContentRead, ct), cancellationToken);
-                if (response.IsSuccessStatusCode)
-                {
-                    return response;
-                }
-                else
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
-                    var error = new ErrorResponse
-                    {
-                        Error = errorMessage,
-                        Request = url,
-                        Method = method.Method,
-                        Streaming = isStreaming,
-                        Content = message
-                    };
-                    throw new HttpRequestException(error.ToString());
-                }
+                return response;
             }
-            catch (Exception e)
+            else
             {
-                throw new HttpRequestException($"Error in request: {e.Message}");
+                var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+                var error = new ErrorResponse
+                {
+                    Error = errorMessage,
+                    Request = url,
+                    Method = method.Method,
+                    Streaming = isStreaming,
+                    Content = message
+                };
+                throw new HttpRequestException(error.ToString());
             }
+
         }
         internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClientWrapper wrapper,
             string url,
@@ -107,41 +101,54 @@ namespace Rystem.OpenAi
         }
         internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Delete, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Delete, headers, configuration, cancellationToken);
         internal static ValueTask<TResponse> GetAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Get, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Get, headers, configuration, cancellationToken);
         internal static ValueTask<TResponse> PatchAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Patch, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Patch, headers, configuration, cancellationToken);
         internal static ValueTask<TResponse> PutAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Put, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Put, headers, configuration, cancellationToken);
         internal static ValueTask<TResponse> PostAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Post, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Post, headers, configuration, cancellationToken);
         internal static async ValueTask<TResponse> ExecuteWithResponseAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
+            if (headers != null && headers.Count > 0)
+            {
+                foreach (var header in headers)
+                {
+                    wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
             var response = await wrapper.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;

@@ -95,8 +95,8 @@ namespace Rystem.OpenAi.Image
         private ValueTask<ImageResult> ExecuteAsync<T>(string endpoint, T request, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
-            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint);
-            return DefaultServices.HttpClientWrapper.PostAsync<ImageResult>(uri, request, DefaultServices.Configuration, cancellationToken);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
+            return DefaultServices.HttpClientWrapper.PostAsync<ImageResult>(uri, request, null, DefaultServices.Configuration, cancellationToken);
         }
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
@@ -107,8 +107,8 @@ namespace Rystem.OpenAi.Image
         private ValueTask<ImageResultForBase64> ExecuteAsBase64Async<T>(string endpoint, T request, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.B64Json.AsString();
-            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint);
-            return DefaultServices.HttpClientWrapper.PostAsync<ImageResultForBase64>(uri, request, DefaultServices.Configuration, cancellationToken);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
+            return DefaultServices.HttpClientWrapper.PostAsync<ImageResultForBase64>(uri, request, null, DefaultServices.Configuration, cancellationToken);
         }
         /// <summary>
         /// An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where image should be edited. Must be a valid PNG file, less than 4MB, and have the same dimensions as image.

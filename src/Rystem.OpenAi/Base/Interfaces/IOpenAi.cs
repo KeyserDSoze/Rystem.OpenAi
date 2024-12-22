@@ -1,4 +1,5 @@
-﻿using Rystem.OpenAi.Audio;
+﻿using Rystem.OpenAi.Assistant;
+using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
 using Rystem.OpenAi.Files;
@@ -21,5 +22,6 @@ namespace Rystem.OpenAi
         IOpenAiModeration Moderation { get; }
         IOpenAiManagement Management { get; }
         IOpenAiSpeech Speech { get; }
+        IOpenAiAssistant Assistant { get; }
     }
 }

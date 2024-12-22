@@ -1,4 +1,5 @@
 ﻿using System;
+using Rystem.OpenAi.Assistant;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
@@ -22,5 +23,6 @@ namespace Rystem.OpenAi
         public Action<IOpenAiModel>? Model { get; set; }
         public Action<IOpenAiModeration>? Moderation { get; set; }
         public Action<IOpenAiManagement>? Management { get; set; }
+        public Action<IOpenAiAssistant>? Assistant { get; set; }
     }
 }

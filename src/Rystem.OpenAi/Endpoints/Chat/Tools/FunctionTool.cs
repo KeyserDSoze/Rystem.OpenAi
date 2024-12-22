@@ -11,6 +11,6 @@ namespace Rystem.OpenAi
         [JsonPropertyName("parameters")]
         public FunctionToolMainProperty Parameters { get; set; } = null!;
         [JsonPropertyName("strict")]
-        public bool Strict { get; set; }
+        public bool? Strict { get; set; }
     }
 }
