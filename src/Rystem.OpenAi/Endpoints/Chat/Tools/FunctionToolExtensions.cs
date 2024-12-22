@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace Rystem.OpenAi
 {

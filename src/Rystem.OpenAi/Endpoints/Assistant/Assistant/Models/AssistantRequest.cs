@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 using Rystem.OpenAi.Chat;
@@ -26,14 +27,14 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("metadata")]
         public Dictionary<string, string>? Metadata { get; set; }
         [JsonPropertyName("response_format")]
-        public object? ResponseFormat { get; set; }
+        public ResponseFormatChatRequest? ResponseFormat { get; set; }
         [JsonPropertyName("temperature")]
         public double? Temperature { get; set; }
         [JsonPropertyName("top_p")]
         public double? TopP { get; set; }
         [JsonPropertyName("tools")]
-        public List<object>? Tools { get; set; }
+        public List<AnyOf<AssistantFunctionTool, AssistantCodeInterpreterTool, AssistantFileSearchTool>>? Tools { get; set; }
         [JsonPropertyName("tool_resources")]
-        public object? ToolResources { get; set; }
+        public AnyOf<AssistantCodeInterpreterToolResources, AssistantFileSearchToolResources>? ToolResources { get; set; }
     }
 }
