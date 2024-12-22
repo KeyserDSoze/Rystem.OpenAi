@@ -44,7 +44,7 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("service_tier")]
         public string? ServiceTier { get; set; }
         [JsonPropertyName("stop")]
-        public AnyOf<string, string[]>? StopSequence { get; set; }
+        public AnyOf<string, List<string>>? StopSequence { get; set; }
         [JsonPropertyName("stream")]
         public bool Stream { get; internal set; } = false;
         [JsonPropertyName("stream_options")]

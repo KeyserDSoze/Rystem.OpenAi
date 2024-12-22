@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -128,7 +129,7 @@ namespace Rystem.OpenAi.Chat
         public IOpenAiChat WithStopSequence(params string[] values)
         {
             if (values.Length > 1)
-                Request.StopSequence = values;
+                Request.StopSequence = values.ToList();
             else if (values.Length == 1)
                 Request.StopSequence = values[0];
             return this;
@@ -137,15 +138,12 @@ namespace Rystem.OpenAi.Chat
         {
             if (Request.StopSequence == null)
                 Request.StopSequence = value;
-            else if (Request.StopSequence.Is<string>())
-                Request.StopSequence = new string[2] { Request.StopSequence.AsT0!, value };
-            else if (Request.StopSequence.Is<string[]>())
+            else if (Request.StopSequence.Is<string>(out var oldValue))
+                Request.StopSequence = new List<string> { oldValue!, value };
+            else if (Request.StopSequence.Is<List<string>>(out var array))
             {
-                var array = Request.StopSequence.AsT1!;
-                var newArray = new string[array.Length + 1];
-                array.CopyTo(newArray, 0);
-                newArray[^1] = value;
-                Request.StopSequence = newArray;
+                array!.Add(value);
+                Request.StopSequence = array;
             }
             return this;
         }
