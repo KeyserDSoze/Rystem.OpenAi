@@ -74,6 +74,12 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         IOpenAiChat AddAssistantMessage(string content);
         /// <summary>
+        /// Developer-provided instructions that the model should follow, regardless of messages sent by the user. With o1 models and newer, developer messages replace the previous system messages.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        IOpenAiChat AddDeveloperMessage(string content);
+        /// <summary>
         /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or Nucleus sampling but not both.
         /// </summary>
         /// <param name="value">Value</param>

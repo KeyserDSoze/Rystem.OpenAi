@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
@@ -16,7 +17,7 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("name")]
         public string? Name { get; set; }
         [JsonPropertyName("content")]
-        public object? Content { get; set; }
+        public AnyOf<string, List<ChatMessageContent>>? Content { get; set; }
         [JsonPropertyName("tool_call_id")]
         public string? ToolCallId { get; set; }
     }

@@ -7,6 +7,6 @@ namespace Rystem.OpenAi.FineTune
         [JsonPropertyName("type")]
         public string? Type { get; set; }
         [JsonPropertyName("wandb")]
-        public object? WeightsAndBiases { get; set; }
+        public WeightsAndBiasesFineTuneIntegration? WeightsAndBiases { get; set; }
     }
 }
