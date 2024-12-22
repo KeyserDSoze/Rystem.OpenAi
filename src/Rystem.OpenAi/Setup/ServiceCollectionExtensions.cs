@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using Polly;
 using Polly.Extensions.Http;
 using Rystem.OpenAi;
+using Rystem.OpenAi.Assistant;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
@@ -85,6 +86,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddFactory<IOpenAiChat, OpenAiChat>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiManagement, OpenAiManagement>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiAssistant, OpenAiAssistant>(integrationName, ServiceLifetime.Transient);
             //services
             //    .AddFactory<IOpenAiBilling, OpenAiBilling>(integrationName, ServiceLifetime.Transient);
             //services

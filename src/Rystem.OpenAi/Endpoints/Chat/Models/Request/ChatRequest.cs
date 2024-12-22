@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
@@ -43,7 +44,7 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("service_tier")]
         public string? ServiceTier { get; set; }
         [JsonPropertyName("stop")]
-        public object? StopSequence { get; set; }
+        public AnyOf<string, List<string>>? StopSequence { get; set; }
         [JsonPropertyName("stream")]
         public bool Stream { get; internal set; } = false;
         [JsonPropertyName("stream_options")]
@@ -53,9 +54,9 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("top_p")]
         public double? TopP { get; set; }
         [JsonPropertyName("tools")]
-        public List<object>? Tools { get; set; }
+        public List<ChatFunctionTool>? Tools { get; set; }
         [JsonPropertyName("tool_choice")]
-        public object? ToolChoice { get; set; }
+        public AnyOf<string, ForcedFunctionTool>? ToolChoice { get; set; }
         [JsonPropertyName("parallel_tool_calls")]
         public bool? ParallelToolCalls { get; set; }
         [JsonPropertyName("user")]

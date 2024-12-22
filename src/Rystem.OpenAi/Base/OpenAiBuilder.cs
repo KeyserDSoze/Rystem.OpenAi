@@ -34,7 +34,7 @@ namespace Rystem.OpenAi
         where TRequest : IOpenAiRequest, new()
         where TModel : ModelName
     {
-        private protected TRequest Request { get; }
+        internal TRequest Request { get; }
         public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
             : base(factory, configurationFactory, types)
         {

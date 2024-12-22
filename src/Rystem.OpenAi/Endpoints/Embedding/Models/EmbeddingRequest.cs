@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Embedding
 {
@@ -7,10 +9,9 @@ namespace Rystem.OpenAi.Embedding
         [JsonPropertyName("model")]
         public string? Model { get; set; }
         [JsonPropertyName("input")]
-        public object? Input { get; set; }
+        public AnyOf<string, List<string>>? Input { get; set; }
         [JsonPropertyName("user")]
         public string? User { get; set; }
-
         [JsonPropertyName("dimensions")]
         public int? Dimensions { get; set; }
         [JsonPropertyName("encoding_format")]

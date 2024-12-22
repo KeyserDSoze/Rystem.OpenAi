@@ -74,6 +74,12 @@ namespace Rystem.OpenAi.Chat
         /// <returns>Builder</returns>
         IOpenAiChat AddAssistantMessage(string content);
         /// <summary>
+        /// Developer-provided instructions that the model should follow, regardless of messages sent by the user. With o1 models and newer, developer messages replace the previous system messages.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns>Builder</returns>
+        IOpenAiChat AddDeveloperMessage(string content);
+        /// <summary>
         /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. We generally recommend altering this or Nucleus sampling but not both.
         /// </summary>
         /// <param name="value">Value</param>
@@ -266,13 +272,15 @@ namespace Rystem.OpenAi.Chat
         /// <typeparam name="T"></typeparam>
         /// <param name="name"></param>
         /// <param name="description"></param>
+        /// <param name="strict"></param>
         /// <returns></returns>
-        IOpenAiChat AddFunctionTool<T>(string name, string? description = null);
+        IOpenAiChat AddFunctionTool<T>(string name, string? description = null, bool? strict = null);
         /// <summary>
         /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
         /// </summary>
         /// <param name="function"></param>
+        /// <param name="strict"></param>
         /// <returns></returns>
-        IOpenAiChat AddFunctionTool(MethodInfo function);
+        IOpenAiChat AddFunctionTool(MethodInfo function, bool? strict = null);
     }
 }

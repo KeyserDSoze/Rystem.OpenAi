@@ -18,6 +18,12 @@ namespace Rystem.OpenAi.Files
         /// <returns></returns>
         IOpenAiUploadFile WithContentType(string contentType = "application/json");
         /// <summary>
+        /// The MIME type of the file.
+        /// </summary>
+        /// <param name="mimeType"></param>
+        /// <returns></returns>
+        IOpenAiUploadFile WithContentType(MimeType mimeType);
+        /// <summary>
         /// The intended purpose of the uploaded file.
         /// </summary>
         /// <param name="purpose"></param>

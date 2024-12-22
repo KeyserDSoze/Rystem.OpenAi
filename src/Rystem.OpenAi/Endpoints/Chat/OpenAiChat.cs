@@ -38,7 +38,7 @@ namespace Rystem.OpenAi.Chat
         {
             Request.Stream = false;
             Request.StreamOptions = null;
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, null, DefaultServices.Configuration, cancellationToken);
             if (response.Usage != null)
                 AddUsages(response.Usage);
             return response;
@@ -53,7 +53,7 @@ namespace Rystem.OpenAi.Chat
                 {
                     IncludeUsage = true
                 };
-            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
+            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
             {
                 if (result.Usage != null)
                     AddUsages(result.Usage);
@@ -83,6 +83,8 @@ namespace Rystem.OpenAi.Chat
             => new(this, role);
         public IOpenAiChat AddUserMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.User });
+        public IOpenAiChat AddDeveloperMessage(string content)
+            => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Developer });
         public IOpenAiChat AddToolMessage(string functionName, string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Tool, ToolCallId = functionName });
         public IOpenAiChat AddUserMessage(ChatMessageContent content)
@@ -127,7 +129,7 @@ namespace Rystem.OpenAi.Chat
         public IOpenAiChat WithStopSequence(params string[] values)
         {
             if (values.Length > 1)
-                Request.StopSequence = values;
+                Request.StopSequence = values.ToList();
             else if (values.Length == 1)
                 Request.StopSequence = values[0];
             return this;
@@ -136,14 +138,12 @@ namespace Rystem.OpenAi.Chat
         {
             if (Request.StopSequence == null)
                 Request.StopSequence = value;
-            else if (Request.StopSequence is string stringableSequence)
-                Request.StopSequence = new string[2] { stringableSequence, value };
-            else if (Request.StopSequence is string[] array)
+            else if (Request.StopSequence.Is<string>(out var oldValue))
+                Request.StopSequence = new List<string> { oldValue!, value };
+            else if (Request.StopSequence.Is<List<string>>(out var array))
             {
-                var newArray = new string[array.Length + 1];
-                array.CopyTo(newArray, 0);
-                newArray[^1] = value;
-                Request.StopSequence = newArray;
+                array!.Add(value);
+                Request.StopSequence = array;
             }
             return this;
         }
@@ -214,9 +214,9 @@ namespace Rystem.OpenAi.Chat
             return this;
         }
         public IOpenAiChat ForceResponseFormat(MethodInfo function)
-            => ForceResponseFormat(function.ToFunctionTool());
+            => ForceResponseFormat(function.ToFunctionTool(null, true));
         public IOpenAiChat ForceResponseFormat<T>()
-            => ForceResponseFormat(typeof(T).ToFunctionTool(typeof(T).Name, null));
+            => ForceResponseFormat(typeof(T).ToFunctionTool(typeof(T).Name, null, true));
         public IOpenAiChat ForceResponseAsJsonFormat()
         {
             Request.ResponseFormat = new()
@@ -294,20 +294,20 @@ namespace Rystem.OpenAi.Chat
             Request.Tools.Add(new ChatFunctionTool { Function = tool });
             return this;
         }
-        public IOpenAiChat AddFunctionTool(MethodInfo function)
+        public IOpenAiChat AddFunctionTool(MethodInfo function, bool? strict = null)
         {
             if (Request.ToolChoice?.ToString() == ChatConstants.ToolChoice.None)
                 Request.ToolChoice = ChatConstants.ToolChoice.Auto;
             Request.Tools ??= [];
-            Request.Tools.Add(new ChatFunctionTool { Function = function.ToFunctionTool() });
+            Request.Tools.Add(new ChatFunctionTool { Function = function.ToFunctionTool(null, strict) });
             return this;
         }
-        public IOpenAiChat AddFunctionTool<T>(string name, string? description = null)
+        public IOpenAiChat AddFunctionTool<T>(string name, string? description = null, bool? strict = null)
         {
             if (Request.ToolChoice?.ToString() == ChatConstants.ToolChoice.None)
                 Request.ToolChoice = ChatConstants.ToolChoice.Auto;
             Request.Tools ??= [];
-            Request.Tools.Add(new ChatFunctionTool { Function = typeof(T).ToFunctionTool(name, description) });
+            Request.Tools.Add(new ChatFunctionTool { Function = typeof(T).ToFunctionTool(name, description, strict) });
             return this;
         }
     }
