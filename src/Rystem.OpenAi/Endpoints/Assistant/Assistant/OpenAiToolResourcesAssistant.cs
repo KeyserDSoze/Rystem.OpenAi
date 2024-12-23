@@ -9,7 +9,10 @@
         }
         public IOpenAiAssistant UseCodeInterpreters(params string[] filesId)
         {
-            _openAiAssistant.Request.ToolResources = new AssistantCodeInterpreterToolResources
+            _openAiAssistant.Request.ToolResources ??= new AssistantToolResources
+            {
+            };
+            _openAiAssistant.Request.ToolResources.CodeInterpreter = new AssistantCodeInterpreterToolResources
             {
                 Files = [.. filesId]
             };
@@ -18,11 +21,14 @@
 
         public IOpenAiFileSearchToolResourcesAssistant WithFileSearch(params string[] vectorStoresId)
         {
+            _openAiAssistant.Request.ToolResources ??= new AssistantToolResources
+            {
+            };
             var assistantFileSearchToolResources = new AssistantFileSearchToolResources
             {
                 VectorStoresId = [.. vectorStoresId]
             };
-            _openAiAssistant.Request.ToolResources = assistantFileSearchToolResources;
+            _openAiAssistant.Request.ToolResources.FileSearch = assistantFileSearchToolResources;
             return new OpenAiFileSearchToolResourcesAssistant(_openAiAssistant, assistantFileSearchToolResources);
         }
     }

@@ -8,6 +8,6 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("type")]
         public string Type { get; } = FunctionType;
         [JsonPropertyName("function")]
-        public required FunctionTool Function { get; set; }
+        public FunctionTool? Function { get; set; }
     }
 }

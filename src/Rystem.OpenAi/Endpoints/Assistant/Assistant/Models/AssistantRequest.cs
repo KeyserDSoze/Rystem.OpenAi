@@ -27,7 +27,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("metadata")]
         public Dictionary<string, string>? Metadata { get; set; }
         [JsonPropertyName("response_format")]
-        public ResponseFormatChatRequest? ResponseFormat { get; set; }
+        public AnyOf<string, ResponseFormatChatRequest>? ResponseFormat { get; set; }
         [JsonPropertyName("temperature")]
         public double? Temperature { get; set; }
         [JsonPropertyName("top_p")]
@@ -35,6 +35,6 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("tools")]
         public List<AnyOf<AssistantFunctionTool, AssistantCodeInterpreterTool, AssistantFileSearchTool>>? Tools { get; set; }
         [JsonPropertyName("tool_resources")]
-        public AnyOf<AssistantCodeInterpreterToolResources, AssistantFileSearchToolResources>? ToolResources { get; set; }
+        public AssistantToolResources? ToolResources { get; set; }
     }
 }
