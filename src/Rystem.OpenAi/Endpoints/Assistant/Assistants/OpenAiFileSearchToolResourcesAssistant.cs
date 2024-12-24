@@ -6,13 +6,13 @@ namespace Rystem.OpenAi.Assistant
     internal sealed class OpenAiFileSearchToolResourcesAssistant<T> : IOpenAiFileSearchToolResourcesAssistant<T>
     {
         private const string ChunkingStrategyTypeAsStatic = "static";
-        private readonly AnyOf<OpenAiAssistant, OpenAiThread> _openAiAssistant;
+        private readonly T _builder;
         private readonly AssistantFileSearchToolResources _assistantFileSearchToolResources;
 
-        public OpenAiFileSearchToolResourcesAssistant(AnyOf<OpenAiAssistant, OpenAiThread> openAiAssistant,
+        public OpenAiFileSearchToolResourcesAssistant(T builder,
             AssistantFileSearchToolResources assistantFileSearchToolResources)
         {
-            _openAiAssistant = openAiAssistant;
+            _builder = builder;
             _assistantFileSearchToolResources = assistantFileSearchToolResources;
         }
         public IOpenAiFileSearchToolResourcesAssistant<T> AddMetadata(string key, string value)
@@ -44,7 +44,7 @@ namespace Rystem.OpenAi.Assistant
 
         public T Use()
         {
-            return _openAiAssistant.Get<T>()!;
+            return _builder;
         }
 
         public T UseFileSearch(params string[] filesId)
@@ -53,7 +53,7 @@ namespace Rystem.OpenAi.Assistant
             if (_assistantFileSearchToolResources.VectorStores.Files == null)
                 _assistantFileSearchToolResources.VectorStores.Files = [];
             _assistantFileSearchToolResources.VectorStores.Files.AddRange(filesId);
-            return _openAiAssistant.Get<T>()!;
+            return _builder;
         }
         public IOpenAiFileSearchToolResourcesAssistant<T> WithStaticChunkingStrategy(int maxChunkSize, int chunkOverlap)
         {

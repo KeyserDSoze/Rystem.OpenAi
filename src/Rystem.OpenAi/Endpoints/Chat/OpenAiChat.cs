@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -79,30 +80,36 @@ namespace Rystem.OpenAi.Chat
             => AddMessage(new ChatMessageRequest { Content = content, Role = role });
         public IOpenAiChat AddMessage(ChatMessageContent content, ChatRole role = ChatRole.User)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = role });
-        public ChatMessageContentBuilder AddContent(ChatRole role = ChatRole.User)
-            => new(this, role);
+        public ChatMessageContentBuilder<IOpenAiChat> AddContent(ChatRole role = ChatRole.User)
+        {
+            var content = new List<ChatMessageContent>();
+            AddMessage(new ChatMessageRequest { Content = content, Role = role });
+            return new ChatMessageContentBuilder<IOpenAiChat>(this, content);
+        }
         public IOpenAiChat AddUserMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.User });
         public IOpenAiChat AddDeveloperMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Developer });
+        public ChatMessageContentBuilder<IOpenAiChat> AddDeveloperContent()
+            => AddContent(ChatRole.Developer);
         public IOpenAiChat AddToolMessage(string functionName, string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Tool, ToolCallId = functionName });
         public IOpenAiChat AddUserMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.User });
-        public ChatMessageContentBuilder AddUserContent()
-            => new(this, ChatRole.User);
+        public ChatMessageContentBuilder<IOpenAiChat> AddUserContent()
+            => AddContent(ChatRole.User);
         public IOpenAiChat AddSystemMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.System });
         public IOpenAiChat AddSystemMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.System });
-        public ChatMessageContentBuilder AddSystemContent()
-            => new(this, ChatRole.System);
+        public ChatMessageContentBuilder<IOpenAiChat> AddSystemContent()
+            => AddContent(ChatRole.System);
         public IOpenAiChat AddAssistantMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Assistant });
         public IOpenAiChat AddAssistantMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.Assistant });
-        public ChatMessageContentBuilder AddAssistantContent()
-            => new(this, ChatRole.Assistant);
+        public ChatMessageContentBuilder<IOpenAiChat> AddAssistantContent()
+            => AddContent(ChatRole.Assistant);
         public IOpenAiChat WithTemperature(double value)
         {
             if (value < 0)

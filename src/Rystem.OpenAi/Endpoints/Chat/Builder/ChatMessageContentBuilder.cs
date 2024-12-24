@@ -5,22 +5,21 @@ using Rystem.OpenAi.Audio;
 
 namespace Rystem.OpenAi.Chat
 {
-    public sealed class ChatMessageContentBuilder
+    public sealed class ChatMessageContentBuilder<T>
     {
-        private readonly IOpenAiChat _openAiChat;
+        private readonly T _builder;
         private readonly List<ChatMessageContent> _content;
-        internal ChatMessageContentBuilder(IOpenAiChat openAiChat, ChatRole role)
+        internal ChatMessageContentBuilder(T builder, List<ChatMessageContent> content)
         {
-            _openAiChat = openAiChat;
-            _content = [];
-            _openAiChat.AddMessage(new ChatMessageRequest { Content = _content, Role = role });
+            _builder = builder;
+            _content = content;
         }
-        public ChatMessageContentBuilder AddText(string text)
+        public ChatMessageContentBuilder<T> AddText(string text)
         {
             _content.Add(new ChatMessageContent { Text = text, Type = ChatConstants.ContentType.Text });
             return this;
         }
-        public ChatMessageContentBuilder AddImage(string uri, ResolutionForVision resolutionForVision = ResolutionForVision.Low)
+        public ChatMessageContentBuilder<T> AddImage(string uri, ResolutionForVision resolutionForVision = ResolutionForVision.Low)
         {
             _content.Add(new ChatMessageContent
             {
@@ -38,7 +37,25 @@ namespace Rystem.OpenAi.Chat
             });
             return this;
         }
-        public ChatMessageContentBuilder AddAudio(Stream stream, AudioFormat audioFormat = AudioFormat.Mp3)
+        public ChatMessageContentBuilder<T> AddFileImage(string fileId, ResolutionForVision resolutionForVision = ResolutionForVision.Low)
+        {
+            _content.Add(new ChatMessageContent
+            {
+                FileImage = new ChatMessageImageFile
+                {
+                    FileId = fileId,
+                    Detail = resolutionForVision switch
+                    {
+                        ResolutionForVision.Auto => ChatConstants.ResolutionVision.Auto,
+                        ResolutionForVision.High => ChatConstants.ResolutionVision.High,
+                        _ => ChatConstants.ResolutionVision.Low,
+                    }
+                },
+                Type = ChatConstants.ContentType.ImageFile
+            });
+            return this;
+        }
+        public ChatMessageContentBuilder<T> AddAudio(Stream stream, AudioFormat audioFormat = AudioFormat.Mp3)
         {
             _content.Add(new ChatMessageContent
             {
@@ -51,6 +68,6 @@ namespace Rystem.OpenAi.Chat
             });
             return this;
         }
-        public IOpenAiChat Builder => _openAiChat;
+        public T Builder => _builder;
     }
 }

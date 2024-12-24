@@ -172,7 +172,11 @@ namespace Rystem.OpenAi.Assistant
         }
 
         public IOpenAiToolResourcesAssistant<IOpenAiAssistant> WithToolResources()
-            => new OpenAiToolResourcesAssistant<IOpenAiAssistant>(this);
+        {
+            Request.ToolResources ??= new();
+            return new OpenAiToolResourcesAssistant<IOpenAiAssistant>(this, Request.ToolResources);
+        }
+
         private static readonly Dictionary<string, string> s_betaHeaders = new()
         {
             { "OpenAI-Beta", "assistants=v2" }

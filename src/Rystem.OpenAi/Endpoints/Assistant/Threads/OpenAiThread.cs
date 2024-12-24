@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,58 +48,17 @@ namespace Rystem.OpenAi.Assistant
             contents.Add(new ChatMessageContent { Text = text, Type = ChatConstants.ContentType.Text });
             return this;
         }
-        public IOpenAiThread AddImage(ChatRole role, string uri, ResolutionForVision resolutionForVision = ResolutionForVision.Low)
+        public ChatMessageContentBuilder<IOpenAiThread> AddContent(ChatRole role = ChatRole.User)
         {
-            var contents = GetLastContent(role);
-            contents.Add(new ChatMessageContent
-            {
-                Image = new ChatMessageImageContent
-                {
-                    Url = uri,
-                    Detail = resolutionForVision switch
-                    {
-                        ResolutionForVision.Auto => ChatConstants.ResolutionVision.Auto,
-                        ResolutionForVision.High => ChatConstants.ResolutionVision.High,
-                        _ => ChatConstants.ResolutionVision.Low,
-                    }
-                },
-                Type = ChatConstants.ContentType.Image
-            });
-            return this;
+            var content = new List<ChatMessageContent>();
+            Request.Messages ??= [];
+            Request.Messages.Add(new ThreadMessages { Content = content, Role = role.AsString() });
+            return new ChatMessageContentBuilder<IOpenAiThread>(this, content);
         }
-        public IOpenAiThread AddFileImage(ChatRole role, string fileId, ResolutionForVision resolutionForVision = ResolutionForVision.Low)
-        {
-            var contents = GetLastContent(role);
-            contents.Add(new ChatMessageContent
-            {
-                FileImage = new ChatMessageImageFile
-                {
-                    FileId = fileId,
-                    Detail = resolutionForVision switch
-                    {
-                        ResolutionForVision.Auto => ChatConstants.ResolutionVision.Auto,
-                        ResolutionForVision.High => ChatConstants.ResolutionVision.High,
-                        _ => ChatConstants.ResolutionVision.Low,
-                    }
-                },
-                Type = ChatConstants.ContentType.ImageFile
-            });
-            return this;
-        }
-        public IOpenAiThread AddAudio(ChatRole role, Stream stream, AudioFormat audioFormat = AudioFormat.Mp3)
-        {
-            var contents = GetLastContent(role);
-            contents.Add(new ChatMessageContent
-            {
-                AudioInput = new ChatMessageAudioFile
-                {
-                    Data = stream.ToBase64(),
-                    Format = audioFormat.AsString()
-                },
-                Type = ChatConstants.ContentType.AudioInput
-            });
-            return this;
-        }
+        public ChatMessageContentBuilder<IOpenAiThread> AddUserContent()
+          => AddContent(ChatRole.User);
+        public ChatMessageContentBuilder<IOpenAiThread> AddAssistantContent()
+          => AddContent(ChatRole.Assistant);
         public IOpenAiThread AddAttachment(ChatRole role, string? fileId, bool withCodeInterpreter = false, bool withFileSearch = false)
         {
             var message = GetLastMessage(role);
@@ -151,7 +108,10 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
         public IOpenAiToolResourcesAssistant<IOpenAiThread> WithToolResources()
-            => new OpenAiToolResourcesAssistant<IOpenAiThread>(this);
+        {
+            Request.ToolResources ??= new();
+            return new OpenAiToolResourcesAssistant<IOpenAiThread>(this, Request.ToolResources);
+        }
         private static readonly Dictionary<string, string> s_betaHeaders = new()
         {
             { "OpenAI-Beta", "assistants=v2" }
