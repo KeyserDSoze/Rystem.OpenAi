@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(results);
             if (results.CreatedUnixTime.HasValue)
             {
-                Assert.True(results.CreatedUnixTime.Value != 0);
+                Assert.NotEqual(0, results.CreatedUnixTime.Value);
                 Assert.NotNull(results.Created);
                 Assert.True(results.Created.Value > new DateTime(2018, 1, 1));
                 Assert.True(results.Created.Value < DateTime.Now.AddDays(1));
@@ -39,9 +39,9 @@ namespace Rystem.OpenAi.Test
                 Assert.Null(results.Created);
             }
             Assert.NotNull(results.Object);
-            Assert.True(results.Data?.Count != 0);
-            Assert.True(results.Data?.FirstOrDefault()?.Embedding?.Length == 3072);
-            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data.First().Embedding!, results.Data.First().Embedding!);
+            Assert.NotEqual(0, results.Data?.Count);
+            Assert.Equal(3072, results.Data?.FirstOrDefault()?.Embedding?.Length);
+            var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data?.First().Embedding!, results.Data?.First().Embedding!);
             Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }
 
@@ -86,7 +86,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(results);
             if (results.CreatedUnixTime.HasValue)
             {
-                Assert.True(results.CreatedUnixTime.Value != 0);
+                Assert.NotEqual(0, results.CreatedUnixTime.Value);
                 Assert.NotNull(results.Created);
                 Assert.True(results.Created.Value > new DateTime(2018, 1, 1));
                 Assert.True(results.Created.Value < DateTime.Now.AddDays(1));
@@ -96,8 +96,8 @@ namespace Rystem.OpenAi.Test
                 Assert.Null(results.Created);
             }
             Assert.NotNull(results.Object);
-            Assert.True(results.Data?.Count != 0);
-            Assert.True(results.Data!.First().Embedding?.Length == 999);
+            Assert.NotEqual(0, results.Data?.Count);
+            Assert.Equal(999, results.Data!.First().Embedding?.Length);
             var resultOfCosineSimilarity = _openAiUtility.CosineSimilarity(results.Data!.First().Embedding!, results.Data!.First().Embedding!);
             Assert.True(resultOfCosineSimilarity >= 0.9999d);
         }

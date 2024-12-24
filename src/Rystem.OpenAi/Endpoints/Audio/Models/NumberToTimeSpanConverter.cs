@@ -1,24 +1,27 @@
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class NumberToTimeSpanConverter : JsonConverter<TimeSpan>
+namespace Rystem.OpenAi.Endpoints.Audio
 {
-    public override TimeSpan Read(
-        ref Utf8JsonReader reader,
-        Type typeToConvert,
-        JsonSerializerOptions options)
+    public class NumberToTimeSpanConverter : JsonConverter<TimeSpan>
     {
-        return reader.TryGetDouble(out var value)
-            ? TimeSpan.FromSeconds(value)
-            : TimeSpan.Zero;
-    }
+        public override TimeSpan Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            return reader.TryGetDouble(out var value)
+                ? TimeSpan.FromSeconds(value)
+                : TimeSpan.Zero;
+        }
 
-    public override void Write(
-        Utf8JsonWriter writer,
-        TimeSpan value,
-        JsonSerializerOptions options)
-    {
-        writer.WriteNumberValue(value.TotalSeconds);
+        public override void Write(
+            Utf8JsonWriter writer,
+            TimeSpan value,
+            JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(value.TotalSeconds);
+        }
     }
 }

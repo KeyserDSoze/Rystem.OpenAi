@@ -10,8 +10,8 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         public int NumberOfTokens => EncodedTokens?.Count ?? 0;
         public static BytePairEncodingResponse Default { get; } = new BytePairEncodingResponse()
         {
-            EncodedTokens = new List<int>(),
-            Tokens = new List<string>(),
+            EncodedTokens = [],
+            Tokens = [],
             LastTokenLength = 0
         };
     }

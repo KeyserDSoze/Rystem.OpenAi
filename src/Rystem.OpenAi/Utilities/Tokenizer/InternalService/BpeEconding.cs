@@ -79,9 +79,9 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
         public string Decode(List<int> inputTokensToDecode)
         {
-            var qq = _bytePairEncodingCoreProcessor.DecodeNative(inputTokensToDecode.ToArray());
+            var qq = _bytePairEncodingCoreProcessor.DecodeNative([.. inputTokensToDecode]);
             var utf8Encoding = Encoding.GetEncoding("UTF-8");
-            return utf8Encoding.GetString(qq.ToArray());
+            return utf8Encoding.GetString([.. qq]);
         }
 
         private static int GetMaxValueFromDictionary(Dictionary<byte[], int> dictionary)

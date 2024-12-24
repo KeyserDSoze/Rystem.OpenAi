@@ -142,13 +142,14 @@ namespace Rystem.OpenAi
             }
             Enum.GetValues<OpenAiType>().ForEach(currentType =>
             {
-                if (!Settings.Deployments.ContainsKey(currentType))
+                if (!Settings.Deployments.TryGetValue(currentType, out var value))
                 {
-                    Settings.Deployments.Add(currentType, []);
+                    value = [];
+                    Settings.Deployments.Add(currentType, value);
                 }
-                if (!Settings.Deployments[currentType].ContainsKey("{Forced}"))
+                if (!value.ContainsKey("{Forced}"))
                 {
-                    Settings.Deployments[currentType].Add("{Forced}", Forced);
+                    value.Add("{Forced}", Forced);
                 }
             });
             uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");

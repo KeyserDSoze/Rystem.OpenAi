@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using Rystem.OpenAi.Endpoints.Audio.Models;
 
 namespace Rystem.OpenAi.Audio
 {

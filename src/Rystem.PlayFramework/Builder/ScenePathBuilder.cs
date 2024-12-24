@@ -4,7 +4,7 @@ namespace Rystem.PlayFramework
 {
     internal sealed class ScenePathBuilder : IScenePathBuilder
     {
-        public List<Regex> RegexForApiMapping { get; set; } = new();
+        public List<Regex> RegexForApiMapping { get; set; } = [];
         public IScenePathBuilder Map(Regex regex)
         {
             RegexForApiMapping.Add(regex);

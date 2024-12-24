@@ -383,8 +383,8 @@ namespace Rystem.OpenAi
         }
         public static string ToIso639_1(this Language language)
         {
-            if (s_languages.ContainsKey(language))
-                return s_languages[language];
+            if (s_languages.TryGetValue(language, out var value))
+                return value;
             return s_languages[Language.English];
         }
     }

@@ -12,7 +12,7 @@ namespace Rystem.OpenAi.Chat
         public string StringableRole
         {
             get => Role.AsString();
-            set => Role = (ChatRole)Enum.Parse(typeof(ChatRole), $"{value.ToUpper()[0]}{value.ToLower()[1..]}");
+            set => Role = Enum.Parse<ChatRole>($"{value.ToUpper()[0]}{value.ToLower()[1..]}");
         }
         [JsonPropertyName("name")]
         public string? Name { get; set; }

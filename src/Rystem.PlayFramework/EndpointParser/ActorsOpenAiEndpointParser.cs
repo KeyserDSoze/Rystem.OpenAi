@@ -136,8 +136,7 @@ namespace Rystem.PlayFramework
                             {
                                 function.HttpRequest.Actions.Add(name, (value, httpBringer) =>
                                 {
-                                    if (httpBringer.Query is null)
-                                        httpBringer.Query = new();
+                                    httpBringer.Query ??= new();
                                     if (httpBringer.Query.Length > 0)
                                         httpBringer.Query.Append('&');
                                     httpBringer.Query.Append($"{name}={value[name]}");

@@ -106,7 +106,6 @@ Install-Package Rystem.OpenAi
     - [Billing](#billing)
     - [Deployments](#deployments)
 
-
 ## Startup Setup
 [📖 Back to summary](#documentation)\
 You may install with Dependency Injection one or more than on integrations at the same time. Furthermore you don't need to use the Dependency Injection pattern and use a custom Setup.

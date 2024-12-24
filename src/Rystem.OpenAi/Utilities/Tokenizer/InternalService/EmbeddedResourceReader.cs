@@ -17,7 +17,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             using var reader = new StreamReader(stream);
             var content = reader.ReadToEnd();
 
-            return content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            return content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
         }
 
         public static Dictionary<byte[], int> LoadTokenBytePairEncoding(string dataSourceName)

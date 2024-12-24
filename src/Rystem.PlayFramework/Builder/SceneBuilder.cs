@@ -23,7 +23,7 @@ namespace Rystem.PlayFramework
         {
             Scene.Name = s_checkName.Replace(name.Replace(' ', '-'), string.Empty);
             if (Scene.Name.Length > 64)
-                Scene.Name = Scene.Name.Substring(0, 64);
+                Scene.Name = Scene.Name[..64];
             return this;
         }
         public ISceneBuilder WithDescription(string description)

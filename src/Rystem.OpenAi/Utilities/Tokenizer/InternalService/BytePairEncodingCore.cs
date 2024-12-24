@@ -21,12 +21,12 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 ? new Dictionary<byte[], int>(comparer)
                 : new Dictionary<byte[], int>(bytePairEncoder, comparer);
             Decoder = bytePairEncoder?.ToDictionary(pair => pair.Value, pair => pair.Key.ToArray())
-                      ?? new Dictionary<int, byte[]>();
+                      ?? [];
 
-            SpecialTokensEncoder = specialTokenEncoder ?? new Dictionary<string, int>();
+            SpecialTokensEncoder = specialTokenEncoder ?? [];
             SpecialTokensDecoder =
                 specialTokenEncoder?.ToDictionary(pair => pair.Value, pair => Encoding.UTF8.GetBytes(pair.Key))
-                ?? new Dictionary<int, byte[]>();
+                ?? [];
             RegexTls = tokenPatternRegex ?? new Regex(string.Empty, RegexOptions.None, TimeSpan.FromSeconds(1));
 
             var parts = SpecialTokensEncoder.Keys.Select(Regex.Escape).ToArray();
@@ -174,7 +174,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 output.Add(f(new Range(partitions[i].Start, partitions[i + 1].Start)));
             }
 
-            return output.ToArray();
+            return [.. output];
         }
         private static void CheckAllPartitions(IReadOnlyCollection<byte> piece,
             IReadOnlyDictionary<byte[], int> ranks,
@@ -229,7 +229,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
         {
             if (inputBytes.Length == 1)
             {
-                return new List<int> { bytePairRanks[inputBytes] }.ToArray();
+                return [bytePairRanks[inputBytes]];
             }
 
             return BytePairMerge(inputBytes, bytePairRanks, pair =>

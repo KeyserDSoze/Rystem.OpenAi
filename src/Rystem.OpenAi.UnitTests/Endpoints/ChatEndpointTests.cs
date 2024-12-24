@@ -30,10 +30,10 @@ namespace Rystem.OpenAi.Test
             var cost = openAiApi.Chat.CalculateCost();
             Assert.NotNull(results);
             Assert.NotNull(results.CreatedUnixTime);
-            Assert.True(results.CreatedUnixTime.Value != 0);
+            Assert.NotEqual(0, results.CreatedUnixTime.Value);
             Assert.NotNull(results.Created);
             Assert.NotNull(results.Choices);
-            Assert.True(results.Choices.Count != 0);
+            Assert.NotEmpty(results.Choices);
             Assert.Contains(results.Choices, c => c.Message?.Role == ChatRole.Assistant);
             Assert.True(cost > 0);
         }
@@ -246,7 +246,7 @@ namespace Rystem.OpenAi.Test
                         .AddEnum("unit", new FunctionToolEnumProperty
                         {
                             Type = "string",
-                            Enums = new List<string> { "celsius", "fahrenheit" }
+                            Enums = ["celsius", "fahrenheit"]
                         })
                         .AddRequired("location")
                 });

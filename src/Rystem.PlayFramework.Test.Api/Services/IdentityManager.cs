@@ -13,6 +13,7 @@
         public async Task<string> GetNameAsync(string username)
         {
             await Task.Delay(0);
+            _ = username;
             return "Alessandro Rapiti";
         }
     }
