@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.Endpoints.Audio
+namespace Rystem.OpenAi.Audio
 {
     public class NumberToTimeSpanConverter : JsonConverter<TimeSpan>
     {

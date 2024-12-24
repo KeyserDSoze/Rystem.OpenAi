@@ -39,6 +39,7 @@ indent_size = 2
 
 csharp_style_prefer_primary_constructors = false
 dotnet_diagnostic.IDE0130.severity = none
+dotnet_diagnostic.SYSLIB10.severity = none
 
 # Dotnet code style settings:
 [*.{cs,vb}]
