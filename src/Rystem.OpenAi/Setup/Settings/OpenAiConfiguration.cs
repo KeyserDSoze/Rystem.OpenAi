@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -13,11 +11,11 @@ using Microsoft.Identity.Client;
 [assembly: InternalsVisibleTo("Rystem.OpenAi.Test")]
 namespace Rystem.OpenAi
 {
-    internal delegate string OpenaiUriMaker(OpenAiType type, string modelId, bool forced, string appendBeforeQueryString, Dictionary<string, string>? querystringParameters);
+    internal delegate string OpenAiUriMaker(OpenAiType type, string modelId, bool forced, string appendBeforeQueryString, Dictionary<string, string>? querystringParameters);
     public sealed class OpenAiConfiguration
     {
         private const string Forced = nameof(Forced);
-        internal OpenaiUriMaker GetUri { get; private set; } = null!;
+        internal OpenAiUriMaker GetUri { get; private set; } = null!;
         internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }

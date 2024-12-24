@@ -1577,7 +1577,7 @@ You can do this step with No dependency injection integration too.
 
 MapDeploymentsAutomaticallyAsync is a extensions method for IServiceProvider, with true you can automatically install on Azure the deployments you setup on application.
 In the other parameter you can choose which integration runs this automatic update. In the example it's running for the default integration.
-With the Management endpoint you can programatically configure or manage deployments on Azure.
+With the Management endpoint you can programmatically configure or manage deployments on Azure.
 
 You can create a new deployment
 

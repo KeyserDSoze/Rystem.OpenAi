@@ -316,7 +316,7 @@ Lists the currently available models, and provides basic information about each 
 ```
 
 ### Retrieve Models
-Retrieves a model instance, providing basic information about the model such as the owner and permissioning.
+Retrieves a model instance, providing basic information about the model such as the owner and per missioning.
 
 ```csharp
     var openAiApi = _openAiFactory.Create(name);
@@ -793,7 +793,7 @@ Vector database options include:
 - [Chroma](https://github.com/chroma-core/chroma), an open-source embeddings store
 
 ### Which distance function should I use?
-We recommend cosine similarity. The choice of distance function typically doesn’t matter much.
+We recommend cosine similarity. The choice of distance function typically doesn't matter much.
 
 OpenAI embeddings are normalized to length 1, which means that:
 
@@ -1521,7 +1521,7 @@ In your openai dashboard you may get the billing usage, or users, or taxes, or s
 
 ### Billing
 [📖 Back to summary](#documentation)\
-You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of april.
+You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of April.
 
 ```csharp
     var management = _openAiFactory.CreateManagement(integrationName);
@@ -1576,7 +1576,7 @@ You can do this step with No dependency injection integration too.
 
 MapDeploymentsAutomaticallyAsync is a extensions method for IServiceProvider, with true you can automatically install on Azure the deployments you setup on application.
 In the other parameter you can choose which integration runs this automatic update. In the example it's running for the default integration.
-With the Management endpoint you can programatically configure or manage deployments on Azure.
+With the Management endpoint you can programmatically configure or manage deployments on Azure.
 
 You can create a new deployment
 

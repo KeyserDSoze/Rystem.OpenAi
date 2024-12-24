@@ -83,10 +83,8 @@ namespace Rystem.OpenAi.Assistant
         {
             if (Request.Metadata == null)
                 Request.Metadata = [];
-            if (Request.Metadata.ContainsKey(key))
+            if (!Request.Metadata.TryAdd(key, value))
                 Request.Metadata[key] = value;
-            else
-                Request.Metadata.Add(key, value);
             return this;
         }
 

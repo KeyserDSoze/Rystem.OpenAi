@@ -250,12 +250,12 @@ namespace Rystem.OpenAi.Chat
         IOpenAiChat ParallelToolCall();
         /// <summary>
         /// If also the Project is Scale tier enabled, the system will utilize scale tier credits until they are exhausted.
-        /// Otherwise if the Project is not Scale tier enabled, the request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.
+        /// Otherwise if the Project is not Scale tier enabled, the request will be processed using the default service tier with a lower uptime SLA and no latency guarantee.
         /// </summary>
         /// <returns></returns>
         IOpenAiChat WithAutoServiceTier();
         /// <summary>
-        /// The request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.
+        /// The request will be processed using the default service tier with a lower uptime SLA and no latency guarantee.
         /// </summary>
         /// <returns></returns>
         IOpenAiChat WithDefaultServiceTier();

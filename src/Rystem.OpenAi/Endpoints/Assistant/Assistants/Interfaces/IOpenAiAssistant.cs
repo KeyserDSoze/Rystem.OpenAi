@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Assistant
         IOpenAiAssistant WithDescription(string description);
         /// <summary>
         /// The system instructions that the assistant uses. The maximum length is 256,000 characters.
-        /// You cann add more WithInstructions to append more instructions but the maximum at all is always 256,000 characters.
+        /// You can add more WithInstructions to append more instructions but the maximum at all is always 256,000 characters.
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
