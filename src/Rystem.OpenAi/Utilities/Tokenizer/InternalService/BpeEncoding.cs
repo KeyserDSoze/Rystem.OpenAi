@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace Rystem.OpenAi.Utilities.Tokenizer
 {
-    internal sealed class BpeEconding
+    internal sealed class BpeEncoding
     {
         private readonly BytePairEncodingCore _bytePairEncodingCoreProcessor;
         private readonly Dictionary<string, int> _specialTokenMappings;
 
-        private BpeEconding(string patternString,
+        private BpeEncoding(string patternString,
             Dictionary<byte[], int> bytePairRanks,
             Dictionary<string, int> specialTokenMappings,
             int? explicitNVocab = null)
@@ -42,11 +42,11 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
         private int MaxTokenValue { get; }
 
-        public static BpeEconding GetEncoding(string modelName)
+        public static BpeEncoding GetEncoding(string modelName)
         {
             var modelParams = ModelParamsGenerator.GetModelParams(modelName);
 
-            var encoding = new BpeEconding(modelParams.Regex, modelParams.MergeableRanks,
+            var encoding = new BpeEncoding(modelParams.Regex, modelParams.MergeableRanks,
                 modelParams.SpecialTokens, modelParams.ExplicitNVocab);
             return encoding;
         }

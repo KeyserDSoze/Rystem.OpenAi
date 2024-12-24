@@ -156,9 +156,9 @@ namespace Rystem.PlayFramework
                     }
                 }
             }
-            IEnumerable<string> GetAllowedHttpMethods(EndpointMetadataCollection metadatas)
+            IEnumerable<string> GetAllowedHttpMethods(EndpointMetadataCollection metadataList)
             {
-                foreach (var metadata in metadatas)
+                foreach (var metadata in metadataList)
                 {
                     if (metadata is HttpMethodMetadata httpMethodMetadata)
                     {

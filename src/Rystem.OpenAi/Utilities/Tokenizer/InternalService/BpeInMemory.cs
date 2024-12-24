@@ -5,11 +5,11 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 {
     internal static class BpeInMemory
     {
-        private static readonly BpeEconding s_r50kBaseEncoding = BpeEconding.GetEncoding("r50k_base");
-        private static readonly BpeEconding s_p50kBaseEncoding = BpeEconding.GetEncoding("p50k_base");
-        private static readonly BpeEconding s_p50kEditEncoding = BpeEconding.GetEncoding("p50k_edit");
-        private static readonly BpeEconding s_cl100kBaseEncoding = BpeEconding.GetEncoding("cl100k_base");
-        public static BpeEconding GetRight(BytePairEncodingType type)
+        private static readonly BpeEncoding s_r50kBaseEncoding = BpeEncoding.GetEncoding("r50k_base");
+        private static readonly BpeEncoding s_p50kBaseEncoding = BpeEncoding.GetEncoding("p50k_base");
+        private static readonly BpeEncoding s_p50kEditEncoding = BpeEncoding.GetEncoding("p50k_edit");
+        private static readonly BpeEncoding s_cl100kBaseEncoding = BpeEncoding.GetEncoding("cl100k_base");
+        public static BpeEncoding GetRight(BytePairEncodingType type)
         {
             return type switch
             {
@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 _ => s_cl100kBaseEncoding,
             };
         }
-        public static BpeEconding GetEncoder(string? modelId)
+        public static BpeEncoding GetEncoder(string? modelId)
         {
             if (modelId != null)
             {

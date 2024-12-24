@@ -125,12 +125,12 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<bool> CityExistsAsync([FromQuery] string city)
         {
             await Task.Delay(10);
-            var x = _cityexist;
-            _cityexist = !_cityexist;
+            var x = _cityAlreadyExists;
+            _cityAlreadyExists = !_cityAlreadyExists;
             _ = city;
             return x;
         }
-        private bool _cityexist;
+        private bool _cityAlreadyExists;
 
         /// <summary>
         /// Retrieves a list of all countries.

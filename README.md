@@ -317,7 +317,7 @@ Lists the currently available models, and provides basic information about each 
 ```
 
 ### Retrieve Models
-Retrieves a model instance, providing basic information about the model such as the owner and permissioning.
+Retrieves a model instance, providing basic information about the model such as the owner and permissions.
 
 ```csharp
     var openAiApi = _openAiFactory.Create(name);
@@ -794,7 +794,7 @@ Vector database options include:
 - [Chroma](https://github.com/chroma-core/chroma), an open-source embeddings store
 
 ### Which distance function should I use?
-We recommend cosine similarity. The choice of distance function typically doesn’t matter much.
+We recommend cosine similarity. The choice of distance function typically doesn't matter much.
 
 OpenAI embeddings are normalized to length 1, which means that:
 
@@ -1522,7 +1522,7 @@ In your openai dashboard you may get the billing usage, or users, or taxes, or s
 
 ### Billing
 [📖 Back to summary](#documentation)\
-You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of april.
+You may use the management endpoint to retrieve data for your usage. Here an example on how to get the usage for the month of April.
 
 ```csharp
     var management = _openAiFactory.CreateManagement(integrationName);
