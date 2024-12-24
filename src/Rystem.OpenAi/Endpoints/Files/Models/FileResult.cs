@@ -38,11 +38,6 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         [JsonPropertyName("created_at")]
         public long CreatedAt { get; set; }
-        /// <summary>
-        /// When the object is deleted, this attribute is used in the Delete file operation
-        /// </summary>
-        [JsonPropertyName("deleted")]
-        public bool Deleted { get; set; }
         [JsonPropertyName("file")]
         public FileDataResult? File { get; set; }
     }

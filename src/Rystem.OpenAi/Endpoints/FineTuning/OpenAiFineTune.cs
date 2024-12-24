@@ -50,7 +50,7 @@ namespace Rystem.OpenAi.FineTune
             => DefaultServices.HttpClientWrapper.GetAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}", null), null, DefaultServices.Configuration, cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClientWrapper.PostAsync<FineTuneResult>(DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/cancel", null), null, null, DefaultServices.Configuration, cancellationToken);
-        public ValueTask<FineTuneCheckPointEventsResult> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        public ValueTask<ResponseAsArray<FineTuneCheckPointResult>> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = new Dictionary<string, string>
             {
@@ -59,9 +59,9 @@ namespace Rystem.OpenAi.FineTune
             if (skip > 0)
                 querystring.Add("after", skip.ToString());
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/checkpoints", querystring);
-            return DefaultServices.HttpClientWrapper.GetAsync<FineTuneCheckPointEventsResult>(uri, null, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.GetAsync<ResponseAsArray<FineTuneCheckPointResult>>(uri, null, DefaultServices.Configuration, cancellationToken);
         }
-        public ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
+        public ValueTask<ResponseAsArray<FineTuneEvent>> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
             var querystring = new Dictionary<string, string>
             {
@@ -70,7 +70,7 @@ namespace Rystem.OpenAi.FineTune
             if (skip > 0)
                 querystring.Add("after", skip.ToString());
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/events", querystring);
-            return DefaultServices.HttpClientWrapper.GetAsync<FineTuneEventsResult>(uri, null, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper.GetAsync<ResponseAsArray<FineTuneEvent>>(uri, null, DefaultServices.Configuration, cancellationToken);
         }
         public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
@@ -109,7 +109,7 @@ namespace Rystem.OpenAi.FineTune
         {
             return ReadStreamAsync(stream, response, bufferAsString =>
             {
-                var chunkResponse = JsonSerializer.Deserialize<FineTuneEventsResult>(bufferAsString);
+                var chunkResponse = JsonSerializer.Deserialize<ResponseAsArray<FineTuneEvent>>(bufferAsString);
                 var chunk = chunkResponse!.Data?.LastOrDefault();
                 return chunk!;
             }, cancellationToken);

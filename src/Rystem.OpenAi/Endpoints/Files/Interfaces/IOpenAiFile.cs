@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +15,7 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
-        ValueTask<FilesDataResult> AllAsync(CancellationToken cancellationToken = default);
+        ValueTask<ResponseAsArray<FileResult>> AllAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// Returns information about a specific file.
         /// </summary>
@@ -40,7 +39,7 @@ namespace Rystem.OpenAi.Files
         ///	</summary>
         ///	 <param name="fileId">The ID of the file to use for this request</param>
         /// <returns></returns>
-        ValueTask<FileResult> DeleteAsync(string fileId, CancellationToken cancellationToken = default);
+        ValueTask<DeleteResponse> DeleteAsync(string fileId, CancellationToken cancellationToken = default);
         /// <summary>
         /// Upload a file that contains document(s) to be used across various endpoints/features. Currently, the size of all the files uploaded by one organization can be up to 1 GB. Please contact us if you need to increase the storage limit.
         /// </summary>

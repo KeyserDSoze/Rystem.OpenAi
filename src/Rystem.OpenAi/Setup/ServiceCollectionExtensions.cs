@@ -90,6 +90,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddFactory<IOpenAiAssistant, OpenAiAssistant>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiThread, OpenAiThread>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiMessage, OpenAiMessage>(integrationName, ServiceLifetime.Transient);
             //services
             //    .AddFactory<IOpenAiBilling, OpenAiBilling>(integrationName, ServiceLifetime.Transient);
             //services

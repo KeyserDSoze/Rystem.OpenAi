@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi
 {
-    public sealed class ResponseAsArray<T>
+    public class ResponseAsArray<T>
     {
         [JsonPropertyName("object")]
         public string? Object { get; set; }

@@ -203,7 +203,7 @@ namespace Rystem.OpenAi.Assistant
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<AssistantListRequest> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
+        public ValueTask<ResponseAsArray<AssistantRequest>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
         {
             var querystring = new Dictionary<string, string>
             {
@@ -215,7 +215,7 @@ namespace Rystem.OpenAi.Assistant
             else if (elementId != null && !getAfterTheElementId)
                 querystring.Add("before", elementId);
             return DefaultServices.HttpClientWrapper.
-                GetAsync<AssistantListRequest>(
+                GetAsync<ResponseAsArray<AssistantRequest>>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, string.Empty, querystring),
                         s_betaHeaders,

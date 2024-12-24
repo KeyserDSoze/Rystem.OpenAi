@@ -156,7 +156,7 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="order"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        ValueTask<AssistantListRequest> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
+        ValueTask<ResponseAsArray<AssistantRequest>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
         /// <summary>
         /// Retrieve the assistant.
         /// </summary>

@@ -50,7 +50,7 @@ namespace Rystem.OpenAi.FineTune
         /// <param name="skip">The number of results to skip.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous operation, containing the checkpoint events.</returns>
-        ValueTask<FineTuneCheckPointEventsResult> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
+        ValueTask<ResponseAsArray<FineTuneCheckPointResult>> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists events for a fine-tune operation.
@@ -60,7 +60,7 @@ namespace Rystem.OpenAi.FineTune
         /// <param name="skip">The number of results to skip.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>A task that represents the asynchronous operation, containing the events.</returns>
-        ValueTask<FineTuneEventsResult> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
+        ValueTask<ResponseAsArray<FineTuneEvent>> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Streams fine-tune results as an asynchronous enumerable.

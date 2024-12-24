@@ -26,6 +26,7 @@ namespace Rystem.OpenAi
         private readonly IFactory<IOpenAiManagement> _openAiManagementFactory;
         private readonly IFactory<IOpenAiAssistant> _openAiAssistantFactory;
         private readonly IFactory<IOpenAiThread> _openAiThreadFactory;
+        private readonly IFactory<IOpenAiMessage> _openAiMessageFactory;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public OpenAi(
             IFactory<OpenAiConfiguration> configurationFactory,
@@ -40,7 +41,8 @@ namespace Rystem.OpenAi
             IFactory<IOpenAiModeration> openAiModerationFactory,
             IFactory<IOpenAiManagement> openAiManagementFactory,
             IFactory<IOpenAiAssistant> openAiAssistantFactory,
-            IFactory<IOpenAiThread> openAiThreadFactory)
+            IFactory<IOpenAiThread> openAiThreadFactory,
+            IFactory<IOpenAiMessage> openAiMessageFactory)
         {
             _configurationFactory = configurationFactory;
             _openAiAudioFactory = openAiAudioFactory;
@@ -55,6 +57,7 @@ namespace Rystem.OpenAi
             _openAiManagementFactory = openAiManagementFactory;
             _openAiAssistantFactory = openAiAssistantFactory;
             _openAiThreadFactory = openAiThreadFactory;
+            _openAiMessageFactory = openAiMessageFactory;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public IOpenAiAudio Audio => field ??= _openAiAudioFactory.Create(_factoryName)!;
@@ -69,6 +72,7 @@ namespace Rystem.OpenAi
         public IOpenAiManagement Management => field ??= _openAiManagementFactory.Create(_factoryName)!;
         public IOpenAiAssistant Assistant => field ??= _openAiAssistantFactory.Create(_factoryName)!;
         public IOpenAiThread Thread => field ??= _openAiThreadFactory.Create(_factoryName)!;
+        public IOpenAiMessage Message => field ??= _openAiMessageFactory.Create(_factoryName)!;
         public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;
         private string? _factoryName;
         public void SetFactoryName(string name)
