@@ -63,7 +63,7 @@ namespace Rystem.OpenAi.Test
                 .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .WithStopSequence("adult")
-                .AddStopSequence("seraphin")
+                .AddStopSequence("information")
                 .WithNumberOfChoicesPerPrompt(1)
                 .WithFrequencyPenalty(0)
                 .WithPresencePenalty(0)

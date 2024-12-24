@@ -9,7 +9,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 {
     internal static class EmbeddedResourceReader
     {
-        private static IEnumerable<string> ReadEmbeddedResourceAsLines(string resourceName)
+        private static string[] ReadEmbeddedResourceAsLines(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             using var stream = assembly.GetManifestResourceStream(resourceName) ??

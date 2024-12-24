@@ -43,7 +43,7 @@ namespace Rystem.OpenAi.Image
         private const string SizeLabel = "size";
         private const string ResponseFormatLabel = "response_format";
         private const string UserLabel = "user";
-        private object CreateRequest(Stream image, string imageName, bool isEdit)
+        private MultipartFormDataContent CreateRequest(Stream image, string imageName, bool isEdit)
         {
             var content = new MultipartFormDataContent();
             if (image != null)

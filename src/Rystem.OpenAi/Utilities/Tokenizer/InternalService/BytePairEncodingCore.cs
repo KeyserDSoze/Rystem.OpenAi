@@ -151,9 +151,9 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                    SpecialTokensDecoder.TryGetValue(token, out tokenBytes);
         }
         private static T[] BytePairMerge<T>(
-            IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks, Func<Range, T> f)
+            byte[] piece, IReadOnlyDictionary<byte[], int> ranks, Func<Range, T> f)
         {
-            var partitions = Enumerable.Range(0, piece.Count + 1)
+            var partitions = Enumerable.Range(0, piece.Length + 1)
                 .Select(i => (Start: i, Rank: int.MaxValue))
                 .ToList();
 
@@ -212,7 +212,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             }
         }
         private static int? GetRank(IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks,
-            IReadOnlyList<(int Start, int Rank)> partitionsList, int startIndex, int skip)
+            List<(int Start, int Rank)> partitionsList, int startIndex, int skip)
         {
             if (startIndex + skip + 2 >= partitionsList.Count)
             {
@@ -225,7 +225,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return ranks.TryGetValue(key, out var rank) ? rank : (int?)null;
         }
-        private static IEnumerable<int> BytePairEncode(byte[] inputBytes, Dictionary<byte[], int> bytePairRanks)
+        private static int[] BytePairEncode(byte[] inputBytes, Dictionary<byte[], int> bytePairRanks)
         {
             if (inputBytes.Length == 1)
             {
