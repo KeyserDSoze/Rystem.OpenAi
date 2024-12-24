@@ -17,7 +17,9 @@ namespace Rystem.OpenAi.Assistant
         public IOpenAiFileSearchToolResourcesAssistant AddMetadata(string key, string value)
         {
             _assistantFileSearchToolResources.Metadata ??= [];
-            if (!_assistantFileSearchToolResources.Metadata.TryAdd(key, value))
+            if (!_assistantFileSearchToolResources.Metadata.ContainsKey(key))
+                _assistantFileSearchToolResources.Metadata.Add(key, value);
+            else
                 _assistantFileSearchToolResources.Metadata[key] = value;
             return this;
         }

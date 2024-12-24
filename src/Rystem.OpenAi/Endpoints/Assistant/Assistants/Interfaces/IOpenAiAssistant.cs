@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Assistant
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        IOpenAiAssistant WithIntructions(string text);
+        IOpenAiAssistant WithInstructions(string text);
         /// <summary>
         /// Add code interpreter to the assistant.
         /// </summary>
@@ -147,8 +147,29 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="cancellationToken"></param>
         /// <returns>AssistantDeleteResponse</returns>
         ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// List all the assistants.
+        /// </summary>
+        /// <param name="take"></param>
+        /// <param name="elementId"></param>
+        /// <param name="getAfterTheElementId"></param>
+        /// <param name="order"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         ValueTask<AssistantListRequest> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Retrieve the assistant.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         ValueTask<AssistantRequest> RetrieveAsync(string id, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Update the assistant.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         ValueTask<AssistantRequest> UpdateAsync(string id, CancellationToken cancellationToken = default);
     }
 }

@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Test
             var assistant = openAiApi.Assistant;
             var created = await assistant
                 .WithTemperature(0.5)
-                .WithIntructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
+                .WithInstructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
                 .WithCodeInterpreter()
                 .WithModel(ChatModelName.Gpt4_o)
                 .CreateAsync();

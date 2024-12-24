@@ -83,8 +83,10 @@ namespace Rystem.OpenAi.Assistant
         {
             if (Request.Metadata == null)
                 Request.Metadata = [];
-            if (!Request.Metadata.TryAdd(key, value))
+            if (Request.Metadata.ContainsKey(key))
                 Request.Metadata[key] = value;
+            else
+                Request.Metadata.Add(key, value);
             return this;
         }
 
@@ -138,7 +140,7 @@ namespace Rystem.OpenAi.Assistant
             return new OpenAiFileSearchAssistant(this, fileSearch);
         }
 
-        public IOpenAiAssistant WithIntructions(string text)
+        public IOpenAiAssistant WithInstructions(string text)
         {
             if (Request.InstructionsBuilder == null)
                 Request.InstructionsBuilder = new();
