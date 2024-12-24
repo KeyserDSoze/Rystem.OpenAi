@@ -1,35 +1,56 @@
-﻿namespace Rystem.OpenAi.Assistant
+﻿using System;
+
+namespace Rystem.OpenAi.Assistant
 {
-    internal sealed class OpenAiToolResourcesAssistant : IOpenAiToolResourcesAssistant
+    internal sealed class OpenAiToolResourcesAssistant<T> : IOpenAiToolResourcesAssistant<T>
     {
-        private readonly OpenAiAssistant _openAiAssistant;
-        public OpenAiToolResourcesAssistant(OpenAiAssistant openAiAssistant)
+        private readonly AnyOf<OpenAiAssistant, OpenAiThread> _openAiAssistant;
+        public OpenAiToolResourcesAssistant(AnyOf<OpenAiAssistant, OpenAiThread> openAiAssistant)
         {
             _openAiAssistant = openAiAssistant;
         }
-        public IOpenAiAssistant UseCodeInterpreters(params string[] filesId)
+        public T UseCodeInterpreters(params string[] filesId)
         {
-            _openAiAssistant.Request.ToolResources ??= new AssistantToolResources
+            if (_openAiAssistant.Is<OpenAiAssistant>(out var assistant))
             {
-            };
-            _openAiAssistant.Request.ToolResources.CodeInterpreter = new AssistantCodeInterpreterToolResources
+                assistant!.Request.ToolResources ??= new AssistantToolResources
+                {
+                };
+                assistant.Request.ToolResources.CodeInterpreter = new AssistantCodeInterpreterToolResources
+                {
+                    Files = [.. filesId]
+                };
+            }
+            else if (_openAiAssistant.Is<OpenAiThread>(out var thread))
             {
-                Files = [.. filesId]
-            };
-            return _openAiAssistant;
+                thread!.Request.ToolResources ??= new AssistantToolResources
+                {
+                };
+                thread.Request.ToolResources.CodeInterpreter = new AssistantCodeInterpreterToolResources
+                {
+                    Files = [.. filesId]
+                };
+            }
+            return _openAiAssistant.Get<T>()!;
         }
 
-        public IOpenAiFileSearchToolResourcesAssistant WithFileSearch(params string[] vectorStoresId)
+        public IOpenAiFileSearchToolResourcesAssistant<T> WithFileSearch(params string[] vectorStoresId)
         {
-            _openAiAssistant.Request.ToolResources ??= new AssistantToolResources
-            {
-            };
             var assistantFileSearchToolResources = new AssistantFileSearchToolResources
             {
                 VectorStoresId = [.. vectorStoresId]
             };
-            _openAiAssistant.Request.ToolResources.FileSearch = assistantFileSearchToolResources;
-            return new OpenAiFileSearchToolResourcesAssistant(_openAiAssistant, assistantFileSearchToolResources);
+            if (_openAiAssistant.Is<OpenAiAssistant>(out var assistant))
+            {
+                assistant!.Request.ToolResources ??= new AssistantToolResources();
+                assistant.Request.ToolResources.FileSearch = assistantFileSearchToolResources;
+            }
+            else if (_openAiAssistant.Is<OpenAiThread>(out var thread))
+            {
+                thread!.Request.ToolResources ??= new AssistantToolResources();
+                thread.Request.ToolResources.FileSearch = assistantFileSearchToolResources;
+            }
+            return new OpenAiFileSearchToolResourcesAssistant<T>(_openAiAssistant, assistantFileSearchToolResources);
         }
     }
 }

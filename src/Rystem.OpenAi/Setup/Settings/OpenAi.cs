@@ -15,6 +15,7 @@
         AudioSpeech,
         Billing,
         Deployment,
-        Assistant
+        Assistant,
+        Thread
     }
 }

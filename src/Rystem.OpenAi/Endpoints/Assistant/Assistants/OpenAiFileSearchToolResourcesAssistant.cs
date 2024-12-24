@@ -1,20 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rystem.OpenAi.Assistant
 {
-    internal sealed class OpenAiFileSearchToolResourcesAssistant : IOpenAiFileSearchToolResourcesAssistant
+    internal sealed class OpenAiFileSearchToolResourcesAssistant<T> : IOpenAiFileSearchToolResourcesAssistant<T>
     {
         private const string ChunkingStrategyTypeAsStatic = "static";
-        private readonly OpenAiAssistant _openAiAssistant;
+        private readonly AnyOf<OpenAiAssistant, OpenAiThread> _openAiAssistant;
         private readonly AssistantFileSearchToolResources _assistantFileSearchToolResources;
 
-        public OpenAiFileSearchToolResourcesAssistant(OpenAiAssistant openAiAssistant,
+        public OpenAiFileSearchToolResourcesAssistant(AnyOf<OpenAiAssistant, OpenAiThread> openAiAssistant,
             AssistantFileSearchToolResources assistantFileSearchToolResources)
         {
             _openAiAssistant = openAiAssistant;
             _assistantFileSearchToolResources = assistantFileSearchToolResources;
         }
-        public IOpenAiFileSearchToolResourcesAssistant AddMetadata(string key, string value)
+        public IOpenAiFileSearchToolResourcesAssistant<T> AddMetadata(string key, string value)
         {
             _assistantFileSearchToolResources.Metadata ??= [];
             if (!_assistantFileSearchToolResources.Metadata.TryAdd(key, value))
@@ -22,39 +23,39 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
 
-        public IOpenAiFileSearchToolResourcesAssistant AddMetadata(Dictionary<string, string> metadata)
+        public IOpenAiFileSearchToolResourcesAssistant<T> AddMetadata(Dictionary<string, string> metadata)
         {
             _assistantFileSearchToolResources.Metadata = metadata;
             return this;
         }
 
-        public IOpenAiFileSearchToolResourcesAssistant ClearMetadata()
+        public IOpenAiFileSearchToolResourcesAssistant<T> ClearMetadata()
         {
             _assistantFileSearchToolResources.Metadata?.Clear();
             return this;
         }
 
-        public IOpenAiFileSearchToolResourcesAssistant RemoveMetadata(string key)
+        public IOpenAiFileSearchToolResourcesAssistant<T> RemoveMetadata(string key)
         {
             if (_assistantFileSearchToolResources.Metadata?.ContainsKey(key) == true)
                 _assistantFileSearchToolResources.Metadata.Remove(key);
             return this;
         }
 
-        public IOpenAiAssistant Use()
+        public T Use()
         {
-            return _openAiAssistant;
+            return _openAiAssistant.Get<T>()!;
         }
 
-        public IOpenAiAssistant UseFileSearch(params string[] filesId)
+        public T UseFileSearch(params string[] filesId)
         {
             _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
             if (_assistantFileSearchToolResources.VectorStores.Files == null)
                 _assistantFileSearchToolResources.VectorStores.Files = [];
             _assistantFileSearchToolResources.VectorStores.Files.AddRange(filesId);
-            return _openAiAssistant;
+            return _openAiAssistant.Get<T>()!;
         }
-        public IOpenAiFileSearchToolResourcesAssistant WithStaticChunkingStrategy(int maxChunkSize, int chunkOverlap)
+        public IOpenAiFileSearchToolResourcesAssistant<T> WithStaticChunkingStrategy(int maxChunkSize, int chunkOverlap)
         {
             _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
             _assistantFileSearchToolResources.VectorStores.ChunkingStrategy = new AssistantChunkingStrategyVectorStoresFileSearchToolResources

@@ -51,6 +51,7 @@ namespace Rystem.OpenAi
             public string BillingUri { get; set; } = string.Format(BaseUri, "{0}", "dashboard/billing/usage", "{1}", "{2}");
             public string DeploymentUri { get; set; } = string.Format(BaseUri, "{0}", "deployments", "{1}", "{2}");
             public string AssistantUri { get; set; } = string.Format(BaseUri, "{0}", "assistants", "{1}", "{2}");
+            public string ThreadUri { get; set; } = string.Format(BaseUri, "{0}", "threads", "{1}", "{2}");
         }
         internal void ConfigureEndpoints()
         {
@@ -76,6 +77,7 @@ namespace Rystem.OpenAi
             uriHelper.AudioSpeechUri = string.Format(uriHelper.AudioSpeechUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.AudioSpeech)}", "{0}", string.Empty);
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://api.openai.com", "{0}", string.Empty);
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Assistant)}", "{0}", string.Empty);
+            uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Thread)}", "{0}", string.Empty);
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString, querystring)
                 => GetUriForOpenAi(type, appendBeforeQueryString, querystring, uriHelper);
@@ -99,6 +101,7 @@ namespace Rystem.OpenAi
                 OpenAiType.FineTuning => string.Format(uriHelper.FineTuneUri, appendBeforeQueryString),
                 OpenAiType.Billing => string.Format(uriHelper.BillingUri, appendBeforeQueryString),
                 OpenAiType.Assistant => PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString)),
+                OpenAiType.Thread => PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString)),
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
 
@@ -157,6 +160,7 @@ namespace Rystem.OpenAi
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
             uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Deployment)}");
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Assistant)}");
+            uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Thread)}");
 
             foreach (var deployments in Settings.Deployments)
             {
@@ -191,6 +195,7 @@ namespace Rystem.OpenAi
                             OpenAiType.Model => uriHelper.ModelUri,
                             OpenAiType.Deployment => uriHelper.DeploymentUri,
                             OpenAiType.Assistant => uriHelper.AssistantUri,
+                            OpenAiType.Thread => uriHelper.ThreadUri,
                             _ => throw new NotImplementedException(),
                         };
                     }
@@ -259,6 +264,8 @@ namespace Rystem.OpenAi
                     return string.Format(uriHelper.DeploymentUri, appendBeforeQueryString);
                 case OpenAiType.Assistant:
                     return PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString));
+                case OpenAiType.Thread:
+                    return PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString));
             }
             if (forceModel)
                 return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);

@@ -24,5 +24,6 @@ namespace Rystem.OpenAi
         public Action<IOpenAiModeration>? Moderation { get; set; }
         public Action<IOpenAiManagement>? Management { get; set; }
         public Action<IOpenAiAssistant>? Assistant { get; set; }
+        public Action<IOpenAiThread>? Thread { get; set; }
     }
 }

@@ -22,6 +22,8 @@
         {
             public const string Text = "text";
             public const string Image = "image_url";
+            public const string ImageFile = "image_file";
+            public const string AudioInput = "input_audio";
         }
         public static class FinishReason
         {

@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Rystem.OpenAi.Audio;
 
 namespace Rystem.OpenAi.Chat
 {
@@ -32,6 +35,19 @@ namespace Rystem.OpenAi.Chat
                     }
                 },
                 Type = ChatConstants.ContentType.Image
+            });
+            return this;
+        }
+        public ChatMessageContentBuilder AddAudio(Stream stream, AudioFormat audioFormat = AudioFormat.Mp3)
+        {
+            _content.Add(new ChatMessageContent
+            {
+                AudioInput = new ChatMessageAudioFile
+                {
+                    Data = stream.ToBase64(),
+                    Format = audioFormat.AsString()
+                },
+                Type = ChatConstants.ContentType.AudioInput
             });
             return this;
         }
