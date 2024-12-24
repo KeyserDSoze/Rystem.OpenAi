@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Rystem.OpenAi.Assistant
+namespace Rystem.OpenAi
 {
-    public sealed class AssistantDeleteResponse
+    public sealed class DeleteResponse
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }

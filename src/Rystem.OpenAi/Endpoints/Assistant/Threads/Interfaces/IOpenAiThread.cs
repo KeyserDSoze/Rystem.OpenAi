@@ -93,7 +93,7 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="id">The ID of the thread to delete.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the delete response.</returns>
-        ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a thread asynchronously by its ID.

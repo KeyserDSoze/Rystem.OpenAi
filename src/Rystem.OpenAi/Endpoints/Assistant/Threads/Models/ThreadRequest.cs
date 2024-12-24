@@ -11,7 +11,7 @@ namespace Rystem.OpenAi.Assistant
     public sealed class ThreadRequest : IOpenAiRequest, IAssistantToolResources
     {
         [JsonPropertyName("messages")]
-        public List<ThreadMessages>? Messages { get; set; }
+        public List<ThreadMessage>? Messages { get; set; }
         [JsonPropertyName("tool_resources")]
         public AssistantToolResources? ToolResources { get; set; }
         [JsonPropertyName("metadata")]

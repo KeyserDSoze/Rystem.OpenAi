@@ -193,10 +193,10 @@ namespace Rystem.OpenAi.Assistant
                         cancellationToken);
         }
 
-        public ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
-                DeleteAsync<AssistantDeleteResponse>(
+                DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
                         s_betaHeaders,

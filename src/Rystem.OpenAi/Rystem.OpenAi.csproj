@@ -47,13 +47,11 @@
         <EmbeddedResource Include="Utilities\Tokenizer\Files\r50k_base.bpe" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Endpoints\Assistant\Messages\" />
       <Folder Include="Endpoints\Assistant\VectorStoreBatches\" />
       <Folder Include="Endpoints\Assistant\VectorStoreFiles\" />
       <Folder Include="Endpoints\Assistant\VectorStores\" />
       <Folder Include="Endpoints\Assistant\RunSteps\" />
       <Folder Include="Endpoints\Assistant\Runs\" />
       <Folder Include="Endpoints\Assistant\Threads\Interfaces\" />
-      <Folder Include="Endpoints\Assistant\Threads\Models\" />
     </ItemGroup>
 </Project>

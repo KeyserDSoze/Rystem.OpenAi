@@ -5,7 +5,7 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
-    public sealed class ThreadMessages
+    public class ThreadMessage : IOpenAiRequest
     {
         [JsonPropertyName("role")]
         public string? Role { get; set; }
@@ -15,5 +15,6 @@ namespace Rystem.OpenAi.Assistant
         public List<ThreadAttachment>? Attachments { get; set; }
         [JsonPropertyName("metadata")]
         public Dictionary<string, string>? Metadata { get; set; }
+        public string? Model { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

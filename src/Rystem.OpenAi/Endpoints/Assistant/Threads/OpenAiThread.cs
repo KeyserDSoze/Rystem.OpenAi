@@ -22,13 +22,13 @@ namespace Rystem.OpenAi.Assistant
                 configuration.Settings.DefaultRequestConfiguration.Thread.Invoke(this);
             }
         }
-        private ThreadMessages GetLastMessage(ChatRole role)
+        private ThreadMessage GetLastMessage(ChatRole role)
         {
             Request.Messages ??= [];
             var lastMessage = Request.Messages.LastOrDefault();
             if (lastMessage?.Role != role.AsString())
             {
-                lastMessage = new ThreadMessages
+                lastMessage = new ThreadMessage
                 {
                     Role = role.AsString(),
                 };
@@ -52,7 +52,7 @@ namespace Rystem.OpenAi.Assistant
         {
             var content = new List<ChatMessageContent>();
             Request.Messages ??= [];
-            Request.Messages.Add(new ThreadMessages { Content = content, Role = role.AsString() });
+            Request.Messages.Add(new ThreadMessage { Content = content, Role = role.AsString() });
             return new ChatMessageContentBuilder<IOpenAiThread>(this, content);
         }
         public ChatMessageContentBuilder<IOpenAiThread> AddUserContent()
@@ -128,10 +128,10 @@ namespace Rystem.OpenAi.Assistant
                         cancellationToken);
         }
 
-        public ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
-                DeleteAsync<AssistantDeleteResponse>(
+                DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{id}", null),
                         s_betaHeaders,

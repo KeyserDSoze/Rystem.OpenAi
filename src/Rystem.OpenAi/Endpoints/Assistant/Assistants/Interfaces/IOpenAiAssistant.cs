@@ -146,7 +146,7 @@ namespace Rystem.OpenAi.Assistant
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>AssistantDeleteResponse</returns>
-        ValueTask<AssistantDeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
         /// <summary>
         /// List all the assistants.
         /// </summary>
