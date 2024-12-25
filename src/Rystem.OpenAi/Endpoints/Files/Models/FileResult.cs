@@ -5,7 +5,7 @@ namespace Rystem.OpenAi.Files
     /// <summary>
     /// Represents a single file used with the OpenAI Files endpoint.  Files are used to upload and manage documents that can be used with features like Fine-tuning.
     /// </summary>
-    public sealed class FileResult
+    public sealed class FileResult : UnixTimeBase
     {
         /// <summary>
         /// Unique id for this file, so that it can be referenced in other operations
@@ -33,11 +33,6 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         [JsonPropertyName("bytes")]
         public long Bytes { get; set; }
-        /// <summary>
-        /// Timestamp for the creation time of this file
-        /// </summary>
-        [JsonPropertyName("created_at")]
-        public long CreatedAt { get; set; }
         [JsonPropertyName("file")]
         public FileDataResult? File { get; set; }
     }

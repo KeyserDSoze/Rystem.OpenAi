@@ -6,14 +6,12 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
-    public sealed class AssistantRequest : IOpenAiRequest
+    public sealed class AssistantRequest : UnixTimeBase, IOpenAiRequest
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("object")]
         public string? Object { get; set; }
-        [JsonPropertyName("created_at")]
-        public long? CreatedAt { get; set; }
         [JsonPropertyName("name")]
         public string? Name { get; set; }
         [JsonPropertyName("description")]

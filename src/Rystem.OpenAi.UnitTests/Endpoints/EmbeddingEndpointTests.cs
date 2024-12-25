@@ -27,9 +27,9 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync();
 
             Assert.NotNull(results);
-            if (results.CreatedUnixTime.HasValue)
+            if (results.CreatedAt.HasValue)
             {
-                Assert.NotEqual(0, results.CreatedUnixTime.Value);
+                Assert.NotEqual(0, results.CreatedAt.Value);
                 Assert.NotNull(results.Created);
                 Assert.True(results.Created.Value > new DateTime(2018, 1, 1));
                 Assert.True(results.Created.Value < DateTime.Now.AddDays(1));
@@ -84,9 +84,9 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync();
 
             Assert.NotNull(results);
-            if (results.CreatedUnixTime.HasValue)
+            if (results.CreatedAt.HasValue)
             {
-                Assert.NotEqual(0, results.CreatedUnixTime.Value);
+                Assert.NotEqual(0, results.CreatedAt.Value);
                 Assert.NotNull(results.Created);
                 Assert.True(results.Created.Value > new DateTime(2018, 1, 1));
                 Assert.True(results.Created.Value < DateTime.Now.AddDays(1));

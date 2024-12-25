@@ -6,16 +6,8 @@ namespace Rystem.OpenAi
     /// <summary>
     /// Represents a result from calling the OpenAI API, with all the common metadata returned from every endpoint
     /// </summary>
-    public abstract class ApiBaseResponse
+    public abstract class ApiBaseResponse : UnixTimeBaseResponse
     {
-        /// The time when the result was generated
-        [JsonIgnore]
-        public DateTime? Created => CreatedUnixTime.HasValue ? (DateTime?)(DateTimeOffset.FromUnixTimeSeconds(CreatedUnixTime.Value).DateTime) : null;
-        /// <summary>
-        /// The time when the result was generated in unix epoch format
-        /// </summary>
-        [JsonPropertyName("created")]
-        public long? CreatedUnixTime { get; set; }
         /// <summary>
         /// Which model was used to generate this result.
         /// </summary>

@@ -29,8 +29,8 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
             Assert.NotNull(results);
-            Assert.NotNull(results.CreatedUnixTime);
-            Assert.NotEqual(0, results.CreatedUnixTime.Value);
+            Assert.NotNull(results.CreatedAt);
+            Assert.NotEqual(0, results.CreatedAt.Value);
             Assert.NotNull(results.Created);
             Assert.NotNull(results.Choices);
             Assert.NotEmpty(results.Choices);
