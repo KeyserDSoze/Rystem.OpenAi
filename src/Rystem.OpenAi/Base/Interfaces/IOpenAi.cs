@@ -25,5 +25,6 @@ namespace Rystem.OpenAi
         IOpenAiAssistant Assistant { get; }
         IOpenAiThread Thread { get; }
         IOpenAiMessage Message { get; }
+        IOpenAiRun Run { get; }
     }
 }

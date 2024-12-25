@@ -9,7 +9,7 @@ namespace Rystem.OpenAi.Assistant
     internal sealed class OpenAiMessage : OpenAiBuilder<IOpenAiMessage, ThreadMessage, ChatModelName>, IOpenAiMessage
     {
         public OpenAiMessage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Assistant)
+            : base(factory, configurationFactory, OpenAiType.Thread)
         {
         }
         private protected override void ConfigureFactory(string name)

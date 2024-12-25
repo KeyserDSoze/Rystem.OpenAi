@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,37 +10,13 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
-    public sealed class RunRequest : AssistantRequest
-    {
-        [JsonIgnore]
-        public StringBuilder? AdditionalInstructionsBuilder { get; set; }
-        [JsonPropertyName("additional_instructions")]
-        public string? AdditionalInstructions { get => AdditionalInstructionsBuilder?.ToString(); set => AdditionalInstructionsBuilder = new(value); }
-        [JsonPropertyName("additional_messages")]
-        public List<ThreadMessage>? AdditionalMessages { get; set; }
-        [JsonPropertyName("stream")]
-        public bool Stream { get; set; }
-        [JsonPropertyName("max_prompt_tokens")]
-        public int? MaxPromptTokens { get; set; }
-        [JsonPropertyName("max_completion_tokens")]
-        public int? MaxCompletionTokens { get; set; }
-        [JsonPropertyName("truncation_strategy")]
-        public RunTruncationStrategy? RunTruncationStrategy { get; set; }
-        [JsonPropertyName("tool_choice")]
-        public AnyOf<string, ForcedFunctionTool>? ToolChoice { get; set; }
-        [JsonPropertyName("parallel_tool_calls")]
-        public bool? ParallelToolCalls { get; set; }
-    }
-    public interface IOpenAiRun : IOpenAiBase<IOpenAiRun, ChatModelName>
-    {
-
-    }
     internal sealed class OpenAiRun : OpenAiBuilder<IOpenAiRun, RunRequest, ChatModelName>, IOpenAiRun
     {
-        private Dictionary<string, string>? s_fileSearchIncludingQuerystring = null;
+        private string? _threadId = null;
+        private Dictionary<string, string>? _fileSearchIncludingQuerystring = null;
         private const string RunsPath = "/runs";
         public OpenAiRun(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Assistant)
+            : base(factory, configurationFactory, OpenAiType.Thread)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -52,17 +27,27 @@ namespace Rystem.OpenAi.Assistant
                 configuration.Settings.DefaultRequestConfiguration.Run.Invoke(this);
             }
         }
+        public IOpenAiRun WithThread(string threadId)
+        {
+            _threadId = threadId;
+            return this;
+        }
+        public ThreadHelper<IOpenAiRun> WithThread()
+        {
+            Request.Thread ??= new();
+            return new ThreadHelper<IOpenAiRun>(this, Request.Thread);
+        }
         public IOpenAiRun IncludeFileSearchContext()
         {
-            s_fileSearchIncludingQuerystring ??= [];
-            s_fileSearchIncludingQuerystring.TryAdd("include[]", "step_details.tool_calls[*].file_search.results[*].content");
+            _fileSearchIncludingQuerystring ??= [];
+            _fileSearchIncludingQuerystring.TryAdd("include[]", "step_details.tool_calls[*].file_search.results[*].content");
             return this;
         }
         public IOpenAiRun ExcludeFileSearchContext()
         {
-            s_fileSearchIncludingQuerystring?.Remove("include[]");
-            if (s_fileSearchIncludingQuerystring?.Count == 0)
-                s_fileSearchIncludingQuerystring = null;
+            _fileSearchIncludingQuerystring?.Remove("include[]");
+            if (_fileSearchIncludingQuerystring?.Count == 0)
+                _fileSearchIncludingQuerystring = null;
             return this;
         }
         public IOpenAiRun AvoidCallingTools()
@@ -81,8 +66,6 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
         private const string FunctionType = "function";
-
-
         public IOpenAiRun ForceCallFunction(string name)
         {
             Request.ToolChoice = new ForcedFunctionTool
@@ -350,33 +333,50 @@ namespace Rystem.OpenAi.Assistant
         {
             { "OpenAI-Beta", "assistants=v2" }
         };
-        private ValueTask<AssistantRequest> CreateAsync(string? threadId, bool streaming, CancellationToken cancellationToken)
+        public ValueTask<RunResult> StartAsync(CancellationToken cancellationToken)
         {
-            Request.Stream = streaming;
+            if (_threadId == null && Request.Thread == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
-                PostAsync<AssistantRequest>(
+                PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, threadId == null ? RunsPath : $"/{threadId}{RunsPath}", s_fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
                         Request,
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<AssistantRequest> CreateAsync(string? threadId = null, CancellationToken cancellationToken = default)
-            => CreateAsync(threadId, false, cancellationToken);
-        public ValueTask<AssistantRequest> CreateAsStreamAsync(string? threadId = null, CancellationToken cancellationToken = default)
-            => CreateAsync(threadId, true, cancellationToken);
-        public ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<RunResult> StartAsStreamAsync(CancellationToken cancellationToken)
         {
+            if (_threadId == null && Request.Thread == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
-                DeleteAsync<DeleteResponse>(
+                StreamAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
+                        _toolOutputRequest,
+                        HttpMethod.Post,
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        null,
+                        cancellationToken);
+        }
+        public ValueTask<RunResult> CancelAsync(string id, CancellationToken cancellationToken = default)
+        {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
+            return DefaultServices.HttpClientWrapper.
+                PostAsync<RunResult>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/cancel", null),
+                        null,
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<ResponseAsArray<AssistantRequest>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
+        public ValueTask<ResponseAsArray<RunResult>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
         {
             var querystring = new Dictionary<string, string>
             {
@@ -388,33 +388,73 @@ namespace Rystem.OpenAi.Assistant
             else if (elementId != null && !getAfterTheElementId)
                 querystring.Add("before", elementId);
             return DefaultServices.HttpClientWrapper.
-                GetAsync<ResponseAsArray<AssistantRequest>>(
+                GetAsync<ResponseAsArray<RunResult>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, string.Empty, querystring),
+                        OpenAiType.Thread, string.Empty, Forced, string.Empty, querystring),
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<AssistantRequest> RetrieveAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<RunResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
         {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
             return DefaultServices.HttpClientWrapper.
-                GetAsync<AssistantRequest>(
+                GetAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}", null),
                         s_betaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
 
-        public ValueTask<AssistantRequest> UpdateAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<RunResult> UpdateAsync(string id, CancellationToken cancellationToken = default)
         {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
             return DefaultServices.HttpClientWrapper.
-                PostAsync<AssistantRequest>(
+                PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}", null),
                         Request,
                         s_betaHeaders,
                         DefaultServices.Configuration,
+                        cancellationToken);
+        }
+        private ToolOutputRequest? _toolOutputRequest;
+        public ToolOutputBuilder<IOpenAiRun> AddToolOutput()
+        {
+            _toolOutputRequest ??= new ToolOutputRequest();
+            return new ToolOutputBuilder<IOpenAiRun>(this, _toolOutputRequest);
+        }
+        public ValueTask<RunResult> ContinueAsync(string id, CancellationToken cancellationToken)
+        {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            Request.Stream = false;
+            return DefaultServices.HttpClientWrapper.
+                PostAsync<RunResult>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
+                        _toolOutputRequest,
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
+        }
+        public IAsyncEnumerable<RunResult> ContinueAsStreamAsync(string id, CancellationToken cancellationToken)
+        {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            Request.Stream = true;
+            return DefaultServices.HttpClientWrapper.
+                StreamAsync<RunResult>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
+                        _toolOutputRequest,
+                        HttpMethod.Post,
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        null,
                         cancellationToken);
         }
     }

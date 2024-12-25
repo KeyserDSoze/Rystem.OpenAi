@@ -156,18 +156,27 @@ namespace Rystem.OpenAi
         internal static ValueTask<Stream> PostAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, configuration, cancellationToken);
+            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, headers, configuration, cancellationToken);
         internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
+            if (headers != null && headers.Count > 0)
+            {
+                foreach (var header in headers)
+                {
+                    wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
             var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
             var responseAsStream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var memoryStream = new MemoryStream();
@@ -179,12 +188,20 @@ namespace Rystem.OpenAi
             string url,
             object? message,
             HttpMethod httpMethod,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             Func<Stream, HttpResponseMessage, CancellationToken, IAsyncEnumerable<TResponse>>? streamReader,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
+            if (headers != null && headers.Count > 0)
+            {
+                foreach (var header in headers)
+                {
+                    wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
             var response = await wrapper.PerformRequestAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);

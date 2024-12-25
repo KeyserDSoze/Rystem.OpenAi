@@ -81,7 +81,7 @@ namespace Rystem.OpenAi.FineTune
             if (skip > 0)
                 querystring.Add("after", skip.ToString());
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, string.Empty, Forced, string.Empty, querystring);
-            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadFineTuneStreamAsync, cancellationToken);
+            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, null, DefaultServices.Configuration, ReadFineTuneStreamAsync, cancellationToken);
         }
 
         public IAsyncEnumerable<FineTuneEvent> ListEventsAsStreamAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
@@ -93,7 +93,7 @@ namespace Rystem.OpenAi.FineTune
             if (skip > 0)
                 querystring.Add("after", skip.ToString());
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, fineTuneId, Forced, $"/{fineTuneId}/events", querystring);
-            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, DefaultServices.Configuration, ReadEventsStreamAsync, cancellationToken);
+            return DefaultServices.HttpClientWrapper.StreamAsync(uri, null, HttpMethod.Get, null, DefaultServices.Configuration, ReadEventsStreamAsync, cancellationToken);
         }
 
         private static IAsyncEnumerable<FineTuneResult> ReadFineTuneStreamAsync(Stream stream, HttpResponseMessage response, CancellationToken cancellationToken)
