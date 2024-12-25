@@ -4,11 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Assistant
 {
-    public interface IAssistantToolResources
-    {
-        AssistantToolResources? ToolResources { get; set; }
-    }
-    public sealed class ThreadRequest : IOpenAiRequest, IAssistantToolResources
+    public sealed class ThreadRequest : IOpenAiRequest
     {
         [JsonPropertyName("messages")]
         public List<ThreadMessage>? Messages { get; set; }

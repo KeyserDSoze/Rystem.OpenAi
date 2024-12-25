@@ -120,7 +120,7 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
 
-        public IOpenAiFileSearchAssistant WithFileSearch(int maxNumberOfResults = 20)
+        public IOpenAiFileSearchAssistant<IOpenAiAssistant> WithFileSearch(int maxNumberOfResults = 20)
         {
             if (maxNumberOfResults < 1)
                 throw new ArgumentException("Max number of results with a value lesser than 1");
@@ -135,13 +135,12 @@ namespace Rystem.OpenAi.Assistant
             };
             Request.Tools ??= [];
             Request.Tools.Add(fileSearch);
-            return new OpenAiFileSearchAssistant(this, fileSearch);
+            return new OpenAiFileSearchAssistant<IOpenAiAssistant>(this, fileSearch);
         }
 
         public IOpenAiAssistant WithInstructions(string text)
         {
-            if (Request.InstructionsBuilder == null)
-                Request.InstructionsBuilder = new();
+            Request.InstructionsBuilder ??= new();
             Request.InstructionsBuilder.Append(text);
             return this;
         }

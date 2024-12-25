@@ -1,27 +1,27 @@
 ﻿namespace Rystem.OpenAi.Assistant
 {
-    internal sealed class OpenAiFileSearchAssistant : IOpenAiFileSearchAssistant
+    internal sealed class OpenAiFileSearchAssistant<T> : IOpenAiFileSearchAssistant<T>
     {
-        private readonly OpenAiAssistant _assistant;
+        private readonly T _builder;
         private readonly AssistantFileSearchTool _assistantFileSearchTool;
 
-        public OpenAiFileSearchAssistant(OpenAiAssistant assistant, AssistantFileSearchTool assistantFileSearchTool)
+        public OpenAiFileSearchAssistant(T builder, AssistantFileSearchTool assistantFileSearchTool)
         {
-            _assistant = assistant;
+            _builder = builder;
             _assistantFileSearchTool = assistantFileSearchTool;
         }
-        public IOpenAiAssistant UseCustom(RankerName ranker, int scoreThreshold)
+        public T UseCustom(RankerName ranker, int scoreThreshold)
         {
             _assistantFileSearchTool.FileSearch ??= new();
             _assistantFileSearchTool.FileSearch.RankingOptions ??= new();
             _assistantFileSearchTool.FileSearch.RankingOptions.Ranker = ranker.Name;
             _assistantFileSearchTool.FileSearch.RankingOptions.ScoreThreshold = scoreThreshold;
-            return _assistant;
+            return _builder;
         }
 
-        public IOpenAiAssistant UseDefault()
+        public T UseDefault()
         {
-            return _assistant;
+            return _builder;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Rystem.OpenAi.Assistant
         /// </summary>
         /// <param name="maxNumberOfResults"></param>
         /// <returns></returns>
-        IOpenAiFileSearchAssistant WithFileSearch(int maxNumberOfResults = 20);
+        IOpenAiFileSearchAssistant<IOpenAiAssistant> WithFileSearch(int maxNumberOfResults = 20);
         /// <summary>
         /// Use this to add a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
         /// </summary>

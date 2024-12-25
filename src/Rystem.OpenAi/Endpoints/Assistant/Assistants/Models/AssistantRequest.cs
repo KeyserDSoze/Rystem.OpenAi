@@ -6,7 +6,7 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
-    public sealed class AssistantRequest : UnixTimeBase, IOpenAiRequest
+    public class AssistantRequest : UnixTimeBase, IOpenAiRequest
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
