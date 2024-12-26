@@ -457,5 +457,43 @@ namespace Rystem.OpenAi.Assistant
                         null,
                         cancellationToken);
         }
+        public ValueTask<ResponseAsArray<RunStepResult>> ListStepsAsync(string id, int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
+        {
+            var querystring = new Dictionary<string, string>
+            {
+                { "limit", take.ToString() },
+                { "order", order == AssistantOrder.Descending ? "desc" : "asc" },
+            };
+            if (_fileSearchIncludingQuerystring?.Count > 0)
+            {
+                foreach (var item in _fileSearchIncludingQuerystring)
+                    querystring.Add(item.Key, item.Value);
+            }
+            if (elementId != null && getAfterTheElementId)
+                querystring.Add("after", elementId);
+            else if (elementId != null && !getAfterTheElementId)
+                querystring.Add("before", elementId);
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            return DefaultServices.HttpClientWrapper.
+                GetAsync<ResponseAsArray<RunStepResult>>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/steps", querystring),
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
+        }
+        public ValueTask<RunStepResult> GetStepAsync(string runId, string id, CancellationToken cancellationToken)
+        {
+            if (_threadId == null)
+                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            return DefaultServices.HttpClientWrapper.
+                GetAsync<RunStepResult>(
+                    DefaultServices.Configuration.GetUri(
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{runId}/steps/{id}", _fileSearchIncludingQuerystring),
+                        s_betaHeaders,
+                        DefaultServices.Configuration,
+                        cancellationToken);
+        }
     }
 }

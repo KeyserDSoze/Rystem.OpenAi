@@ -24,6 +24,12 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <UserSecretsId>b0061d78-060a-4020-9298-82b4fd2c0821</UserSecretsId>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Endpoints\Assistant\RunSteps\**" />
+      <EmbeddedResource Remove="Endpoints\Assistant\RunSteps\**" />
+      <None Remove="Endpoints\Assistant\RunSteps\**" />
+    </ItemGroup>
     <ItemGroup>
         <None Update="openai.png">
             <Pack>True</Pack>
@@ -50,7 +56,6 @@
       <Folder Include="Endpoints\Assistant\VectorStoreBatches\" />
       <Folder Include="Endpoints\Assistant\VectorStoreFiles\" />
       <Folder Include="Endpoints\Assistant\VectorStores\" />
-      <Folder Include="Endpoints\Assistant\RunSteps\" />
       <Folder Include="Endpoints\Assistant\Threads\Interfaces\" />
     </ItemGroup>
 </Project>
