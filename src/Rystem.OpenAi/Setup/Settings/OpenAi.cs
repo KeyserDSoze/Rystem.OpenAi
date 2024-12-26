@@ -16,6 +16,7 @@
         Billing,
         Deployment,
         Assistant,
-        Thread
+        Thread,
+        VectorStore
     }
 }

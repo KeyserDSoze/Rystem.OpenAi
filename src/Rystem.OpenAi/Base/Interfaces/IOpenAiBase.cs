@@ -1,4 +1,6 @@
-﻿namespace Rystem.OpenAi
+﻿using Azure.Core;
+
+namespace Rystem.OpenAi
 {
     public interface IOpenAiBase<out T, TModel>
         where TModel : ModelName

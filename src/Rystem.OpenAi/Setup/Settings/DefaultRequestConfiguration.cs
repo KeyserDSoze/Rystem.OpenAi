@@ -27,5 +27,6 @@ namespace Rystem.OpenAi
         public Action<IOpenAiThread>? Thread { get; set; }
         public Action<IOpenAiMessage>? Message { get; set; }
         public Action<IOpenAiRun>? Run { get; set; }
+        public Action<IOpenAiVectorStore>? VectorStore { get; set; }
     }
 }

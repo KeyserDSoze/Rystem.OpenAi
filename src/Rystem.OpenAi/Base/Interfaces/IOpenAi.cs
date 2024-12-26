@@ -26,5 +26,6 @@ namespace Rystem.OpenAi
         IOpenAiThread Thread { get; }
         IOpenAiMessage Message { get; }
         IOpenAiRun Run { get; }
+        IOpenAiVectorStore VectorStore { get; }
     }
 }

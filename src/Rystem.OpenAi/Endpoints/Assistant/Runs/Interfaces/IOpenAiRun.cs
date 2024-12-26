@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
+using Azure.Core;
+using System;
 
 namespace Rystem.OpenAi.Assistant
 {
@@ -204,5 +206,24 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the updated run result.</returns>
         ValueTask<RunResult> UpdateAsync(string id, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Lists steps asynchronously with optional filters.
+        /// </summary>
+        /// <param name="id">The ID of the run to retrieve.</param>
+        /// <param name="take">The number of runs to retrieve.</param>
+        /// <param name="elementId">Optional: The ID of a reference run for pagination.</param>
+        /// <param name="getAfterTheElementId">Specifies whether to retrieve runs after the reference run (true) or before (false).</param>
+        /// <param name="order">The order of the runs (ascending or descending).</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>esponseAsArray<RunStepResult></returns>
+        ValueTask<ResponseAsArray<RunStepResult>> ListStepsAsync(string id, int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Retrieves a step asynchronously by its ID.
+        /// </summary>
+        /// <param name="runId">The ID of the run to retrieve.</param>
+        /// <param name="id">The ID of the step to retrieve.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        /// <returns>RunStepResult</returns>
+        ValueTask<RunStepResult> GetStepAsync(string runId, string id, CancellationToken cancellationToken);
     }
 }

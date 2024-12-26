@@ -27,8 +27,14 @@
 
     <ItemGroup>
       <Compile Remove="Endpoints\Assistant\RunSteps\**" />
+      <Compile Remove="Endpoints\Assistant\VectorStoreBatches\**" />
+      <Compile Remove="Endpoints\Assistant\VectorStoreFiles\**" />
       <EmbeddedResource Remove="Endpoints\Assistant\RunSteps\**" />
+      <EmbeddedResource Remove="Endpoints\Assistant\VectorStoreBatches\**" />
+      <EmbeddedResource Remove="Endpoints\Assistant\VectorStoreFiles\**" />
       <None Remove="Endpoints\Assistant\RunSteps\**" />
+      <None Remove="Endpoints\Assistant\VectorStoreBatches\**" />
+      <None Remove="Endpoints\Assistant\VectorStoreFiles\**" />
     </ItemGroup>
     <ItemGroup>
         <None Update="openai.png">
@@ -53,9 +59,6 @@
         <EmbeddedResource Include="Utilities\Tokenizer\Files\r50k_base.bpe" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Endpoints\Assistant\VectorStoreBatches\" />
-      <Folder Include="Endpoints\Assistant\VectorStoreFiles\" />
-      <Folder Include="Endpoints\Assistant\VectorStores\" />
       <Folder Include="Endpoints\Assistant\Threads\Interfaces\" />
     </ItemGroup>
 </Project>

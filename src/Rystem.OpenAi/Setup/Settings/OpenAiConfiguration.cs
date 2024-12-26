@@ -52,6 +52,7 @@ namespace Rystem.OpenAi
             public string DeploymentUri { get; set; } = string.Format(BaseUri, "{0}", "deployments", "{1}", "{2}");
             public string AssistantUri { get; set; } = string.Format(BaseUri, "{0}", "assistants", "{1}", "{2}");
             public string ThreadUri { get; set; } = string.Format(BaseUri, "{0}", "threads", "{1}", "{2}");
+            public string VectorStoreUri { get; set; } = string.Format(BaseUri, "{0}", "vector_stores", "{1}", "{2}");
         }
         internal void ConfigureEndpoints()
         {
@@ -78,6 +79,7 @@ namespace Rystem.OpenAi
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://api.openai.com", "{0}", string.Empty);
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Assistant)}", "{0}", string.Empty);
             uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Thread)}", "{0}", string.Empty);
+            uriHelper.VectorStoreUri = string.Format(uriHelper.VectorStoreUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.VectorStore)}", "{0}", string.Empty);
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString, querystring)
                 => GetUriForOpenAi(type, appendBeforeQueryString, querystring, uriHelper);
@@ -102,6 +104,7 @@ namespace Rystem.OpenAi
                 OpenAiType.Billing => string.Format(uriHelper.BillingUri, appendBeforeQueryString),
                 OpenAiType.Assistant => PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString)),
                 OpenAiType.Thread => PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString)),
+                OpenAiType.VectorStore => PassForQuerystringCheck(querystring, string.Format(uriHelper.VectorStoreUri, appendBeforeQueryString)),
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
 
@@ -161,6 +164,7 @@ namespace Rystem.OpenAi
             uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Deployment)}");
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Assistant)}");
             uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Thread)}");
+            uriHelper.VectorStoreUri = string.Format(uriHelper.VectorStoreUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.VectorStore)}");
 
             foreach (var deployments in Settings.Deployments)
             {
@@ -196,6 +200,7 @@ namespace Rystem.OpenAi
                             OpenAiType.Deployment => uriHelper.DeploymentUri,
                             OpenAiType.Assistant => uriHelper.AssistantUri,
                             OpenAiType.Thread => uriHelper.ThreadUri,
+                            OpenAiType.VectorStore => uriHelper.VectorStoreUri,
                             _ => throw new NotImplementedException(),
                         };
                     }
@@ -266,6 +271,8 @@ namespace Rystem.OpenAi
                     return PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString));
                 case OpenAiType.Thread:
                     return PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString));
+                case OpenAiType.VectorStore:
+                    return PassForQuerystringCheck(querystring, string.Format(uriHelper.VectorStoreUri, appendBeforeQueryString));
             }
             if (forceModel)
                 return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);
