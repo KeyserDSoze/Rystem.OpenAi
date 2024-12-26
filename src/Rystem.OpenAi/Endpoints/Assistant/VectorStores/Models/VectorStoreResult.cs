@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Assistant
         public string? Name { get; set; }
         //todo: adding a status as enum like the others status property
         [JsonPropertyName("status")]
-        public string? Status { get; set; }
+        public string? StatusAsString { get; set; }
         [JsonPropertyName("file_counts")]
         public VectorStoreFileCounts? FileCounts { get; set; }
         [JsonPropertyName("metadata")]

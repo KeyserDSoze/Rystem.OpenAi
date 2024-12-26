@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
 {
-    internal abstract class OpenAiBuilderWithMetadat<T, TRequest, TModel> : OpenAiBuilder<T, TRequest, TModel>, IServiceForFactory
+    internal abstract class OpenAiBuilderWithMetadata<T, TRequest, TModel> : OpenAiBuilder<T, TRequest, TModel>, IServiceForFactory
         where T : class
         where TRequest : IOpenAiRequestWithMetadata, new()
         where TModel : ModelName
     {
-        public OpenAiBuilderWithMetadat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
+        public OpenAiBuilderWithMetadata(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
             : base(factory, configurationFactory, types)
         {
         }

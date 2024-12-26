@@ -75,10 +75,6 @@ namespace Rystem.OpenAi.Assistant
                 Request.Metadata.Remove(key);
             return this;
         }
-        private static readonly Dictionary<string, string> s_betaHeaders = new()
-        {
-            { "OpenAI-Beta", "assistants=v2" }
-        };
         public ValueTask<ThreadMessageResponse> CreateAsync(string threadId, CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
@@ -86,7 +82,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{threadId}/messages", null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -97,7 +93,7 @@ namespace Rystem.OpenAi.Assistant
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{threadId}/messages/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -107,7 +103,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<ThreadMessageResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{threadId}/messages/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -126,7 +122,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<ResponseAsArray<ThreadMessageResponse>>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{threadId}/messages", querystring),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -138,7 +134,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{threadId}/messages/{id}", null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }

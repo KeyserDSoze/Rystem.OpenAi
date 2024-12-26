@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Assistant
 {
-    internal sealed class OpenAiVectorStore : OpenAiBuilderWithMetadat<IOpenAiVectorStore, VectorStoreRequest, ChatModelName>, IOpenAiVectorStore
+    internal sealed class OpenAiVectorStore : OpenAiBuilderWithMetadata<IOpenAiVectorStore, VectorStoreRequest, ChatModelName>, IOpenAiVectorStore
     {
         public OpenAiVectorStore(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
             : base(factory, configurationFactory, OpenAiType.VectorStore)
@@ -19,6 +19,8 @@ namespace Rystem.OpenAi.Assistant
                 configuration.Settings.DefaultRequestConfiguration.VectorStore.Invoke(this);
             }
         }
+        public IOpenAiVectorStoreFile ManageStore(string vectorStoreId)
+            => new OpenAiVectorStoreFile(vectorStoreId, DefaultServices);
         public IOpenAiVectorStore WithName(string name)
         {
             Request.Name = name;
@@ -48,10 +50,7 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
 
-        private static readonly Dictionary<string, string> s_betaHeaders = new()
-        {
-            { "OpenAI-Beta", "assistants=v2" }
-        };
+
 
         public ValueTask<VectorStoreResult> CreateAsync(CancellationToken cancellationToken = default)
         {
@@ -60,7 +59,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, string.Empty, null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -70,7 +69,7 @@ namespace Rystem.OpenAi.Assistant
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -89,7 +88,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<ResponseAsArray<VectorStoreResult>>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, string.Empty, querystring),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -99,18 +98,18 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<AssistantRequest> UpdateAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<VectorStoreResult> UpdateAsync(string id, CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
-                PostAsync<AssistantRequest>(
+                PostAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }

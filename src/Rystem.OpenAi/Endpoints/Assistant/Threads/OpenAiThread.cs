@@ -44,10 +44,6 @@ namespace Rystem.OpenAi.Assistant
             => _threadHelper.RemoveMetadata(key);
         public IOpenAiToolResourcesAssistant<IOpenAiThread> WithToolResources()
             => _threadHelper.WithToolResources();
-        private static readonly Dictionary<string, string> s_betaHeaders = new()
-        {
-            { "OpenAI-Beta", "assistants=v2" }
-        };
         public ValueTask<ThreadResponse> CreateAsync(CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
@@ -55,7 +51,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, string.Empty, null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -66,7 +62,7 @@ namespace Rystem.OpenAi.Assistant
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -76,7 +72,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<ThreadResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -88,7 +84,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, $"/{id}", null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }

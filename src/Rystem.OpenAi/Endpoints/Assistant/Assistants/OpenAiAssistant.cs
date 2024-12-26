@@ -176,10 +176,6 @@ namespace Rystem.OpenAi.Assistant
             return new OpenAiToolResourcesAssistant<IOpenAiAssistant>(this, Request.ToolResources);
         }
 
-        private static readonly Dictionary<string, string> s_betaHeaders = new()
-        {
-            { "OpenAI-Beta", "assistants=v2" }
-        };
         public ValueTask<AssistantRequest> CreateAsync(CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper.
@@ -187,7 +183,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, string.Empty, null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -198,7 +194,7 @@ namespace Rystem.OpenAi.Assistant
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -217,7 +213,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<ResponseAsArray<AssistantRequest>>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, string.Empty, querystring),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -227,7 +223,7 @@ namespace Rystem.OpenAi.Assistant
                 GetAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
@@ -239,7 +235,7 @@ namespace Rystem.OpenAi.Assistant
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
                         Request,
-                        s_betaHeaders,
+                        BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }

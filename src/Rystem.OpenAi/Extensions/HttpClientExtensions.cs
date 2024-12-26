@@ -242,9 +242,9 @@ namespace Rystem.OpenAi
                 response.Headers.TryGetValues("X-Request-ID", out var requestIds);
                 if (requestIds?.Any() == true)
                     result.RequestId = requestIds.First();
-                response.Headers.TryGetValues("Openai-Processing-Ms", out var processings);
-                if (processings?.Any() == true)
-                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processings.First()));
+                response.Headers.TryGetValues("Openai-Processing-Ms", out var processing);
+                if (processing?.Any() == true)
+                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processing.First()));
                 response.Headers.TryGetValues("Openai-Version", out var versions);
                 if (versions?.Any() == true)
                     result.OpenaiVersion = versions.First();
