@@ -328,10 +328,13 @@ namespace Rystem.OpenAi.Assistant
             Request.RunTruncationStrategy = RunTruncationStrategy.LastMessages(numberOfMaximumLastMessagesInTheContext);
             return this;
         }
-        public ValueTask<RunResult> StartAsync(CancellationToken cancellationToken)
+        public ValueTask<RunResult> StartAsync(string assistantId, CancellationToken cancellationToken = default)
         {
             if (_threadId == null && Request.Thread == null)
                 throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            if (assistantId == null)
+                throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
+            Request.AssistantId = assistantId;
             Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
@@ -342,10 +345,13 @@ namespace Rystem.OpenAi.Assistant
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public IAsyncEnumerable<RunResult> StartAsStreamAsync(CancellationToken cancellationToken)
+        public IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default)
         {
             if (_threadId == null && Request.Thread == null)
                 throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            if (assistantId == null)
+                throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
+            Request.AssistantId = assistantId;
             Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
                 StreamAsync<RunResult>(

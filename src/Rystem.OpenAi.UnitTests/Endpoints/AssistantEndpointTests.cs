@@ -61,7 +61,59 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(created.Id);
 
             var threadClient = openAiApi.Thread;
-            threadClient.AddText(Chat.ChatRole.User, "What is 2 + 2?");
+            var response = await threadClient
+                .AddText(Chat.ChatRole.User, "What is 2 + 2?")
+                .AddAssistantContent()
+                .AddText("What is 4+4?")
+                .Builder
+                .CreateAsync();
+
+            Assert.NotNull(response);
+            Assert.NotNull(response.Id);
+            var theThread = await threadClient.RetrieveAsync(response.Id);
+            Assert.NotNull(theThread);
+            Assert.Equal(response.Id, theThread.Id);
+
+            var deletion = await threadClient.DeleteAsync(response.Id);
+            Assert.True(deletion.Deleted);
+
+            var deleted = await assistant.DeleteAsync(created.Id);
+            Assert.True(deleted.Deleted);
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask CreateSimpleThreadFlowAndExecuteASynchronousRunAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.Assistant);
+            var assistant = openAiApi.Assistant;
+            var created = await assistant
+                .WithTemperature(0.5)
+                .WithInstructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
+                .WithCodeInterpreter()
+                .WithModel(ChatModelName.Gpt4_o)
+                .CreateAsync();
+
+            Assert.NotNull(created);
+            Assert.NotNull(created.Id);
+
+            var threadClient = openAiApi.Thread;
+            var response = await threadClient
+                .AddText(Chat.ChatRole.User, "What is 2 + 2?")
+                .CreateAsync();
+
+            Assert.NotNull(response);
+            Assert.NotNull(response.Id);
+
+            var runClient = openAiApi.Run;
+            var runResponse = await runClient
+                 .WithThread(response.Id)
+                 .AddText(Chat.ChatRole.Assistant, "Solve it")
+                 .StartAsync(created.Id);
+
+            var deletion = await threadClient.DeleteAsync(response.Id);
+            Assert.True(deletion.Deleted);
 
             var deleted = await assistant.DeleteAsync(created.Id);
             Assert.True(deleted.Deleted);

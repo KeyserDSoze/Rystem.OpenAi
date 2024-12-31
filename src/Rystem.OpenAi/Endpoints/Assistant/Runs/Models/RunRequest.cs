@@ -8,6 +8,8 @@ namespace Rystem.OpenAi.Assistant
 {
     public sealed class RunRequest : AssistantRequest
     {
+        [JsonPropertyName("assistant_id")]
+        public string? AssistantId { get; set; }
         [JsonIgnore]
         public StringBuilder? AdditionalInstructionsBuilder { get; set; }
         [JsonPropertyName("additional_instructions")]

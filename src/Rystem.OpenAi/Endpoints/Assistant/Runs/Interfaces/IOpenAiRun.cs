@@ -1,10 +1,10 @@
-﻿using Rystem.OpenAi.Chat;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Azure.Core;
-using System;
+using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
@@ -161,16 +161,18 @@ namespace Rystem.OpenAi.Assistant
         /// <summary>
         /// Starts the run asynchronously.
         /// </summary>
+        /// <param name="assistantId">Assistant Id</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the run result.</returns>
-        ValueTask<RunResult> StartAsync(CancellationToken cancellationToken);
+        ValueTask<RunResult> StartAsync(string assistantId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Starts the run as a stream asynchronously.
         /// </summary>
+        /// <param name="assistantId">Assistant Id</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An asynchronous stream of run results.</returns>
-        IAsyncEnumerable<RunResult> StartAsStreamAsync(CancellationToken cancellationToken);
+        IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cancels a run asynchronously by its ID.
