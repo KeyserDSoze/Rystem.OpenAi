@@ -106,17 +106,28 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(response);
             Assert.NotNull(response.Id);
 
-            var runClient = openAiApi.Run;
-            var runResponse = await runClient
-                 .WithThread(response.Id)
-                 .AddText(Chat.ChatRole.Assistant, "Solve it")
-                 .StartAsync(created.Id);
+            try
+            {
+                var runClient = openAiApi.Run;
+                var runResponse = await runClient
+                     .WithThread(response.Id)
+                     .AddText(Chat.ChatRole.Assistant, "Solve it")
+                     .StartAsync(created.Id);
+                Assert.NotNull(runResponse);
+                Assert.NotNull(runResponse.Id);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                var deletion = await threadClient.DeleteAsync(response.Id);
+                Assert.True(deletion.Deleted);
 
-            var deletion = await threadClient.DeleteAsync(response.Id);
-            Assert.True(deletion.Deleted);
-
-            var deleted = await assistant.DeleteAsync(created.Id);
-            Assert.True(deleted.Deleted);
+                var deleted = await assistant.DeleteAsync(created.Id);
+                Assert.True(deleted.Deleted);
+            }
         }
     }
 }
