@@ -14,9 +14,9 @@ namespace Rystem.OpenAi.Test
             _openAiFactory = openAiFactory;
         }
         [Theory]
-        [InlineData("")]
-        [InlineData("Azure")]
-        public async ValueTask CreateSimpleAssistantFlowAsync(string name)
+        [InlineData("", "gpt-4o")]
+        [InlineData("Azure", "gpt-4o-2")]
+        public async ValueTask CreateSimpleAssistantFlowAsync(string name, string model)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Assistant);
@@ -25,7 +25,7 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(0.5)
                 .WithInstructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
                 .WithCodeInterpreter()
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(model)
                 .CreateAsync();
 
             Assert.NotNull(created);
@@ -43,9 +43,9 @@ namespace Rystem.OpenAi.Test
             Assert.True(deleted.Deleted);
         }
         [Theory]
-        [InlineData("")]
-        [InlineData("Azure")]
-        public async ValueTask CreateSimpleThreadFlowAsync(string name)
+        [InlineData("", "gpt-4o")]
+        [InlineData("Azure", "gpt-4o-2")]
+        public async ValueTask CreateSimpleThreadFlowAsync(string name, string model)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Assistant);
@@ -54,7 +54,7 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(0.5)
                 .WithInstructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
                 .WithCodeInterpreter()
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(model)
                 .CreateAsync();
 
             Assert.NotNull(created);
@@ -81,9 +81,9 @@ namespace Rystem.OpenAi.Test
             Assert.True(deleted.Deleted);
         }
         [Theory]
-        [InlineData("")]
-        [InlineData("Azure")]
-        public async ValueTask CreateSimpleThreadFlowAndExecuteASynchronousRunAsync(string name)
+        [InlineData("", "gpt-4o")]
+        [InlineData("Azure", "gpt-4o-2")]
+        public async ValueTask CreateSimpleThreadFlowAndExecuteASynchronousRunAsync(string name, string model)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Assistant);
@@ -92,7 +92,7 @@ namespace Rystem.OpenAi.Test
                 .WithTemperature(0.5)
                 .WithInstructions("You are a personal math tutor. When asked a question, write and run Python code to answer the question.")
                 .WithCodeInterpreter()
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(model)
                 .CreateAsync();
 
             Assert.NotNull(created);

@@ -15,6 +15,7 @@ namespace Rystem.OpenAi.Assistant
         public List<ThreadAttachment>? Attachments { get; set; }
         [JsonPropertyName("metadata")]
         public Dictionary<string, string>? Metadata { get; set; }
+        [JsonIgnore]
         public string? Model { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
