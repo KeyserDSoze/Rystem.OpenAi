@@ -332,9 +332,7 @@ namespace Rystem.OpenAi.Assistant
         {
             if (_threadId == null && Request.Thread == null)
                 throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
-            if (assistantId == null)
-                throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
-            Request.AssistantId = assistantId;
+            Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
             Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
@@ -349,9 +347,7 @@ namespace Rystem.OpenAi.Assistant
         {
             if (_threadId == null && Request.Thread == null)
                 throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
-            if (assistantId == null)
-                throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
-            Request.AssistantId = assistantId;
+            Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
             Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
                 StreamAsync<RunResult>(
@@ -391,7 +387,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<RunResult>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, string.Empty, querystring),
+                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);

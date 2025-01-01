@@ -1,7 +1,5 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Assistant;
-using Rystem.OpenAi.Audio;
 using Xunit;
 
 namespace Rystem.OpenAi.Test
@@ -27,20 +25,29 @@ namespace Rystem.OpenAi.Test
                 .WithCodeInterpreter()
                 .WithModel(model)
                 .CreateAsync();
-
             Assert.NotNull(created);
             Assert.NotNull(created.Id);
-            var theAssistant = await assistant.RetrieveAsync(created.Id);
-            Assert.NotNull(theAssistant);
-            Assert.Equal(created.Id, theAssistant.Id);
-            var assistants = await assistant.ListAsync(20);
-            Assert.NotNull(assistants?.Data);
-            Assert.NotEmpty(assistants.Data);
-            var firstAssistant = assistants.Data[0];
-            Assert.NotNull(firstAssistant);
-            Assert.Equal(created.Id, firstAssistant.Id);
-            var deleted = await assistant.DeleteAsync(created.Id);
-            Assert.True(deleted.Deleted);
+            try
+            {
+                var theAssistant = await assistant.RetrieveAsync(created.Id);
+                Assert.NotNull(theAssistant);
+                Assert.Equal(created.Id, theAssistant.Id);
+                var assistants = await assistant.ListAsync(20);
+                Assert.NotNull(assistants?.Data);
+                Assert.NotEmpty(assistants.Data);
+                var firstAssistant = assistants.Data[0];
+                Assert.NotNull(firstAssistant);
+                Assert.Equal(created.Id, firstAssistant.Id);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                var deleted = await assistant.DeleteAsync(created.Id);
+                Assert.True(deleted.Deleted);
+            }
         }
         [Theory]
         [InlineData("", "gpt-4o")]
@@ -70,15 +77,25 @@ namespace Rystem.OpenAi.Test
 
             Assert.NotNull(response);
             Assert.NotNull(response.Id);
-            var theThread = await threadClient.RetrieveAsync(response.Id);
-            Assert.NotNull(theThread);
-            Assert.Equal(response.Id, theThread.Id);
+            try
+            {
 
-            var deletion = await threadClient.DeleteAsync(response.Id);
-            Assert.True(deletion.Deleted);
+                var theThread = await threadClient.RetrieveAsync(response.Id);
+                Assert.NotNull(theThread);
+                Assert.Equal(response.Id, theThread.Id);
 
-            var deleted = await assistant.DeleteAsync(created.Id);
-            Assert.True(deleted.Deleted);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                var deletion = await threadClient.DeleteAsync(response.Id);
+                Assert.True(deletion.Deleted);
+                var deleted = await assistant.DeleteAsync(created.Id);
+                Assert.True(deleted.Deleted);
+            }
         }
         [Theory]
         [InlineData("", "gpt-4o")]
@@ -115,6 +132,17 @@ namespace Rystem.OpenAi.Test
                      .StartAsync(created.Id);
                 Assert.NotNull(runResponse);
                 Assert.NotNull(runResponse.Id);
+                var runs = await runClient.ListAsync(20);
+                Assert.NotNull(runs?.Data);
+                Assert.NotEmpty(runs.Data);
+                var firstRun = runs.Data[0];
+                Assert.NotNull(firstRun);
+                Assert.Equal(runResponse.Id, firstRun.Id);
+                var run = await runClient.RetrieveAsync(runResponse.Id);
+                Assert.NotNull(run);
+                Assert.Equal(runResponse.Id, run.Id);
+                var cancellationResult = await runClient.CancelAsync(runResponse.Id);
+                Assert.Equal(RunStatus.Cancelling, cancellationResult.Status);
             }
             catch (Exception)
             {
