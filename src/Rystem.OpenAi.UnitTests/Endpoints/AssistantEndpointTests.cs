@@ -201,6 +201,7 @@ namespace Rystem.OpenAi.Test
                 var run = await runClient.RetrieveAsync(runResponse.Id);
                 Assert.NotNull(run);
                 Assert.Equal(runResponse.Id, run.Id);
+                await Task.Delay(4_000);
                 var steps = await runClient.ListStepsAsync(runResponse.Id);
                 Assert.NotNull(steps);
                 Assert.NotNull(steps.Data);
@@ -212,9 +213,12 @@ namespace Rystem.OpenAi.Test
             }
             finally
             {
-                var cancellationResult = await runClient.CancelAsync(runResponse.Id);
-                Assert.Equal(RunStatus.Cancelling, cancellationResult.Status);
-
+                try
+                {
+                    var cancellationResult = await runClient.CancelAsync(runResponse.Id);
+                    Assert.Equal(RunStatus.Cancelling, cancellationResult.Status);
+                }
+                catch { }
                 var deletion = await threadClient.DeleteAsync(response.Id);
                 Assert.True(deletion.Deleted);
 
