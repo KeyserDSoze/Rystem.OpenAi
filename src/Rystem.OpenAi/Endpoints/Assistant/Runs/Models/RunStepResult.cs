@@ -20,15 +20,15 @@ namespace Rystem.OpenAi.Assistant
         [JsonIgnore]
         public RunStatus? Status => RunStatusExtensions.ToRunStatus(StatusAsString);
         [JsonPropertyName("started_at")]
-        public int StartedAt { get; set; }
+        public int? StartedAt { get; set; }
         [JsonPropertyName("expired_at")]
-        public int ExpiredAt { get; set; }
+        public int? ExpiredAt { get; set; }
         [JsonPropertyName("cancelled_at")]
-        public int CancelledAt { get; set; }
+        public int? CancelledAt { get; set; }
         [JsonPropertyName("failed_at")]
-        public int FailedAt { get; set; }
+        public int? FailedAt { get; set; }
         [JsonPropertyName("completed_at")]
-        public int CompletedAt { get; set; }
+        public int? CompletedAt { get; set; }
         [JsonPropertyName("last_error")]
         public LastErrorRun? LastError { get; set; }
         [JsonPropertyName("step_details")]
