@@ -66,6 +66,9 @@ namespace Rystem.OpenAi.Assistant
             return this;
         }
         private const string FunctionType = "function";
+        private const string ThreadIdParameterName = "ThreadId";
+        private const string ThreadIdParameterMessage = "Thread id or Thread value is null. Please use WithThread method before the request.";
+
         public IOpenAiRun ForceCallFunction(string name)
         {
             Request.ToolChoice = new ForcedFunctionTool
@@ -330,8 +333,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public ValueTask<RunResult> StartAsync(string assistantId, CancellationToken cancellationToken = default)
         {
-            if (_threadId == null && Request.Thread == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
             Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
@@ -345,8 +347,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default)
         {
-            if (_threadId == null && Request.Thread == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
             Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
@@ -362,8 +363,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public ValueTask<RunResult> CancelAsync(string id, CancellationToken cancellationToken = default)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
+            CheckThreadId();
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
@@ -394,8 +394,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public ValueTask<RunResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
+            CheckThreadId();
             return DefaultServices.HttpClientWrapper.
                 GetAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
@@ -407,8 +406,7 @@ namespace Rystem.OpenAi.Assistant
 
         public ValueTask<RunResult> UpdateAsync(string id, CancellationToken cancellationToken = default)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(_threadId), "Thread id is null. Please use WithThread method before the request.");
+            CheckThreadId();
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
@@ -426,8 +424,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public ValueTask<RunResult> ContinueAsync(string id, CancellationToken cancellationToken)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
@@ -440,8 +437,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public IAsyncEnumerable<RunResult> ContinueAsStreamAsync(string id, CancellationToken cancellationToken)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
                 StreamAsync<RunResult>(
@@ -470,8 +466,7 @@ namespace Rystem.OpenAi.Assistant
                 querystring.Add("after", elementId);
             else if (elementId != null && !getAfterTheElementId)
                 querystring.Add("before", elementId);
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<RunStepResult>>(
                     DefaultServices.Configuration.GetUri(
@@ -482,8 +477,7 @@ namespace Rystem.OpenAi.Assistant
         }
         public ValueTask<RunStepResult> GetStepAsync(string runId, string id, CancellationToken cancellationToken)
         {
-            if (_threadId == null)
-                throw new ArgumentNullException(nameof(Request.Thread), "Thread id or Thread value is null. Please use WithThread method before the request.");
+            CheckThreadId();
             return DefaultServices.HttpClientWrapper.
                 GetAsync<RunStepResult>(
                     DefaultServices.Configuration.GetUri(
@@ -491,6 +485,11 @@ namespace Rystem.OpenAi.Assistant
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
+        }
+        private void CheckThreadId()
+        {
+            if (_threadId == null && Request.Thread == null)
+                throw new ArgumentNullException(ThreadIdParameterName, ThreadIdParameterMessage);
         }
     }
 }

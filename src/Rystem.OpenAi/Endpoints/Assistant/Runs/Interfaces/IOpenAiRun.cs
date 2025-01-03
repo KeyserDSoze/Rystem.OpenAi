@@ -217,7 +217,7 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="getAfterTheElementId">Specifies whether to retrieve runs after the reference run (true) or before (false).</param>
         /// <param name="order">The order of the runs (ascending or descending).</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>esponseAsArray<RunStepResult></returns>
+        /// <returns>ResponseAsArray<RunStepResult></returns>
         ValueTask<ResponseAsArray<RunStepResult>> ListStepsAsync(string id, int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default);
         /// <summary>
         /// Retrieves a step asynchronously by its ID.
