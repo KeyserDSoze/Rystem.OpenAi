@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -13,11 +11,11 @@ using Microsoft.Identity.Client;
 [assembly: InternalsVisibleTo("Rystem.OpenAi.Test")]
 namespace Rystem.OpenAi
 {
-    internal delegate string OpenaiUriMaker(OpenAiType type, string modelId, bool forced, string appendBeforeQueryString, Dictionary<string, string>? querystringParameters);
+    internal delegate string OpenAiUriMaker(OpenAiType type, string modelId, bool forced, string appendBeforeQueryString, Dictionary<string, string>? querystringParameters);
     public sealed class OpenAiConfiguration
     {
         private const string Forced = nameof(Forced);
-        internal OpenaiUriMaker GetUri { get; private set; } = null!;
+        internal OpenAiUriMaker GetUri { get; private set; } = null!;
         internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }
@@ -53,6 +51,8 @@ namespace Rystem.OpenAi
             public string BillingUri { get; set; } = string.Format(BaseUri, "{0}", "dashboard/billing/usage", "{1}", "{2}");
             public string DeploymentUri { get; set; } = string.Format(BaseUri, "{0}", "deployments", "{1}", "{2}");
             public string AssistantUri { get; set; } = string.Format(BaseUri, "{0}", "assistants", "{1}", "{2}");
+            public string ThreadUri { get; set; } = string.Format(BaseUri, "{0}", "threads", "{1}", "{2}");
+            public string VectorStoreUri { get; set; } = string.Format(BaseUri, "{0}", "vector_stores", "{1}", "{2}");
         }
         internal void ConfigureEndpoints()
         {
@@ -78,6 +78,8 @@ namespace Rystem.OpenAi
             uriHelper.AudioSpeechUri = string.Format(uriHelper.AudioSpeechUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.AudioSpeech)}", "{0}", string.Empty);
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://api.openai.com", "{0}", string.Empty);
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Assistant)}", "{0}", string.Empty);
+            uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.Thread)}", "{0}", string.Empty);
+            uriHelper.VectorStoreUri = string.Format(uriHelper.VectorStoreUri, $"https://api.openai.com/{GetVersion(Settings, OpenAiType.VectorStore)}", "{0}", string.Empty);
 
             GetUri = (type, modelId, forceModel, appendBeforeQueryString, querystring)
                 => GetUriForOpenAi(type, appendBeforeQueryString, querystring, uriHelper);
@@ -101,6 +103,8 @@ namespace Rystem.OpenAi
                 OpenAiType.FineTuning => string.Format(uriHelper.FineTuneUri, appendBeforeQueryString),
                 OpenAiType.Billing => string.Format(uriHelper.BillingUri, appendBeforeQueryString),
                 OpenAiType.Assistant => PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString)),
+                OpenAiType.Thread => PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString)),
+                OpenAiType.VectorStore => PassForQuerystringCheck(querystring, string.Format(uriHelper.VectorStoreUri, appendBeforeQueryString)),
                 _ => string.Format(uriHelper.ModelUri, appendBeforeQueryString),
             };
 
@@ -142,13 +146,14 @@ namespace Rystem.OpenAi
             }
             Enum.GetValues<OpenAiType>().ForEach(currentType =>
             {
-                if (!Settings.Deployments.ContainsKey(currentType))
+                if (!Settings.Deployments.TryGetValue(currentType, out var value))
                 {
-                    Settings.Deployments.Add(currentType, []);
+                    value = [];
+                    Settings.Deployments.Add(currentType, value);
                 }
-                if (!Settings.Deployments[currentType].ContainsKey("{Forced}"))
+                if (!value.ContainsKey("{Forced}"))
                 {
-                    Settings.Deployments[currentType].Add("{Forced}", Forced);
+                    value.Add("{Forced}", Forced);
                 }
             });
             uriHelper.ModelUri = string.Format(uriHelper.ModelUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Model)}");
@@ -158,6 +163,8 @@ namespace Rystem.OpenAi
             uriHelper.BillingUri = string.Format(uriHelper.BillingUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Billing)}");
             uriHelper.DeploymentUri = string.Format(uriHelper.DeploymentUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Deployment)}");
             uriHelper.AssistantUri = string.Format(uriHelper.AssistantUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Assistant)}");
+            uriHelper.ThreadUri = string.Format(uriHelper.ThreadUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.Thread)}");
+            uriHelper.VectorStoreUri = string.Format(uriHelper.VectorStoreUri, $"https://{Settings.Azure.ResourceName}.openai.azure.com/openai", "{0}", $"?api-version={GetVersion(Settings, OpenAiType.VectorStore)}");
 
             foreach (var deployments in Settings.Deployments)
             {
@@ -192,6 +199,8 @@ namespace Rystem.OpenAi
                             OpenAiType.Model => uriHelper.ModelUri,
                             OpenAiType.Deployment => uriHelper.DeploymentUri,
                             OpenAiType.Assistant => uriHelper.AssistantUri,
+                            OpenAiType.Thread => uriHelper.ThreadUri,
+                            OpenAiType.VectorStore => uriHelper.VectorStoreUri,
                             _ => throw new NotImplementedException(),
                         };
                     }
@@ -260,6 +269,10 @@ namespace Rystem.OpenAi
                     return string.Format(uriHelper.DeploymentUri, appendBeforeQueryString);
                 case OpenAiType.Assistant:
                     return PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, appendBeforeQueryString));
+                case OpenAiType.Thread:
+                    return PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, appendBeforeQueryString));
+                case OpenAiType.VectorStore:
+                    return PassForQuerystringCheck(querystring, string.Format(uriHelper.VectorStoreUri, appendBeforeQueryString));
             }
             if (forceModel)
                 return string.Format(uris[$"{Forced}_{type}"], modelId, appendBeforeQueryString);

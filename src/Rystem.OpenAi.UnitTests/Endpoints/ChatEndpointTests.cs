@@ -29,11 +29,11 @@ namespace Rystem.OpenAi.Test
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
             Assert.NotNull(results);
-            Assert.NotNull(results.CreatedUnixTime);
-            Assert.True(results.CreatedUnixTime.Value != 0);
+            Assert.NotNull(results.CreatedAt);
+            Assert.NotEqual(0, results.CreatedAt.Value);
             Assert.NotNull(results.Created);
             Assert.NotNull(results.Choices);
-            Assert.True(results.Choices.Count != 0);
+            Assert.NotEmpty(results.Choices);
             Assert.Contains(results.Choices, c => c.Message?.Role == ChatRole.Assistant);
             Assert.True(cost > 0);
         }
@@ -62,8 +62,8 @@ namespace Rystem.OpenAi.Test
                 .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
-                .WithStopSequence("alekud")
-                .AddStopSequence("coltello")
+                .WithStopSequence("adult")
+                .AddStopSequence("information")
                 .WithNumberOfChoicesPerPrompt(1)
                 .WithFrequencyPenalty(0)
                 .WithPresencePenalty(0)
@@ -246,7 +246,7 @@ namespace Rystem.OpenAi.Test
                         .AddEnum("unit", new FunctionToolEnumProperty
                         {
                             Type = "string",
-                            Enums = new List<string> { "celsius", "fahrenheit" }
+                            Enums = ["celsius", "fahrenheit"]
                         })
                         .AddRequired("location")
                 });

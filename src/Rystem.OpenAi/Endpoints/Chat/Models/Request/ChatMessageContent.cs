@@ -10,5 +10,9 @@ namespace Rystem.OpenAi.Chat
         public string? Text { get; set; }
         [JsonPropertyName("image_url")]
         public ChatMessageImageContent? Image { get; set; }
+        [JsonPropertyName("image_file")]
+        public ChatMessageImageFile? FileImage { get; set; }
+        [JsonPropertyName("input_audio")]
+        public ChatMessageAudioFile? AudioInput { get; set; }
     }
 }

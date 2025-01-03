@@ -2,7 +2,7 @@
 
 namespace Rystem.OpenAi.Files
 {
-    public sealed class FileDataResult
+    public sealed class FileDataResult : UnixTimeBase
     {
         /// <summary>
         /// Unique id for this file, so that it can be referenced in other operations
@@ -30,10 +30,5 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         [JsonPropertyName("bytes")]
         public long Bytes { get; set; }
-        /// <summary>
-        /// Timestamp for the creation time of this file
-        /// </summary>
-        [JsonPropertyName("created_at")]
-        public long CreatedAt { get; set; }
     }
 }

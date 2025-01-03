@@ -20,13 +20,13 @@ namespace Rystem.OpenAi.Models
         /// List all models via the API
         /// </summary>
         /// <returns>Asynchronously returns the list of all <see cref="Model"/>s</returns>
-        Task<ModelListResult> ListAsync(CancellationToken cancellationToken = default);
+        Task<ResponseAsArray<ModelResult>> ListAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="fineTuneId">The id/name of the fine tune model.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>Result for deletion</returns>
-        ValueTask<FineTuneDeleteResult> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
+        ValueTask<DeleteResponse> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default);
     }
 }

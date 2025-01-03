@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Image
                 configuration.Settings.DefaultRequestConfiguration.Image.Invoke(this);
             }
         }
-        private void CheckPromptLenght(string prompt)
+        private void CheckPromptLength(string prompt)
         {
             if (Request.Model == ImageModelName.Dalle2 && prompt.Length > 1000)
                 throw new ArgumentOutOfRangeException(nameof(prompt), "The maximum character length for the prompt is 1000 characters.");
@@ -43,7 +43,7 @@ namespace Rystem.OpenAi.Image
         private const string SizeLabel = "size";
         private const string ResponseFormatLabel = "response_format";
         private const string UserLabel = "user";
-        private object CreateRequest(Stream image, string imageName, bool isEdit)
+        private MultipartFormDataContent CreateRequest(Stream image, string imageName, bool isEdit)
         {
             var content = new MultipartFormDataContent();
             if (image != null)
@@ -67,25 +67,25 @@ namespace Rystem.OpenAi.Image
         public ValueTask<ImageResult> GenerateAsync(string prompt, CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
-            CheckPromptLenght(prompt);
+            CheckPromptLength(prompt);
             return ExecuteAsync(GenerationEndpoint, Request, cancellationToken);
         }
         public ValueTask<ImageResultForBase64> GenerateAsBase64Async(string prompt, CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
-            CheckPromptLenght(prompt);
+            CheckPromptLength(prompt);
             return ExecuteAsBase64Async(GenerationEndpoint, Request, cancellationToken);
         }
         public ValueTask<ImageResult> EditAsync(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
-            CheckPromptLenght(prompt);
+            CheckPromptLength(prompt);
             return ExecuteAsync(EditEndpoint, CreateRequest(file, fileName, true), cancellationToken);
         }
         public ValueTask<ImageResultForBase64> EditAsBase64Async(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
-            CheckPromptLenght(prompt);
+            CheckPromptLength(prompt);
             return ExecuteAsBase64Async(EditEndpoint, CreateRequest(file, fileName, true), cancellationToken);
         }
         public ValueTask<ImageResult> VariateAsync(Stream file, string fileName = "image", CancellationToken cancellationToken = default)

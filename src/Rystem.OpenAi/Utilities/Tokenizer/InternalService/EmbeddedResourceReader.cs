@@ -9,7 +9,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 {
     internal static class EmbeddedResourceReader
     {
-        private static IEnumerable<string> ReadEmbeddedResourceAsLines(string resourceName)
+        private static string[] ReadEmbeddedResourceAsLines(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();
             using var stream = assembly.GetManifestResourceStream(resourceName) ??
@@ -17,7 +17,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             using var reader = new StreamReader(stream);
             var content = reader.ReadToEnd();
 
-            return content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            return content.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
         }
 
         public static Dictionary<byte[], int> LoadTokenBytePairEncoding(string dataSourceName)

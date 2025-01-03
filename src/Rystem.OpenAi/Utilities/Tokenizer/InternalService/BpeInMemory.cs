@@ -5,11 +5,11 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 {
     internal static class BpeInMemory
     {
-        private static readonly BpeEconding s_r50kBaseEncoding = BpeEconding.GetEncoding("r50k_base");
-        private static readonly BpeEconding s_p50kBaseEncoding = BpeEconding.GetEncoding("p50k_base");
-        private static readonly BpeEconding s_p50kEditEncoding = BpeEconding.GetEncoding("p50k_edit");
-        private static readonly BpeEconding s_cl100kBaseEncoding = BpeEconding.GetEncoding("cl100k_base");
-        public static BpeEconding GetRight(BytePairEncodingType type)
+        private static readonly BpeEncoding s_r50kBaseEncoding = BpeEncoding.GetEncoding("r50k_base");
+        private static readonly BpeEncoding s_p50kBaseEncoding = BpeEncoding.GetEncoding("p50k_base");
+        private static readonly BpeEncoding s_p50kEditEncoding = BpeEncoding.GetEncoding("p50k_edit");
+        private static readonly BpeEncoding s_cl100kBaseEncoding = BpeEncoding.GetEncoding("cl100k_base");
+        public static BpeEncoding GetRight(BytePairEncodingType type)
         {
             return type switch
             {
@@ -19,7 +19,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 _ => s_cl100kBaseEncoding,
             };
         }
-        public static BpeEconding GetEncoder(string? modelId)
+        public static BpeEncoding GetEncoder(string? modelId)
         {
             if (modelId != null)
             {
@@ -31,7 +31,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             }
             return s_cl100kBaseEncoding;
         }
-        public static readonly List<BpeMapper> Mapping = new List<BpeMapper>();
+        public static readonly List<BpeMapper> Mapping = [];
 
         public sealed class BpeMapper
         {
@@ -44,34 +44,34 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             Mapping.Add(new BpeMapper
             {
                 Type = BytePairEncodingType.Cl100k,
-                StartsWith = new List<string>
-                {
+                StartsWith =
+                [
                     "gpt-4", "gpt-3.5", "text-embedding-"
-                }
+                ]
             });
             Mapping.Add(new BpeMapper
             {
                 Type = BytePairEncodingType.P50k,
-                StartsWith = new List<string>
-                {
+                StartsWith =
+                [
                     "text-davinci-002", "text-davinci-003", "code-davinci", "davinci-codex", "cushman-codex"
-                }
+                ]
             });
             Mapping.Add(new BpeMapper
             {
                 Type = BytePairEncodingType.P50k_Edit,
-                StartsWith = new List<string>
-                {
+                StartsWith =
+                [
                     "text-davinci-edit-", "code-davinci-edit-"
-                }
+                ]
             });
             Mapping.Add(new BpeMapper
             {
                 Type = BytePairEncodingType.R50k,
-                StartsWith = new List<string>
-                {
+                StartsWith =
+                [
                     "text-", "davinci", "curie", "babbage", "ada", "code-search-"
-                }
+                ]
             });
         }
     }

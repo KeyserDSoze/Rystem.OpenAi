@@ -44,7 +44,7 @@ namespace Rystem.OpenAi
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
-        private static async Task<HttpResponseMessage> PrivatedExecuteAsync(this HttpClientWrapper wrapper,
+        private static async Task<HttpResponseMessage> PerformRequestAsync(this HttpClientWrapper wrapper,
             string url,
             HttpMethod method,
             object? message,
@@ -97,7 +97,7 @@ namespace Rystem.OpenAi
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
-            return await PrivatedExecuteAsync(wrapper, url, method, message, isStreaming, cancellationToken);
+            return await PerformRequestAsync(wrapper, url, method, message, isStreaming, cancellationToken);
         }
         internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
@@ -149,26 +149,35 @@ namespace Rystem.OpenAi
                     wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
-            var response = await wrapper.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
+            var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
             return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
         }
         internal static ValueTask<Stream> PostAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
-            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, configuration, cancellationToken);
+            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, headers, configuration, cancellationToken);
         internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
-            var response = await wrapper.PrivatedExecuteAsync(url, method, message, false, cancellationToken);
+            if (headers != null && headers.Count > 0)
+            {
+                foreach (var header in headers)
+                {
+                    wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
+            var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
             var responseAsStream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var memoryStream = new MemoryStream();
             await responseAsStream.CopyToAsync(memoryStream, cancellationToken);
@@ -179,13 +188,21 @@ namespace Rystem.OpenAi
             string url,
             object? message,
             HttpMethod httpMethod,
+            Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
             Func<Stream, HttpResponseMessage, CancellationToken, IAsyncEnumerable<TResponse>>? streamReader,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
-            var response = await wrapper.PrivatedExecuteAsync(url, httpMethod, message, true, cancellationToken);
+            if (headers != null && headers.Count > 0)
+            {
+                foreach (var header in headers)
+                {
+                    wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
+            var response = await wrapper.PerformRequestAsync(url, httpMethod, message, true, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
             await foreach (var item in items)
@@ -225,9 +242,9 @@ namespace Rystem.OpenAi
                 response.Headers.TryGetValues("X-Request-ID", out var requestIds);
                 if (requestIds?.Any() == true)
                     result.RequestId = requestIds.First();
-                response.Headers.TryGetValues("Openai-Processing-Ms", out var processings);
-                if (processings?.Any() == true)
-                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processings.First()));
+                response.Headers.TryGetValues("Openai-Processing-Ms", out var processing);
+                if (processing?.Any() == true)
+                    result.ProcessingTime = TimeSpan.FromMilliseconds(double.Parse(processing.First()));
                 response.Headers.TryGetValues("Openai-Version", out var versions);
                 if (versions?.Any() == true)
                     result.OpenaiVersion = versions.First();

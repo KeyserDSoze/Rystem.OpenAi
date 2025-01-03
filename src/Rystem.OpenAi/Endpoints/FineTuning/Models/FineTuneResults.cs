@@ -4,14 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.FineTune
 {
-    public sealed class FineTuneResults
+    public sealed class FineTuneResults : ResponseAsArray<FineTuneResult>
     {
-        [JsonPropertyName("data")]
-        public List<FineTuneResult>? Data { get; set; }
-        [JsonPropertyName("object")]
-        public string? Object { get; set; }
-        [JsonPropertyName("has_more")]
-        public bool HasMore { get; set; }
         [JsonIgnore]
         public IEnumerable<FineTuneResult>? ValidatingFiles => Data?.Where(x => x.Status == FineTuneStatus.ValidatingFiles);
         [JsonIgnore]

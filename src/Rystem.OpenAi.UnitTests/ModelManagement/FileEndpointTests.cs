@@ -8,12 +8,10 @@ namespace Rystem.OpenAi.Test
     public class FileEndpointTests
     {
         private readonly IFactory<IOpenAi> _openAiFactory;
-        private readonly IOpenAiUtility _openAiUtility;
 
-        public FileEndpointTests(IFactory<IOpenAi> openAiFactory, IOpenAiUtility openAiUtility)
+        public FileEndpointTests(IFactory<IOpenAi> openAiFactory)
         {
             _openAiFactory = openAiFactory;
-            _openAiUtility = openAiUtility;
         }
         [Theory]
         [InlineData("")]
@@ -54,10 +52,8 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(retrieve);
             Assert.Equal("data-test-file.jsonl", retrieve.Name);
 
-#pragma warning disable S125 // Not allowed with free apikey
             //var contentRetrieve = await _openAiApi.File.RetrieveFileContentAsStringAsync(uploadResult.Id);
             //Assert.Contains("type for", contentRetrieve);
-#pragma warning restore S125 // Sections of code should not be commented out
             await Task.Delay(5_000);
             var deleteResult = await openAiApi.File.DeleteAsync(uploadResult.Id);
             if (name != "Azure")

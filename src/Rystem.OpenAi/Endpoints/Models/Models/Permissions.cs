@@ -1,12 +1,11 @@
-﻿using System;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi
 {
     /// <summary>
     /// Permissions for using the model
     /// </summary>
-    public class Permissions
+    public class Permissions : UnixTimeBaseResponse
     {
         /// <summary>
         /// Permission Id (not to be confused with ModelId)
@@ -18,14 +17,6 @@ namespace Rystem.OpenAi
         /// </summary>
         [JsonPropertyName("object")]
         public string? Object { get; set; }
-        /// The time when the permission was created
-        [JsonIgnore]
-        public DateTime Created => DateTimeOffset.FromUnixTimeSeconds(CreatedUnixTime).DateTime;
-        /// <summary>
-        /// Unix timestamp for creation date/time
-        /// </summary>
-        [JsonPropertyName("created")]
-        public long CreatedUnixTime { get; set; }
         /// <summary>
         /// Can the model be created?
         /// </summary>

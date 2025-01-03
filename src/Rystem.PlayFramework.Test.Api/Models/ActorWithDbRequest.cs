@@ -5,7 +5,7 @@ namespace Rystem.PlayFramework.Test.Api
     {
         public async Task<ActorResponse> PlayAsync(SceneContext context, CancellationToken cancellationToken)
         {
-            await Task.Delay(0);
+            await Task.Delay(0, cancellationToken);
             return new ActorResponse { Message = string.Empty };
         }
     }

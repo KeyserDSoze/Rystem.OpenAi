@@ -21,12 +21,12 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 ? new Dictionary<byte[], int>(comparer)
                 : new Dictionary<byte[], int>(bytePairEncoder, comparer);
             Decoder = bytePairEncoder?.ToDictionary(pair => pair.Value, pair => pair.Key.ToArray())
-                      ?? new Dictionary<int, byte[]>();
+                      ?? [];
 
-            SpecialTokensEncoder = specialTokenEncoder ?? new Dictionary<string, int>();
+            SpecialTokensEncoder = specialTokenEncoder ?? [];
             SpecialTokensDecoder =
                 specialTokenEncoder?.ToDictionary(pair => pair.Value, pair => Encoding.UTF8.GetBytes(pair.Key))
-                ?? new Dictionary<int, byte[]>();
+                ?? [];
             RegexTls = tokenPatternRegex ?? new Regex(string.Empty, RegexOptions.None, TimeSpan.FromSeconds(1));
 
             var parts = SpecialTokensEncoder.Keys.Select(Regex.Escape).ToArray();
@@ -151,9 +151,9 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                    SpecialTokensDecoder.TryGetValue(token, out tokenBytes);
         }
         private static T[] BytePairMerge<T>(
-            IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks, Func<Range, T> f)
+            byte[] piece, IReadOnlyDictionary<byte[], int> ranks, Func<Range, T> f)
         {
-            var partitions = Enumerable.Range(0, piece.Count + 1)
+            var partitions = Enumerable.Range(0, piece.Length + 1)
                 .Select(i => (Start: i, Rank: int.MaxValue))
                 .ToList();
 
@@ -174,7 +174,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
                 output.Add(f(new Range(partitions[i].Start, partitions[i + 1].Start)));
             }
 
-            return output.ToArray();
+            return [.. output];
         }
         private static void CheckAllPartitions(IReadOnlyCollection<byte> piece,
             IReadOnlyDictionary<byte[], int> ranks,
@@ -212,7 +212,7 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
             }
         }
         private static int? GetRank(IReadOnlyCollection<byte> piece, IReadOnlyDictionary<byte[], int> ranks,
-            IReadOnlyList<(int Start, int Rank)> partitionsList, int startIndex, int skip)
+            List<(int Start, int Rank)> partitionsList, int startIndex, int skip)
         {
             if (startIndex + skip + 2 >= partitionsList.Count)
             {
@@ -225,11 +225,11 @@ namespace Rystem.OpenAi.Utilities.Tokenizer
 
             return ranks.TryGetValue(key, out var rank) ? rank : (int?)null;
         }
-        private static IEnumerable<int> BytePairEncode(byte[] inputBytes, Dictionary<byte[], int> bytePairRanks)
+        private static int[] BytePairEncode(byte[] inputBytes, Dictionary<byte[], int> bytePairRanks)
         {
             if (inputBytes.Length == 1)
             {
-                return new List<int> { bytePairRanks[inputBytes] }.ToArray();
+                return [bytePairRanks[inputBytes]];
             }
 
             return BytePairMerge(inputBytes, bytePairRanks, pair =>

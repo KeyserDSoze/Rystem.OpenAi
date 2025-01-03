@@ -53,7 +53,7 @@ namespace Rystem.OpenAi.Chat
                 {
                     IncludeUsage = true
                 };
-            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, HttpMethod.Post, DefaultServices.Configuration, null, cancellationToken))
+            await foreach (var result in DefaultServices.HttpClientWrapper.StreamAsync<ChunkChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, HttpMethod.Post, null, DefaultServices.Configuration, null, cancellationToken))
             {
                 if (result.Usage != null)
                     AddUsages(result.Usage);
@@ -79,30 +79,36 @@ namespace Rystem.OpenAi.Chat
             => AddMessage(new ChatMessageRequest { Content = content, Role = role });
         public IOpenAiChat AddMessage(ChatMessageContent content, ChatRole role = ChatRole.User)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = role });
-        public ChatMessageContentBuilder AddContent(ChatRole role = ChatRole.User)
-            => new(this, role);
+        public ChatMessageContentBuilder<IOpenAiChat> AddContent(ChatRole role = ChatRole.User)
+        {
+            var content = new List<ChatMessageContent>();
+            AddMessage(new ChatMessageRequest { Content = content, Role = role });
+            return new ChatMessageContentBuilder<IOpenAiChat>(this, content);
+        }
         public IOpenAiChat AddUserMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.User });
         public IOpenAiChat AddDeveloperMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Developer });
+        public ChatMessageContentBuilder<IOpenAiChat> AddDeveloperContent()
+            => AddContent(ChatRole.Developer);
         public IOpenAiChat AddToolMessage(string functionName, string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Tool, ToolCallId = functionName });
         public IOpenAiChat AddUserMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.User });
-        public ChatMessageContentBuilder AddUserContent()
-            => new(this, ChatRole.User);
+        public ChatMessageContentBuilder<IOpenAiChat> AddUserContent()
+            => AddContent(ChatRole.User);
         public IOpenAiChat AddSystemMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.System });
         public IOpenAiChat AddSystemMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.System });
-        public ChatMessageContentBuilder AddSystemContent()
-            => new(this, ChatRole.System);
+        public ChatMessageContentBuilder<IOpenAiChat> AddSystemContent()
+            => AddContent(ChatRole.System);
         public IOpenAiChat AddAssistantMessage(string content)
             => AddMessage(new ChatMessageRequest { Content = content, Role = ChatRole.Assistant });
         public IOpenAiChat AddAssistantMessage(ChatMessageContent content)
             => AddMessage(new ChatMessageRequest { Content = new List<ChatMessageContent> { content }, Role = ChatRole.Assistant });
-        public ChatMessageContentBuilder AddAssistantContent()
-            => new(this, ChatRole.Assistant);
+        public ChatMessageContentBuilder<IOpenAiChat> AddAssistantContent()
+            => AddContent(ChatRole.Assistant);
         public IOpenAiChat WithTemperature(double value)
         {
             if (value < 0)
@@ -177,9 +183,7 @@ namespace Rystem.OpenAi.Chat
             if (value < -100)
                 throw new ArgumentException("Value of bias is lesser than -100. Accepted values have range [-100, 100].");
             Request.Bias ??= [];
-            if (!Request.Bias.ContainsKey(key))
-                Request.Bias.Add(key, value);
-            else
+            if (!Request.Bias.TryAdd(key, value))
                 Request.Bias[key] = value;
             return this;
         }

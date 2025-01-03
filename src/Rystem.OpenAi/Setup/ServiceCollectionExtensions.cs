@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);
             if (openAiSettings.ApiKey == null && !openAiSettings.Azure.HasAnotherKindOfAuthentication)
-                throw new ArgumentNullException($"{nameof(OpenAiSettings.ApiKey)} is empty.");
+                throw new ArgumentNullException(openAiSettings.ApiKey, $"Api key is empty.");
             services.AddFactory<IOpenAi, OpenAi>(integrationName);
             services.AddFactory(new OpenAiConfiguration(openAiSettings, integrationName), integrationName, ServiceLifetime.Singleton);
             services.AddFactory<IOpenAiPriceService>(new PriceService(openAiSettings.PriceBuilder.Prices), integrationName, ServiceLifetime.Singleton);
@@ -88,6 +88,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddFactory<IOpenAiManagement, OpenAiManagement>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiAssistant, OpenAiAssistant>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiThread, OpenAiThread>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiMessage, OpenAiMessage>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiRun, OpenAiRun>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiVectorStore, OpenAiVectorStore>(integrationName, ServiceLifetime.Transient);
             //services
             //    .AddFactory<IOpenAiBilling, OpenAiBilling>(integrationName, ServiceLifetime.Transient);
             //services

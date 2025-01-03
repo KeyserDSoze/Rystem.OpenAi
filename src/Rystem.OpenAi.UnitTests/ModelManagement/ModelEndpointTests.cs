@@ -8,12 +8,10 @@ namespace Rystem.OpenAi.Test
     public class ModelEndpointTests
     {
         private readonly IFactory<IOpenAi> _openAiFactory;
-        private readonly IOpenAiUtility _openAiUtility;
 
-        public ModelEndpointTests(IFactory<IOpenAi> openAiFactory, IOpenAiUtility openAiUtility)
+        public ModelEndpointTests(IFactory<IOpenAi> openAiFactory)
         {
             _openAiFactory = openAiFactory;
-            _openAiUtility = openAiUtility;
         }
         [Theory]
         [InlineData("")]
@@ -22,7 +20,7 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Model);
             var results = await openAiApi.Model.ListAsync();
-            foreach (var model in results.Models ?? [])
+            foreach (var model in results.Data ?? [])
             {
                 var modelResult = await openAiApi.Model.RetrieveAsync(model.Id!);
                 Assert.NotNull(modelResult);
@@ -31,7 +29,7 @@ namespace Rystem.OpenAi.Test
                 //    Assert.True(modelResult.Created > new DateTime(2018, 1, 1));
             }
             Assert.NotNull(results);
-            Assert.NotEmpty(results.Models ?? []);
+            Assert.NotEmpty(results.Data ?? []);
         }
 
         [Theory]
@@ -62,7 +60,7 @@ namespace Rystem.OpenAi.Test
         {
             var openAiApi = _openAiFactory.Create(name)!;
             var models = await openAiApi.Model.ListAsync();
-            Assert.True(models.Models?.Count > 5);
+            Assert.True(models.Data?.Count > 5);
         }
     }
 }

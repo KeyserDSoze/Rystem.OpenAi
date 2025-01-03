@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Rystem.PlayFramework.Test.Api
 {
@@ -9,15 +10,6 @@ namespace Rystem.PlayFramework.Test.Api
     [Route("[controller]/[action]")]
     public class CountryController : ControllerBase
     {
-        private readonly ILogger<CountryController> _logger;
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CountryController"/> class.
-        /// </summary>
-        /// <param name="logger"></param>
-        public CountryController(ILogger<CountryController> logger)
-        {
-            _logger = logger;
-        }
         /// <summary>
         /// Retrieves a city by its ID.
         /// </summary>
@@ -51,6 +43,7 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<IActionResult> AddCityAsync([FromBody] City city)
         {
             await Task.Delay(0);
+            _ = city;
             return Ok("true");
         }
 
@@ -74,6 +67,7 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<IActionResult> AddCountryAsync([FromBody] Country country)
         {
             await Task.Delay(0);
+            _ = country;
             return Ok("true");
         }
 
@@ -112,6 +106,7 @@ namespace Rystem.PlayFramework.Test.Api
             await Task.Delay(10);
             var x = _exist;
             _exist = !_exist;
+            _ = country;
             return x;
         }
         private bool _exist = false;
@@ -130,11 +125,12 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<bool> CityExistsAsync([FromQuery] string city)
         {
             await Task.Delay(10);
-            var x = _cityexist;
-            _cityexist = !_cityexist;
+            var x = _cityAlreadyExists;
+            _cityAlreadyExists = !_cityAlreadyExists;
+            _ = city;
             return x;
         }
-        private bool _cityexist;
+        private bool _cityAlreadyExists;
 
         /// <summary>
         /// Retrieves a list of all countries.
@@ -168,6 +164,7 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<IActionResult> DeleteCityAsync(string name)
         {
             await Task.Delay(0);
+            _ = name;
             return Ok("true");
         }
 
@@ -186,6 +183,7 @@ namespace Rystem.PlayFramework.Test.Api
         public async Task<IActionResult> DeleteCountryAsync(string name)
         {
             await Task.Delay(0);
+            _ = name;
             return Ok("true");
         }
     }

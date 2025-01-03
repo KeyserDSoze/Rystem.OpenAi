@@ -136,8 +136,7 @@ namespace Rystem.PlayFramework
                             {
                                 function.HttpRequest.Actions.Add(name, (value, httpBringer) =>
                                 {
-                                    if (httpBringer.Query is null)
-                                        httpBringer.Query = new();
+                                    httpBringer.Query ??= new();
                                     if (httpBringer.Query.Length > 0)
                                         httpBringer.Query.Append('&');
                                     httpBringer.Query.Append($"{name}={value[name]}");
@@ -157,9 +156,9 @@ namespace Rystem.PlayFramework
                     }
                 }
             }
-            IEnumerable<string> GetAllowedHttpMethods(EndpointMetadataCollection metadatas)
+            IEnumerable<string> GetAllowedHttpMethods(EndpointMetadataCollection metadataList)
             {
-                foreach (var metadata in metadatas)
+                foreach (var metadata in metadataList)
                 {
                     if (metadata is HttpMethodMetadata httpMethodMetadata)
                     {

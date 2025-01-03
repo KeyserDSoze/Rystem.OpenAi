@@ -6,7 +6,7 @@ namespace Rystem.OpenAi
     /// <summary>
     /// Represents a language model
     /// </summary>
-    public sealed class ModelResult
+    public sealed class ModelResult : UnixTimeBaseResponse
     {
         /// <summary>
         /// The id/name of the model
@@ -20,12 +20,5 @@ namespace Rystem.OpenAi
         /// </summary>
         [JsonPropertyName("owned_by")]
         public string? OwnedBy { get; set; }
-        [JsonIgnore]
-        public DateTime? Created => CreatedUnixTime.HasValue ? (DateTime?)(DateTimeOffset.FromUnixTimeSeconds(CreatedUnixTime.Value).DateTime) : null;
-        /// <summary>
-        /// The time when the model was created in unix epoch format
-        /// </summary>
-        [JsonPropertyName("created")]
-        public long? CreatedUnixTime { get; set; }
     }
 }

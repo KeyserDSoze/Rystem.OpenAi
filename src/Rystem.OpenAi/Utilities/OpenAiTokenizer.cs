@@ -5,7 +5,7 @@ namespace Rystem.OpenAi
 {
     internal sealed class OpenAiTokenizer : IOpenAiTokenizer
     {
-        private BpeEconding _encoder = BpeInMemory.GetEncoder(null);
+        private BpeEncoding _encoder = BpeInMemory.GetEncoder(null);
         public IOpenAiTokenizer WithModel(string modelId)
         {
             _encoder = BpeInMemory.GetEncoder(modelId);

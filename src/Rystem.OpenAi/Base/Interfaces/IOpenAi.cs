@@ -23,5 +23,9 @@ namespace Rystem.OpenAi
         IOpenAiManagement Management { get; }
         IOpenAiSpeech Speech { get; }
         IOpenAiAssistant Assistant { get; }
+        IOpenAiThread Thread { get; }
+        IOpenAiMessage Message { get; }
+        IOpenAiRun Run { get; }
+        IOpenAiVectorStore VectorStore { get; }
     }
 }

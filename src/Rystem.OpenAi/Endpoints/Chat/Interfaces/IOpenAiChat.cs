@@ -48,11 +48,11 @@ namespace Rystem.OpenAi.Chat
         IOpenAiChat AddMessage(string content, ChatRole role = ChatRole.User);
 
         /// <summary>
-        /// Add a message with content text or image to the request
+        /// Add a message with content text or image or audio to the request
         /// </summary>
         /// <param name="role"></param>
         /// <returns>Builder</returns>
-        ChatMessageContentBuilder AddContent(ChatRole role = ChatRole.User);
+        ChatMessageContentBuilder<IOpenAiChat> AddContent(ChatRole role = ChatRole.User);
 
         /// <summary>
         /// User message is a message used to send information.
@@ -162,22 +162,25 @@ namespace Rystem.OpenAi.Chat
         /// <returns></returns>
         IOpenAiChat WithSeed(int? seed);
         /// <summary>
-        /// Add a message with content text or image to the request as User
+        /// Add a message with content text or image or audio to the request as Developer
         /// </summary>
-        /// <param name="content"></param>
-        /// <param name="role"></param>
         /// <returns>Builder</returns>
-        ChatMessageContentBuilder AddUserContent();
+        ChatMessageContentBuilder<IOpenAiChat> AddDeveloperContent();
         /// <summary>
-        /// Add a message with content text or image to the request as System
+        /// Add a message with content text or image or audio to the request as User
         /// </summary>
         /// <returns>Builder</returns>
-        ChatMessageContentBuilder AddSystemContent();
+        ChatMessageContentBuilder<IOpenAiChat> AddUserContent();
         /// <summary>
-        /// Add a message with content text or image to the request as Assistant
+        /// Add a message with content text or image or audio to the request as System
         /// </summary>
         /// <returns>Builder</returns>
-        ChatMessageContentBuilder AddAssistantContent();
+        ChatMessageContentBuilder<IOpenAiChat> AddSystemContent();
+        /// <summary>
+        /// Add a message with content text or image or audio to the request as Assistant
+        /// </summary>
+        /// <returns>Builder</returns>
+        ChatMessageContentBuilder<IOpenAiChat> AddAssistantContent();
         /// <summary>
         /// Structured Outputs are available in our latest large language models, starting with GPT-4o:
         /// gpt-4o-mini-2024-07-18 and later
@@ -250,12 +253,12 @@ namespace Rystem.OpenAi.Chat
         IOpenAiChat ParallelToolCall();
         /// <summary>
         /// If also the Project is Scale tier enabled, the system will utilize scale tier credits until they are exhausted.
-        /// Otherwise if the Project is not Scale tier enabled, the request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.
+        /// Otherwise if the Project is not Scale tier enabled, the request will be processed using the default service tier with a lower uptime SLA and no latency guarantee.
         /// </summary>
         /// <returns></returns>
         IOpenAiChat WithAutoServiceTier();
         /// <summary>
-        /// The request will be processed using the default service tier with a lower uptime SLA and no latency guarentee.
+        /// The request will be processed using the default service tier with a lower uptime SLA and no latency guarantee.
         /// </summary>
         /// <returns></returns>
         IOpenAiChat WithDefaultServiceTier();

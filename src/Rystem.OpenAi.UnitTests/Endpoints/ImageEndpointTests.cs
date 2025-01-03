@@ -8,12 +8,9 @@ namespace Rystem.OpenAi.Test
     public class ImageEndpointTests
     {
         private readonly IFactory<IOpenAi> _openAiFactory;
-        private readonly IOpenAiUtility _openAiUtility;
-
-        public ImageEndpointTests(IFactory<IOpenAi> openAiFactory, IOpenAiUtility openAiUtility)
+        public ImageEndpointTests(IFactory<IOpenAi> openAiFactory)
         {
             _openAiFactory = openAiFactory;
-            _openAiUtility = openAiUtility;
         }
         [Theory]
         [InlineData("")]
