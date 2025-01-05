@@ -48,6 +48,12 @@
     <None Update="Files\otter2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Files\stories\chapter01.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\stories\chapter02.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Files\test.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

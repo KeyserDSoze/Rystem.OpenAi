@@ -10,7 +10,7 @@
             _builder = builder;
             _assistantFileSearchTool = assistantFileSearchTool;
         }
-        public T UseCustom(RankerName ranker, int scoreThreshold)
+        public T UseCustom(RankerName ranker, float scoreThreshold)
         {
             _assistantFileSearchTool.FileSearch ??= new();
             _assistantFileSearchTool.FileSearch.RankingOptions ??= new();

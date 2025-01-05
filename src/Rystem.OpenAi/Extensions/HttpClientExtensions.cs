@@ -28,6 +28,8 @@ namespace Rystem.OpenAi
             public required bool Streaming { get; set; }
             [JsonPropertyName("content")]
             public object? Content { get; set; }
+            [JsonPropertyName("response")]
+            public object? Response { get; set; }
             public override string ToString()
             {
                 return $"""
@@ -36,7 +38,8 @@ namespace Rystem.OpenAi
                 Request: {Request}
                 Method: {Method}
                 Streaming: {Streaming}
-                Content: {Content?.ToJson(s_options)}
+                Content: {(Content is string ? Content : Content?.ToJson(s_options))}
+                Response: {(Response is string ? Response : Response?.ToJson(s_options))}
                 """;
             }
         }
@@ -151,7 +154,23 @@ namespace Rystem.OpenAi
             }
             var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
-            return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
+            try
+            {
+                return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
+            }
+            catch (Exception ex)
+            {
+                var error = new ErrorResponse
+                {
+                    Error = ex.Message,
+                    Request = url,
+                    Method = method.Method,
+                    Streaming = false,
+                    Content = message,
+                    Response = responseAsString
+                };
+                throw new FormatException(error.ToString(), ex);
+            }
         }
         internal static ValueTask<Stream> PostAsync(this HttpClientWrapper wrapper,
             string url,

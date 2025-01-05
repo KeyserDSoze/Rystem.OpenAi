@@ -6,7 +6,8 @@ namespace Rystem.OpenAi.Assistant
     {
         private const string FunctionType = "function";
         [JsonPropertyName("type")]
-        public string Type { get; } = FunctionType;
+        [JsonAnyOfChooser(FunctionType)]
+        public string Type { get; set; } = FunctionType;
         [JsonPropertyName("function")]
         public FunctionTool? Function { get; set; }
     }

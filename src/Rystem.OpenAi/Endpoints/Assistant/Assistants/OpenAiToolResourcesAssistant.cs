@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Rystem.OpenAi.Assistant
 {
@@ -21,14 +22,20 @@ namespace Rystem.OpenAi.Assistant
             return _builder;
         }
 
-        public IOpenAiFileSearchToolResourcesAssistant<T> WithFileSearch(params string[] vectorStoresId)
+        public IOpenAiFileSearchToolResourcesAssistant<T> WithFileSearch()
         {
-            var assistantFileSearchToolResources = new AssistantFileSearchToolResources
+            var assistantFileSearchToolResources = new AssistantFileSearchToolResources();
+            _toolResources.FileSearch = assistantFileSearchToolResources;
+            return new OpenAiFileSearchToolResourcesAssistant<T>(_builder, assistantFileSearchToolResources);
+        }
+        public T WithVectorStoresAsFileSearch(params string[] vectorStoresId)
+        {
+            var assistantFileSearchToolResources = new AssistantFileSearchToolResources()
             {
                 VectorStoresId = [.. vectorStoresId]
             };
             _toolResources.FileSearch = assistantFileSearchToolResources;
-            return new OpenAiFileSearchToolResourcesAssistant<T>(_builder, assistantFileSearchToolResources);
+            return _builder;
         }
     }
 }

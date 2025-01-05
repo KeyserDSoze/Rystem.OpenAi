@@ -9,10 +9,15 @@
         /// <returns></returns>
         T UseCodeInterpreters(params string[] filesId);
         /// <summary>
-        /// The vector store attached to this assistant. There can be a maximum of 1 vector store attached to the assistant.
+        /// Create a new vector store with some files and a chunking strategy.
+        /// </summary>
+        /// <returns></returns>
+        IOpenAiFileSearchToolResourcesAssistant<T> WithFileSearch();
+        /// <summary>
+        /// Add a already created vector store.
         /// </summary>
         /// <param name="vectorStoresId"></param>
         /// <returns></returns>
-        IOpenAiFileSearchToolResourcesAssistant<T> WithFileSearch(params string[] vectorStoresId);
+        T WithVectorStoresAsFileSearch(params string[] vectorStoresId);
     }
 }

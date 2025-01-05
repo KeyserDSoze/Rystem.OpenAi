@@ -7,6 +7,6 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("ranker")]
         public string? Ranker { get; set; }
         [JsonPropertyName("score_threshold")]
-        public int ScoreThreshold { get; set; }
+        public float? ScoreThreshold { get; set; }
     }
 }

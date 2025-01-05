@@ -9,5 +9,7 @@ namespace Rystem.OpenAi.Assistant
         public List<string>? Files { get; set; }
         [JsonPropertyName("chunking_strategy")]
         public AssistantChunkingStrategyVectorStoresFileSearchToolResources? ChunkingStrategy { get; set; }
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, string>? Metadata { get; set; }
     }
 }
