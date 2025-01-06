@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Rystem.OpenAi.Assistant;
 using Xunit;
 
@@ -431,14 +433,33 @@ namespace Rystem.OpenAi.Test
             {
                 var runClient = openAiApi.Run;
                 string? runResponseId = null;
+                var message = new StringBuilder();
                 await foreach (var value in runClient
                                                .WithThread(response.Id)
                                                .AddText(Chat.ChatRole.Assistant, "Please explain the Nexus.")
                                                .StreamAsync(created.Id))
                 {
-                    runResponseId = value.Id;
+                    if (value.Is<RunResult>())
+                        runResponseId = value.AsT0?.Id;
+                    else if (value.Is<ThreadChunkMessageResponse>())
+                    {
+                        var content = value.AsT2?.Delta?.Content;
+                        if (content != null)
+                        {
+                            if (content.Is<string>())
+                                message.Append(content.AsT0);
+                            else
+                                foreach (var c in content.CastT1)
+                                {
+                                    if (c.Text != null)
+                                        message.Append(c.Text?.Value);
+                                }
+                        }
+                    }
+
                 }
                 Assert.NotNull(runResponseId);
+                Assert.NotEmpty(message.ToString());
                 var runs = await runClient.ListAsync(20);
                 Assert.NotNull(runs?.Data);
                 Assert.NotEmpty(runs.Data);
