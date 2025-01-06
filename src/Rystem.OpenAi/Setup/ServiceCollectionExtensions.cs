@@ -91,8 +91,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .AddFactory<IOpenAiThread, OpenAiThread>(integrationName, ServiceLifetime.Transient);
             services
-                .AddFactory<IOpenAiMessage, OpenAiMessage>(integrationName, ServiceLifetime.Transient);
-            services
                 .AddFactory<IOpenAiRun, OpenAiRun>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiVectorStore, OpenAiVectorStore>(integrationName, ServiceLifetime.Transient);

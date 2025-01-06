@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi.Chat;
-using Rystem.OpenAi.FineTune;
 
 namespace Rystem.OpenAi.Assistant
 {
@@ -37,10 +32,10 @@ namespace Rystem.OpenAi.Assistant
             _threadId = threadId;
             return this;
         }
-        public ThreadHelper<IOpenAiRun> WithThread()
+        public MessageThreadBuilder<IOpenAiRun> WithThread()
         {
             Request.Thread ??= new();
-            return new ThreadHelper<IOpenAiRun>(this, Request.Thread);
+            return new MessageThreadBuilder<IOpenAiRun>(this, Request.Thread);
         }
         public IOpenAiRun IncludeFileSearchContext()
         {
@@ -356,43 +351,15 @@ namespace Rystem.OpenAi.Assistant
             Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
             Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
-                StreamAsync(
+                StreamAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
-                        Request,
+                        _toolOutputRequest,
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        ReadRunResultAsync,
+                        null,
                         cancellationToken);
-        }
-        private static IAsyncEnumerable<RunResult> ReadRunResultAsync(Stream stream, HttpResponseMessage response, CancellationToken cancellationToken)
-        {
-            return ReadStreamAsync(stream, response, bufferAsString =>
-            {
-                var chunkResponse = bufferAsString.FromJson<RunResult>();
-                var chunk = chunkResponse;
-                return chunk!;
-            }, cancellationToken);
-        }
-        private static async IAsyncEnumerable<T> ReadStreamAsync<T>(Stream stream, HttpResponseMessage response, Func<string, T> entityReader, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var reader = new StreamReader(stream);
-            string? line;
-            while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (line.StartsWith(AssistantRunConstants.Streaming.StartingWith))
-                    line = line[AssistantRunConstants.Streaming.StartingWith.Length..];
-                if (line == AssistantRunConstants.Streaming.Done)
-                {
-                    yield break;
-                }
-                else if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith(AssistantRunConstants.Streaming.Event))
-                {
-                    yield return entityReader(line);
-                }
-            }
         }
         public ValueTask<RunResult> CancelAsync(string id, CancellationToken cancellationToken = default)
         {
@@ -458,8 +425,7 @@ namespace Rystem.OpenAi.Assistant
         public ValueTask<RunResult> ContinueAsync(string id, CancellationToken cancellationToken)
         {
             CheckThreadId();
-            if (_toolOutputRequest != null)
-                _toolOutputRequest.Stream = false;
+            Request.Stream = false;
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
@@ -472,8 +438,7 @@ namespace Rystem.OpenAi.Assistant
         public IAsyncEnumerable<RunResult> ContinueAsStreamAsync(string id, CancellationToken cancellationToken)
         {
             CheckThreadId();
-            if (_toolOutputRequest != null)
-                _toolOutputRequest.Stream = false;
+            Request.Stream = true;
             return DefaultServices.HttpClientWrapper.
                 StreamAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
@@ -482,7 +447,7 @@ namespace Rystem.OpenAi.Assistant
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        ReadRunResultAsync,
+                        null,
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<RunStepResult>> ListStepsAsync(string id, int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)

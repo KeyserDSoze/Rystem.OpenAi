@@ -132,18 +132,21 @@ namespace Rystem.OpenAi.Test
 
             var threadClient = openAiApi.Thread;
             var response = await threadClient
+                .WithMessage()
                 .AddText(Chat.ChatRole.User, "What is 2 + 2?")
+                .WithMessage()
                 .AddAssistantContent()
                 .AddText("What is 4+4?")
-                .Builder
+                .And
+                .Thread
                 .CreateAsync();
 
             Assert.NotNull(response);
             Assert.NotNull(response.Id);
             try
             {
-
-                var theThread = await threadClient.RetrieveAsync(response.Id);
+                threadClient.WithId(response.Id);
+                var theThread = await threadClient.RetrieveAsync();
                 Assert.NotNull(theThread);
                 Assert.Equal(response.Id, theThread.Id);
 
@@ -154,7 +157,7 @@ namespace Rystem.OpenAi.Test
             }
             finally
             {
-                var deletion = await threadClient.DeleteAsync(response.Id);
+                var deletion = await threadClient.DeleteAsync();
                 Assert.True(deletion.Deleted);
                 var deleted = await assistant.DeleteAsync(created.Id);
                 Assert.True(deleted.Deleted);
@@ -180,6 +183,7 @@ namespace Rystem.OpenAi.Test
 
             var threadClient = openAiApi.Thread;
             var response = await threadClient
+                .WithMessage()
                 .AddText(Chat.ChatRole.User, "What is 2 + 2?")
                 .CreateAsync();
 
@@ -213,7 +217,7 @@ namespace Rystem.OpenAi.Test
             }
             finally
             {
-                var deletion = await threadClient.DeleteAsync(response.Id);
+                var deletion = await threadClient.DeleteAsync();
                 Assert.True(deletion.Deleted);
 
                 var deleted = await assistant.DeleteAsync(created.Id);
@@ -240,6 +244,7 @@ namespace Rystem.OpenAi.Test
 
             var threadClient = openAiApi.Thread;
             var response = await threadClient
+                .WithMessage()
                 .AddText(Chat.ChatRole.User, "What is 2 + 2?")
                 .CreateAsync();
 
@@ -282,7 +287,7 @@ namespace Rystem.OpenAi.Test
                     Assert.Equal(RunStatus.Cancelling, cancellationResult.Status);
                 }
                 catch { }
-                var deletion = await threadClient.DeleteAsync(response.Id);
+                var deletion = await threadClient.DeleteAsync();
                 Assert.True(deletion.Deleted);
 
                 var deleted = await assistant.DeleteAsync(created.Id);
@@ -327,6 +332,7 @@ namespace Rystem.OpenAi.Test
 
             var threadClient = openAiApi.Thread;
             var response = await threadClient
+                .WithMessage()
                 .AddText(Chat.ChatRole.User, "What is the Nexus?")
                 .CreateAsync();
 
@@ -369,7 +375,7 @@ namespace Rystem.OpenAi.Test
                     Assert.Equal(RunStatus.Cancelling, cancellationResult.Status);
                 }
                 catch { }
-                var deletion = await threadClient.DeleteAsync(response.Id);
+                var deletion = await threadClient.DeleteAsync();
                 Assert.True(deletion.Deleted);
 
                 var deleted = await assistant.DeleteAsync(created.Id);
@@ -411,9 +417,10 @@ namespace Rystem.OpenAi.Test
                 .CreateAsync();
             Assert.NotNull(created);
             Assert.NotNull(created.Id);
-
+            await Task.Delay(15_000);
             var threadClient = openAiApi.Thread;
             var response = await threadClient
+                .WithMessage()
                 .AddText(Chat.ChatRole.User, "What is the Nexus?")
                 .CreateAsync();
 
@@ -441,7 +448,6 @@ namespace Rystem.OpenAi.Test
                 var run = await runClient.RetrieveAsync(runResponseId);
                 Assert.NotNull(run);
                 Assert.Equal(runResponseId, run.Id);
-                await Task.Delay(4_000);
                 var steps = await runClient.ListStepsAsync(runResponseId);
                 Assert.NotNull(steps);
                 Assert.NotNull(steps.Data);
@@ -459,7 +465,7 @@ namespace Rystem.OpenAi.Test
             }
             finally
             {
-                var deletion = await threadClient.DeleteAsync(response.Id);
+                var deletion = await threadClient.DeleteAsync();
                 Assert.True(deletion.Deleted);
 
                 var deleted = await assistant.DeleteAsync(created.Id);

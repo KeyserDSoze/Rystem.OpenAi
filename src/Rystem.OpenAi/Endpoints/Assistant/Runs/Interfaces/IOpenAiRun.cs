@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         /// Provides a helper to configure thread details for the run.
         /// </summary>
         /// <returns>A helper object for thread configuration.</returns>
-        ThreadHelper<IOpenAiRun> WithThread();
+        MessageThreadBuilder<IOpenAiRun> WithThread();
 
         /// <summary>
         /// Includes file search context in the run configuration.
