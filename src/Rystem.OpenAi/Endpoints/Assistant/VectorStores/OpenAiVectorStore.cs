@@ -7,6 +7,7 @@ namespace Rystem.OpenAi.Assistant
 {
     internal sealed class OpenAiVectorStore : OpenAiBuilderWithMetadata<IOpenAiVectorStore, VectorStoreRequest, ChatModelName>, IOpenAiVectorStore
     {
+        private string? _vectorStoreId;
         public OpenAiVectorStore(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
             : base(factory, configurationFactory, OpenAiType.VectorStore)
         {
@@ -19,8 +20,18 @@ namespace Rystem.OpenAi.Assistant
                 configuration.Settings.DefaultRequestConfiguration.VectorStore.Invoke(this);
             }
         }
-        public IOpenAiVectorStoreFile ManageStore(string vectorStoreId)
-            => new OpenAiVectorStoreFile(vectorStoreId, DefaultServices);
+        public IOpenAiVectorStoreFile ManageStore()
+        {
+            if (_vectorStoreId == null)
+                throw new System.Exception("Vector Store Id is required. Use WithId method.");
+            return new OpenAiVectorStoreFile(_vectorStoreId, DefaultServices);
+        }
+
+        public IOpenAiVectorStore WithId(string id)
+        {
+            _vectorStoreId = id;
+            return this;
+        }
         public IOpenAiVectorStore WithName(string name)
         {
             Request.Name = name;
@@ -49,12 +60,9 @@ namespace Rystem.OpenAi.Assistant
             };
             return this;
         }
-
-
-
-        public ValueTask<VectorStoreResult> CreateAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<VectorStoreResult> CreateAsync(CancellationToken cancellationToken = default)
         {
-            return DefaultServices.HttpClientWrapper.
+            var response = await DefaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.VectorStore, string.Empty, Forced, string.Empty, null),
@@ -62,13 +70,17 @@ namespace Rystem.OpenAi.Assistant
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
+            _vectorStoreId = response.Id;
+            return response;
         }
-        public ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<DeleteResponse> DeleteAsync(CancellationToken cancellationToken = default)
         {
+            if (_vectorStoreId == null)
+                throw new System.Exception("Vector Store Id is required. Use WithId method.");
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
@@ -92,22 +104,26 @@ namespace Rystem.OpenAi.Assistant
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<VectorStoreResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<VectorStoreResult> RetrieveAsync(CancellationToken cancellationToken = default)
         {
+            if (_vectorStoreId == null)
+                throw new System.Exception("Vector Store Id is required. Use WithId method.");
             return DefaultServices.HttpClientWrapper.
                 GetAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public ValueTask<VectorStoreResult> UpdateAsync(string id, CancellationToken cancellationToken = default)
+        public ValueTask<VectorStoreResult> UpdateAsync(CancellationToken cancellationToken = default)
         {
+            if (_vectorStoreId == null)
+                throw new System.Exception("Vector Store Id is required. Use WithId method.");
             return DefaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,

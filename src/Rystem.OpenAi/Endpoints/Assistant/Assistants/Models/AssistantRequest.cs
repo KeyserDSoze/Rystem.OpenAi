@@ -31,7 +31,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("top_p")]
         public double? TopP { get; set; }
         [JsonPropertyName("tools")]
-        public List<AnyOf<AssistantFunctionTool, AssistantCodeInterpreterTool, AssistantFileSearchTool>>? Tools { get; set; }
+        public List<AnyOf<AssistantCodeInterpreterTool, AssistantFileSearchTool, AssistantFunctionTool>>? Tools { get; set; }
         [JsonPropertyName("tool_resources")]
         public AssistantToolResources? ToolResources { get; set; }
     }

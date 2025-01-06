@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         /// Provides a helper to configure thread details for the run.
         /// </summary>
         /// <returns>A helper object for thread configuration.</returns>
-        ThreadHelper<IOpenAiRun> WithThread();
+        MessageThreadBuilder<IOpenAiRun> WithThread();
 
         /// <summary>
         /// Includes file search context in the run configuration.
@@ -172,7 +172,7 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="assistantId">Assistant Id</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An asynchronous stream of run results.</returns>
-        IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<AnyOf<RunResult, ThreadMessageResponse, ThreadChunkMessageResponse>> StreamAsync(string assistantId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cancels a run asynchronously by its ID.

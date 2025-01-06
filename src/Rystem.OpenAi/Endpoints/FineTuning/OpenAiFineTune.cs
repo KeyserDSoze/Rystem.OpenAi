@@ -100,7 +100,7 @@ namespace Rystem.OpenAi.FineTune
         {
             return ReadStreamAsync(stream, response, bufferAsString =>
             {
-                var chunkResponse = JsonSerializer.Deserialize<FineTuneResults>(bufferAsString);
+                var chunkResponse = bufferAsString.FromJson<FineTuneResults>();
                 var chunk = chunkResponse!.Data?.LastOrDefault();
                 return chunk!;
             }, cancellationToken);
@@ -109,7 +109,7 @@ namespace Rystem.OpenAi.FineTune
         {
             return ReadStreamAsync(stream, response, bufferAsString =>
             {
-                var chunkResponse = JsonSerializer.Deserialize<ResponseAsArray<FineTuneEvent>>(bufferAsString);
+                var chunkResponse = bufferAsString.FromJson<ResponseAsArray<FineTuneEvent>>();
                 var chunk = chunkResponse!.Data?.LastOrDefault();
                 return chunk!;
             }, cancellationToken);

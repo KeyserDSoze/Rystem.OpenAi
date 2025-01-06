@@ -26,7 +26,6 @@ namespace Rystem.OpenAi
         private readonly IFactory<IOpenAiManagement> _openAiManagementFactory;
         private readonly IFactory<IOpenAiAssistant> _openAiAssistantFactory;
         private readonly IFactory<IOpenAiThread> _openAiThreadFactory;
-        private readonly IFactory<IOpenAiMessage> _openAiMessageFactory;
         private readonly IFactory<IOpenAiRun> _openAiRunFactory;
         private readonly IFactory<IOpenAiVectorStore> _openAiVectorStoreFactory;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
@@ -44,7 +43,6 @@ namespace Rystem.OpenAi
             IFactory<IOpenAiManagement> openAiManagementFactory,
             IFactory<IOpenAiAssistant> openAiAssistantFactory,
             IFactory<IOpenAiThread> openAiThreadFactory,
-            IFactory<IOpenAiMessage> openAiMessageFactory,
             IFactory<IOpenAiRun> openAiRunFactory,
             IFactory<IOpenAiVectorStore> openAiVectorStoreFactory)
         {
@@ -61,7 +59,6 @@ namespace Rystem.OpenAi
             _openAiManagementFactory = openAiManagementFactory;
             _openAiAssistantFactory = openAiAssistantFactory;
             _openAiThreadFactory = openAiThreadFactory;
-            _openAiMessageFactory = openAiMessageFactory;
             _openAiRunFactory = openAiRunFactory;
             _openAiVectorStoreFactory = openAiVectorStoreFactory;
         }
@@ -78,7 +75,6 @@ namespace Rystem.OpenAi
         public IOpenAiManagement Management => field ??= _openAiManagementFactory.Create(_factoryName)!;
         public IOpenAiAssistant Assistant => field ??= _openAiAssistantFactory.Create(_factoryName)!;
         public IOpenAiThread Thread => field ??= _openAiThreadFactory.Create(_factoryName)!;
-        public IOpenAiMessage Message => field ??= _openAiMessageFactory.Create(_factoryName)!;
         public IOpenAiRun Run => field ??= _openAiRunFactory.Create(_factoryName)!;
         public IOpenAiVectorStore VectorStore => field ??= _openAiVectorStoreFactory.Create(_factoryName)!;
         public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;

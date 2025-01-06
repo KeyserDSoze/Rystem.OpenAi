@@ -8,6 +8,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("object")]
+        [AnyOfJsonSelector("thread.message")]
         public string? Object { get; set; }
         [JsonPropertyName("assistant_id")]
         public string? AssistantId { get; set; }

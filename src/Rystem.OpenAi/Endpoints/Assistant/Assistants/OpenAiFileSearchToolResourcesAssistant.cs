@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rystem.OpenAi.Assistant
 {
@@ -17,48 +18,45 @@ namespace Rystem.OpenAi.Assistant
         }
         public IOpenAiFileSearchToolResourcesAssistant<T> AddMetadata(string key, string value)
         {
-            _assistantFileSearchToolResources.Metadata ??= [];
-            if (!_assistantFileSearchToolResources.Metadata.TryAdd(key, value))
-                _assistantFileSearchToolResources.Metadata[key] = value;
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            assistantVectorStoresFileSearchTool.Metadata ??= [];
+            if (!assistantVectorStoresFileSearchTool.Metadata.TryAdd(key, value))
+                assistantVectorStoresFileSearchTool.Metadata[key] = value;
             return this;
         }
 
         public IOpenAiFileSearchToolResourcesAssistant<T> AddMetadata(Dictionary<string, string> metadata)
         {
-            _assistantFileSearchToolResources.Metadata = metadata;
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            assistantVectorStoresFileSearchTool.Metadata = metadata;
             return this;
         }
 
         public IOpenAiFileSearchToolResourcesAssistant<T> ClearMetadata()
         {
-            _assistantFileSearchToolResources.Metadata?.Clear();
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            assistantVectorStoresFileSearchTool.Metadata?.Clear();
             return this;
         }
 
         public IOpenAiFileSearchToolResourcesAssistant<T> RemoveMetadata(string key)
         {
-            if (_assistantFileSearchToolResources.Metadata?.ContainsKey(key) == true)
-                _assistantFileSearchToolResources.Metadata.Remove(key);
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            if (assistantVectorStoresFileSearchTool.Metadata?.ContainsKey(key) == true)
+                assistantVectorStoresFileSearchTool.Metadata.Remove(key);
             return this;
         }
-
-        public T Use()
+        public T Use(params string[] filesId)
         {
-            return _builder;
-        }
-
-        public T UseFileSearch(params string[] filesId)
-        {
-            _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
-            if (_assistantFileSearchToolResources.VectorStores.Files == null)
-                _assistantFileSearchToolResources.VectorStores.Files = [];
-            _assistantFileSearchToolResources.VectorStores.Files.AddRange(filesId);
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            assistantVectorStoresFileSearchTool.Files ??= [];
+            assistantVectorStoresFileSearchTool.Files.AddRange(filesId);
             return _builder;
         }
         public IOpenAiFileSearchToolResourcesAssistant<T> WithStaticChunkingStrategy(int maxChunkSize, int chunkOverlap)
         {
-            _assistantFileSearchToolResources.VectorStores ??= new AssistantVectorStoresFileSearchToolResources();
-            _assistantFileSearchToolResources.VectorStores.ChunkingStrategy = new AssistantChunkingStrategyVectorStoresFileSearchToolResources
+            var assistantVectorStoresFileSearchTool = CreateOrGet();
+            assistantVectorStoresFileSearchTool.ChunkingStrategy = new AssistantChunkingStrategyVectorStoresFileSearchToolResources
             {
                 Type = ChunkingStrategyTypeAsStatic,
                 Static = new AssistantStaticChunkingStrategyVectorStoresFileSearchToolResources
@@ -68,6 +66,16 @@ namespace Rystem.OpenAi.Assistant
                 }
             };
             return this;
+        }
+        private AssistantVectorStoresFileSearchToolResources CreateOrGet()
+        {
+            _assistantFileSearchToolResources.VectorStores ??= [];
+            var assistantVectorStoresFileSearchTool = _assistantFileSearchToolResources.VectorStores.FirstOrDefault() ?? new AssistantVectorStoresFileSearchToolResources
+            {
+            };
+            if (_assistantFileSearchToolResources.VectorStores.Count == 0)
+                _assistantFileSearchToolResources.VectorStores.Add(assistantVectorStoresFileSearchTool);
+            return assistantVectorStoresFileSearchTool;
         }
     }
 }

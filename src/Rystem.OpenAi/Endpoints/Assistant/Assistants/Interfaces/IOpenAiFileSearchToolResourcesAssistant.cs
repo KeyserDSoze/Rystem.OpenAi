@@ -5,16 +5,11 @@ namespace Rystem.OpenAi.Assistant
     public interface IOpenAiFileSearchToolResourcesAssistant<T>
     {
         /// <summary>
-        /// Return to the client.
-        /// </summary>
-        /// <returns></returns>
-        T Use();
-        /// <summary>
         /// The list of files to search over. Each file must be less than 100MB in size. The total size of all files combined must be less than 1GB. The supported file formats are: PDF, DOC, DOCX, PPT, PPTX, XLSX, and TXT.
         /// </summary>
         /// <param name="filesId"></param>
         /// <returns></returns>
-        T UseFileSearch(params string[] filesId);
+        T Use(params string[] filesId);
         /// <summary>
         /// The chunking strategy used to chunk the file(s). 
         /// </summary>

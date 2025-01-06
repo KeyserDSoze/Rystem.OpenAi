@@ -5,6 +5,7 @@ using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
+    [AnyOfJsonDefault]
     public sealed class RunResult : ApiBaseResponse
     {
         [JsonPropertyName("id")]
