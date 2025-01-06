@@ -350,7 +350,7 @@ namespace Rystem.OpenAi.Assistant
                         DefaultServices.Configuration,
                         cancellationToken);
         }
-        public IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<RunResult> StreamAsync(string assistantId, CancellationToken cancellationToken = default)
         {
             CheckThreadId();
             Request.AssistantId = assistantId ?? throw new ArgumentNullException(nameof(assistantId), "Assistant id is null.");
@@ -359,7 +359,7 @@ namespace Rystem.OpenAi.Assistant
                 StreamAsync(
                     DefaultServices.Configuration.GetUri(
                         OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
-                        _toolOutputRequest,
+                        Request,
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,

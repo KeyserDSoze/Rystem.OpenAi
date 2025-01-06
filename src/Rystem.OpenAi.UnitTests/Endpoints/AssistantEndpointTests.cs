@@ -427,7 +427,7 @@ namespace Rystem.OpenAi.Test
                 await foreach (var value in runClient
                                                .WithThread(response.Id)
                                                .AddText(Chat.ChatRole.Assistant, "Please explain the Nexus.")
-                                               .StartAsStreamAsync(created.Id))
+                                               .StreamAsync(created.Id))
                 {
                     runResponseId = value.Id;
                 }

@@ -172,7 +172,7 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="assistantId">Assistant Id</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An asynchronous stream of run results.</returns>
-        IAsyncEnumerable<RunResult> StartAsStreamAsync(string assistantId, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<RunResult> StreamAsync(string assistantId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cancels a run asynchronously by its ID.
