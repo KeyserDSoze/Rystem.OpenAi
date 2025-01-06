@@ -387,7 +387,7 @@ namespace Rystem.OpenAi.Test
         [Theory]
         [InlineData("", "gpt-4o")]
         [InlineData("Azure", "gpt-4o-2")]
-        public async ValueTask CreateComplexAssistantAndReadAllStepsInSteeamAsync(string name, string model)
+        public async ValueTask CreateComplexAssistantAndReadAllStepsInStreamAsync(string name, string model)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             var fileApi = openAiApi.File;
@@ -492,6 +492,49 @@ namespace Rystem.OpenAi.Test
                 var deleted = await assistant.DeleteAsync(created.Id);
                 Assert.True(deleted.Deleted);
             }
+        }
+        [Theory]
+        [InlineData("", "theVector")]
+        [InlineData("Azure", "theVector")]
+        public async ValueTask UploadAVectorAsync(string name, string vectorName)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            var fileApi = openAiApi.File;
+            var location = Assembly.GetExecutingAssembly().Location;
+            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            var files = new List<string>();
+            foreach (var file in new DirectoryInfo($"{location}\\Files\\stories").GetFiles())
+            {
+                using var readableStream = File.OpenRead(file.FullName);
+                var currentFileByte = readableStream.ToArray();
+                var fileResult = await fileApi.UploadFileAsync(currentFileByte, file.Name, "application/text", Files.PurposeFileUpload.Assistants);
+                files.Add(fileResult.Id!);
+            }
+            Assert.NotNull(openAiApi.VectorStore);
+            var vectorStoreApi = openAiApi.VectorStore;
+            var vectorStore = await vectorStoreApi
+                .WithName(vectorName)
+                .AddFiles(files)
+                .AddMetadata("Author", "Alessandro Rapiti")
+                .CreateAsync();
+            Assert.NotNull(vectorStore);
+            Assert.NotNull(vectorStore.Id);
+            var vectorStores = await vectorStoreApi.ListAsync(20);
+            Assert.NotNull(vectorStores?.Data);
+            Assert.Contains(vectorStores.Data, x => x.Id == vectorStore.Id);
+            var retrievedVectorStore = await vectorStoreApi.WithId(vectorStore.Id).RetrieveAsync();
+            Assert.True(retrievedVectorStore.Metadata?.ContainsKey("Author"));
+            Assert.Equal("Alessandro Rapiti", retrievedVectorStore.Metadata?["Author"]);
+            Assert.NotNull(retrievedVectorStore);
+            Assert.Equal(vectorStore.Id, retrievedVectorStore.Id);
+            var filesInVectorStore = await vectorStoreApi.ManageStore().ListAsync(20);
+            Assert.NotNull(filesInVectorStore?.Data);
+            Assert.NotEmpty(filesInVectorStore.Data);
+            var firstFile = filesInVectorStore.Data[0];
+            Assert.Contains(firstFile.Id, files);
+            Assert.NotNull(firstFile);
+            var deleteResponse = await vectorStoreApi.DeleteAsync();
+            Assert.True(deleteResponse.Deleted);
         }
     }
 }

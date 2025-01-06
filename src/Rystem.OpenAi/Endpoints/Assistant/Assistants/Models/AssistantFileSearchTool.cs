@@ -6,7 +6,7 @@ namespace Rystem.OpenAi.Assistant
     {
         private const string FileType = "file_search";
         [JsonPropertyName("type")]
-        [JsonAnyOfChooser(FileType)]
+        [AnyOfJsonSelector(FileType)]
         public string Type { get; set; } = FileType;
         [JsonPropertyName("file_search")]
         public AssistantSettingsForFileSearchTool? FileSearch { get; set; }

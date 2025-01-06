@@ -8,6 +8,6 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("value")]
         public string? Value { get; set; }
         [JsonPropertyName("annotations")]
-        public List<string>? Annotations { get; set; }
+        public List<ChatMessageAnnotation>? Annotations { get; set; }
     }
 }

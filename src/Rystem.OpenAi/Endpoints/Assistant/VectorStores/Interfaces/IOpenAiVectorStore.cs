@@ -12,9 +12,8 @@ namespace Rystem.OpenAi.Assistant
         /// <summary>
         /// Manages files within a specific vector store.
         /// </summary>
-        /// <param name="vectorStoreId">The ID of the vector store to manage.</param>
         /// <returns>An interface for managing vector store files.</returns>
-        IOpenAiVectorStoreFile ManageStore(string vectorStoreId);
+        IOpenAiVectorStoreFile ManageStore();
 
         /// <summary>
         /// Sets the name of the vector store.
@@ -43,6 +42,12 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="days">The number of days before expiration.</param>
         /// <returns>The current vector store instance for chaining.</returns>
         IOpenAiVectorStore WithExpirationAfter(int days);
+        /// <summary>
+        /// Sets the ID of the vector store.
+        /// </summary>
+        /// <param name="id">Vector Id</param>
+        /// <returns>The current vector store instance for chaining.</returns>
+        IOpenAiVectorStore WithId(string id);
 
         /// <summary>
         /// Creates a new vector store asynchronously.
@@ -54,10 +59,9 @@ namespace Rystem.OpenAi.Assistant
         /// <summary>
         /// Deletes a vector store asynchronously by its ID.
         /// </summary>
-        /// <param name="id">The ID of the vector store to delete.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the delete response.</returns>
-        ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<DeleteResponse> DeleteAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Lists vector stores asynchronously with optional filters.
@@ -73,17 +77,15 @@ namespace Rystem.OpenAi.Assistant
         /// <summary>
         /// Retrieves a vector store asynchronously by its ID.
         /// </summary>
-        /// <param name="id">The ID of the vector store to retrieve.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the retrieved vector store result.</returns>
-        ValueTask<VectorStoreResult> RetrieveAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<VectorStoreResult> RetrieveAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a vector store asynchronously by its ID.
         /// </summary>
-        /// <param name="id">The ID of the vector store to update.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>A task representing the asynchronous operation, containing the updated vector store result.</returns>
-        ValueTask<VectorStoreResult> UpdateAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<VectorStoreResult> UpdateAsync(CancellationToken cancellationToken = default);
     }
 }

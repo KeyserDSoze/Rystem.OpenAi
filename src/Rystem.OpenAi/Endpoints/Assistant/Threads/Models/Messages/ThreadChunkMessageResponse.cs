@@ -7,7 +7,7 @@ namespace Rystem.OpenAi.Assistant
         [JsonPropertyName("id")]
         public string? Id { get; set; }
         [JsonPropertyName("object")]
-        [JsonAnyOfChooser("thread.message.delta")]
+        [AnyOfJsonSelector("thread.message.delta")]
         public string? Object { get; set; }
         [JsonPropertyName("delta")]
         public ThreadDeltaMessageResponse? Delta { get; set; }

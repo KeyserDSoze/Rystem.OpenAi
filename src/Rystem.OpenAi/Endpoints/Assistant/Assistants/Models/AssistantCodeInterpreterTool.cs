@@ -6,7 +6,7 @@ namespace Rystem.OpenAi.Assistant
     {
         private const string FileType = "code_interpreter";
         [JsonPropertyName("type")]
-        [JsonAnyOfChooser(FileType)]
+        [AnyOfJsonSelector(FileType)]
         public string Type { get; set; } = FileType;
     }
 }
