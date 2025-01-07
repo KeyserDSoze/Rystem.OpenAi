@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Test
 
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
-                .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+                .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .ExecuteAsync();
@@ -58,8 +58,8 @@ namespace Rystem.OpenAi.Test
                 chat.SetMaxTokens(1200);
             }
             await foreach (var x in chat
-                .AddMessage(new ChatMessageRequest { Role = ChatRole.System, Content = "You are a friend of mine." })
-                .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+                .AddMessage(new SystemChatMessage("You are a friend of mine."))
+                .AddMessage(new UserChatMessage("Hello!! How are you?"))
                 .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .WithStopSequence("adult")
@@ -89,8 +89,8 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = new List<ChunkChatResult>();
             await foreach (var x in openAiApi.Chat
-                .AddMessage(new ChatMessageRequest { Role = ChatRole.System, Content = "You are a friend of mine." })
-                .AddMessage(new ChatMessageRequest { Role = ChatRole.User, Content = "Hello!! How are you?" })
+                .AddMessage(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
+                .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
                 .WithModel(ChatModelName.Gpt4_o)
                 .WithTemperature(1)
                 .WithNumberOfChoicesPerPrompt(2)

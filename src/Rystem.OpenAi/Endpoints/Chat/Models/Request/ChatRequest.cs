@@ -10,7 +10,7 @@ namespace Rystem.OpenAi.Chat
     public sealed class ChatRequest : IOpenAiRequest
     {
         [JsonPropertyName("messages")]
-        public List<ChatMessageRequest>? Messages { get; set; }
+        public List<ChatMessage>? Messages { get; set; }
         [JsonPropertyName("model")]
         public string? Model { get; set; }
         [JsonPropertyName("store")]

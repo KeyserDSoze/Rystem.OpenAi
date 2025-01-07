@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Rystem.OpenAi.Chat
 {
-    public sealed class ChatMessageRequest
+    public class ChatMessage
     {
         [JsonIgnore]
         public ChatRole Role { get; set; }

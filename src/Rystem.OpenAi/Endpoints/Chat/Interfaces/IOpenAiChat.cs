@@ -24,20 +24,20 @@ namespace Rystem.OpenAi.Chat
         /// </summary>
         /// <param name="message">Prompt</param>
         /// <returns>Builder</returns>
-        IOpenAiChat AddMessage(ChatMessageRequest message);
+        IOpenAiChat AddMessage(ChatMessage message);
 
         /// <summary>
         /// Add some messages to the request
         /// </summary>
         /// <param name="messages">Prompts</param>
         /// <returns>Builder</returns>
-        IOpenAiChat AddMessages(params ChatMessageRequest[] messages);
+        IOpenAiChat AddMessages(params ChatMessage[] messages);
 
         /// <summary>
         /// Get all messages added till now.
         /// </summary>
         /// <returns>List<ChatMessage></returns>
-        List<ChatMessageRequest> GetCurrentMessages();
+        List<ChatMessage> GetCurrentMessages();
 
         /// <summary>
         /// Add a message to the request
