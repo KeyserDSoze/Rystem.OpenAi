@@ -53,6 +53,23 @@ namespace Rystem.OpenAi.Assistant
             contents.Add(new ChatMessageContent { Text = text, Type = ChatConstants.ContentType.Text });
             return _entity;
         }
+        public T Add(ChatMessage message)
+        {
+            Request.Messages ??= [];
+            Request.Messages.Add(new ThreadMessage
+            {
+                Content = message.Content,
+                AlreadyAdded = false,
+                Role = message.Role.AsString(),
+            });
+            return _entity;
+        }
+        public T Add(ThreadMessage message)
+        {
+            Request.Messages ??= [];
+            Request.Messages.Add(message);
+            return _entity;
+        }
         public ChatMessageContentBuilder<IMessageThreadBuilder<T>> AddContent(ChatRole role = ChatRole.User)
         {
             var content = new List<ChatMessageContent>();

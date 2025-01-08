@@ -18,7 +18,18 @@ namespace Rystem.OpenAi.Assistant
         /// <param name="role"></param>
         /// <returns></returns>
         IMessageThreadBuilder<T> AddEmpty(ChatRole role);
-
+        /// <summary>
+        /// Adds a message to the thread.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        T Add(ChatMessage message);
+        /// <summary>
+        /// Adds a message to the thread.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        T Add(ThreadMessage message);
         /// <summary>
         /// Adds a text message to the thread for a specific chat role.
         /// </summary>
