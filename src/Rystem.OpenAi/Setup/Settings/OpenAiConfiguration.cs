@@ -136,7 +136,7 @@ namespace Rystem.OpenAi
             SetManagedIdentityForAzure();
 
             var uris = new Dictionary<string, string>();
-            Settings.Version ??= "2022-12-01";
+            Settings.Version ??= "2024-10-21";
             foreach (var deployment in Settings.Deployments)
             {
                 if (!deployment.Value.ContainsKey("{Forced}"))

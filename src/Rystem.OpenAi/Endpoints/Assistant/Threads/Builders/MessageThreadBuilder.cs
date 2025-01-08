@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Assistant
             _entity = entity;
             Request = request;
         }
-        public T Thread => _entity;
+        public T And() => _entity;
         private ThreadMessage? GetLastMessage(ChatRole? role = null)
         {
             Request.Messages ??= [];
@@ -51,6 +51,23 @@ namespace Rystem.OpenAi.Assistant
         {
             var contents = GetLastContent(role)!;
             contents.Add(new ChatMessageContent { Text = text, Type = ChatConstants.ContentType.Text });
+            return _entity;
+        }
+        public T Add(ChatMessage message)
+        {
+            Request.Messages ??= [];
+            Request.Messages.Add(new ThreadMessage
+            {
+                Content = message.Content,
+                AlreadyAdded = false,
+                Role = message.Role.AsString(),
+            });
+            return _entity;
+        }
+        public T Add(ThreadMessage message)
+        {
+            Request.Messages ??= [];
+            Request.Messages.Add(message);
             return _entity;
         }
         public ChatMessageContentBuilder<IMessageThreadBuilder<T>> AddContent(ChatRole role = ChatRole.User)
