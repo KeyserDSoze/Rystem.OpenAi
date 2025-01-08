@@ -105,7 +105,19 @@ Install-Package Rystem.OpenAi
   - [Management](#management)
     - [Billing](#billing)
     - [Deployments](#deployments)
-
+  - [How the OpenAI Assistant Works](#how-the-openai-assistant-works)
+  - [Assistant Features](#assistant-features)
+   - [Assistant](#assistant)
+   - [Thread](#thread)
+   - [Run](#run)
+   - [VectorStore](#vectorstore)
+   - [Examples](#assistant-examples)
+    - [Create a Simple Assistant](#create-a-simple-assistant)
+    - [Use the Assistant for Code Interpretation](#use-the-assistant-for-code-interpretation)
+    - [Create a Thread and Manage Messages](#create-a-thread-and-manage-messages)
+    - [Execute a Run and Retrieve Steps](#execute-a-run-and-retrieve-steps)
+    - [Stream Responses from the Assistant](#stream-responses-from-the-assistant)
+    - [Work with VectorStore](#work-with-vectorstore)
 
 ## Startup Setup
 [📖 Back to summary](#documentation)\
@@ -317,7 +329,7 @@ Lists the currently available models, and provides basic information about each 
 ```
 
 ### Retrieve Models
-Retrieves a model instance, providing basic information about the model such as the owner and permissions.
+Retrieves a model instance, providing basic information about the model such as the owner and per missioning.
 
 ```csharp
     var openAiApi = _openAiFactory.Create(name);
@@ -1619,3 +1631,201 @@ Delete a deployment by Id
     var deleteResponse = await openAiApi.Management.Deployment
         .DeleteAsync(createResponse.Id);
 ```
+
+## How the OpenAI Assistant Works
+
+The OpenAI Assistant is a conversational agent powered by OpenAI's GPT models (e.g., GPT-4). Here's a breakdown of its key concepts:
+
+- **Instructions**: Define the assistant's behavior (e.g., "You are a math tutor").
+- **Model Selection**: Choose a model such as `gpt-4` or `gpt-3.5`.
+- **Temperature**: Adjust the randomness of the assistant's responses (e.g., `0.7` for more creative answers, `0.2` for deterministic answers).
+- **Code Interpreter**: Enable the assistant to execute Python code to solve complex problems.
+- **File Search**: Attach files and let the assistant search within them for context.
+
+The assistant interacts with threads and runs:
+- **Thread**: A conversation that persists messages for a context-aware dialogue.
+- **Run**: An execution instance where tasks are performed and steps are tracked.
+
+---
+
+## Assistant Features
+[📖 Back to summary](#documentation)
+
+### Assistant
+
+Create and manage AI assistants with configurable instructions, temperature, and capabilities (e.g., file search, code interpretation).
+
+### Thread
+
+Manage conversations by creating threads and exchanging messages with context.
+
+### Run
+
+Execute tasks asynchronously, allowing for step-by-step operations and status monitoring.
+
+### VectorStore
+
+Store and manage vectorized data or files for advanced AI integrations, such as semantic search.
+
+---
+
+## Assistant Examples
+
+### Create a Simple Assistant
+[📖 Back to summary](#documentation)
+
+Define an assistant with specific instructions and model:
+
+```csharp
+var assistant = openAiApi.Assistant;
+var created = await assistant
+    .WithTemperature(0.7)
+    .WithInstructions("You are a personal assistant. Respond professionally to all queries.")
+    .WithModel("gpt-4")
+    .CreateAsync();
+
+Console.WriteLine($"Assistant created with ID: {created.Id}");
+```
+
+Retrieve the assistant details:
+
+```csharp
+var retrievedAssistant = await assistant.RetrieveAsync(created.Id);
+Console.WriteLine($"Retrieved Assistant ID: {retrievedAssistant.Id}");
+```
+
+---
+
+### Use the Assistant for Code Interpretation
+[📖 Back to summary](#documentation)
+
+Enable the assistant to write and execute Python code:
+
+```csharp
+var assistant = openAiApi.Assistant;
+var created = await assistant
+    .WithInstructions("You are a Python code interpreter. Solve math problems by running Python code.")
+    .WithCodeInterpreter()
+    .WithModel("gpt-4")
+    .CreateAsync();
+
+Console.WriteLine($"Assistant created for code interpretation with ID: {created.Id}");
+```
+
+---
+
+### Create a Thread and Manage Messages
+[📖 Back to summary](#documentation)
+
+Start a conversation thread:
+
+```csharp
+var threadClient = openAiApi.Thread;
+var response = await threadClient
+    .WithMessage()
+    .AddText(Chat.ChatRole.User, "What is the capital of France?")
+    .CreateAsync();
+
+Console.WriteLine($"Thread created with ID: {response.Id}");
+```
+
+Add more messages to the thread:
+
+```csharp
+var responseMessages = await threadClient.WithId(response.Id)
+    .WithMessage()
+    .AddText(Chat.ChatRole.Assistant, "Please explain the Nexus.")
+    .AddMessagesAsync()
+    .ToListAsync();
+```
+
+---
+
+### Execute a Run and Retrieve Steps
+[📖 Back to summary](#documentation)
+
+Start a run and retrieve its status:
+
+```csharp
+var runClient = openAiApi.Run;
+var runResponse = await runClient
+    .WithThread(threadId)
+    .AddText(Chat.ChatRole.Assistant, "Let me calculate that for you.")
+    .StartAsync(assistantId);
+
+Console.WriteLine($"Run started with ID: {runResponse.Id}");
+
+var steps = await runClient.ListStepsAsync(runResponse.Id);
+foreach (var step in steps.Data)
+{
+    Console.WriteLine($"Step: {step.Content}");
+}
+```
+
+---
+
+### Stream Responses from the Assistant
+[📖 Back to summary](#documentation)
+
+Stream responses for real-time feedback:
+
+```csharp
+var runClient = openAiApi.Run;
+string? runResponseId = null;
+var message = new StringBuilder();
+await foreach (var value in runClient
+                                .WithThread(response.Id)
+                                .AddText(Chat.ChatRole.Assistant, "Please explain the Nexus.")
+                                .StreamAsync(created.Id))
+{
+    if (value.Is<RunResult>())
+        runResponseId = value.AsT0?.Id;
+    else if (value.Is<ThreadChunkMessageResponse>())
+    {
+        var content = value.AsT2?.Delta?.Content;
+        if (content != null)
+        {
+            if (content.Is<string>())
+                message.Append(content.AsT0);
+            else
+                foreach (var c in content.CastT1)
+                {
+                    if (c.Text != null)
+                        message.Append(c.Text?.Value);
+                }
+        }
+    }
+
+}
+
+Console.WriteLine($"Streamed Response: {message.ToString()}");
+```
+
+---
+
+### Work with VectorStore
+[📖 Back to summary](#documentation)
+
+Upload files to a vector store for advanced integrations:
+
+```csharp
+var fileApi = openAiApi.File;
+var fileId = await fileApi.UploadFileAsync(fileBytes, "document.txt", "application/text");
+
+var vectorStore = await openAiApi.VectorStore
+    .WithName("KnowledgeBase")
+    .AddFiles(new[] { fileId })
+    .AddMetadata("Category", "Documentation")
+    .CreateAsync();
+
+Console.WriteLine($"VectorStore created with ID: {vectorStore.Id}");
+```
+
+Retrieve stored vectors:
+
+```csharp
+var retrievedStore = await openAiApi.VectorStore.WithId(vectorStore.Id).RetrieveAsync();
+Console.WriteLine($"Metadata: {retrievedStore.Metadata["Category"]}");
+```
+
+---
