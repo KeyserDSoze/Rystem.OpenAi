@@ -68,6 +68,6 @@ namespace Rystem.OpenAi.Chat
             });
             return this;
         }
-        public T And => _builder;
+        public T Close() => _builder;
     }
 }

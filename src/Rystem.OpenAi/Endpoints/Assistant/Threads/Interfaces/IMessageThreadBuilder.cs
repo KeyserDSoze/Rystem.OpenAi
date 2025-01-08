@@ -11,7 +11,7 @@ namespace Rystem.OpenAi.Assistant
         /// <summary>
         /// Gets the builder instance.
         /// </summary>
-        T Thread { get; }
+        T And();
         /// <summary>
         /// Adds an empty message to the thread for a specific chat role.
         /// </summary>

@@ -135,12 +135,12 @@ namespace Rystem.OpenAi.Test
             var threadClient = openAiApi.Thread;
             var response = await threadClient
                 .WithMessage()
-                .AddText(Chat.ChatRole.User, "What is 2 + 2?")
+                    .AddText(Chat.ChatRole.User, "What is 2 + 2?")
                 .WithMessage()
-                .AddAssistantContent()
-                .AddText("What is 4+4?")
-                .And
-                .Thread
+                    .AddAssistantContent()
+                        .AddText("What is 4+4?")
+                        .Close()
+                    .And()
                 .CreateAsync();
 
             Assert.NotNull(response);

@@ -15,7 +15,7 @@ namespace Rystem.OpenAi.Assistant
             _entity = entity;
             Request = request;
         }
-        public T Thread => _entity;
+        public T And() => _entity;
         private ThreadMessage? GetLastMessage(ChatRole? role = null)
         {
             Request.Messages ??= [];
