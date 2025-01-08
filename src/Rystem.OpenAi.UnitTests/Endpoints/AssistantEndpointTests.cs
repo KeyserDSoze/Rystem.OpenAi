@@ -338,6 +338,12 @@ namespace Rystem.OpenAi.Test
                 .AddText(Chat.ChatRole.User, "What is the Nexus?")
                 .CreateAsync();
 
+            var responseMessages = await threadClient.WithId(response.Id)
+                .WithMessage()
+                .AddText(Chat.ChatRole.Assistant, "Please explain the Nexus.")
+                .AddMessagesAsync()
+                .ToListAsync();
+
             Assert.NotNull(response);
             Assert.NotNull(response.Id);
 
@@ -456,7 +462,6 @@ namespace Rystem.OpenAi.Test
                                 }
                         }
                     }
-
                 }
                 Assert.NotNull(runResponseId);
                 Assert.NotEmpty(message.ToString());
