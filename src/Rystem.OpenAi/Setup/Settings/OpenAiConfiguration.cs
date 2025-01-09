@@ -19,7 +19,7 @@ namespace Rystem.OpenAi
         internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public bool WithAzure { get; private set; }
-        public string Name { get; }
+        public AnyOf<string?, Enum> Name { get; }
         internal Task EnrichClientAsync(HttpClientWrapper wrapper)
         {
             if (BeforeRequest != null)
@@ -28,7 +28,7 @@ namespace Rystem.OpenAi
                 return Task.CompletedTask;
         }
         internal OpenAiSettings Settings { get; }
-        internal OpenAiConfiguration(OpenAiSettings settings, string? name)
+        internal OpenAiConfiguration(OpenAiSettings settings, AnyOf<string?, Enum>? name)
         {
             Settings = settings;
             Name = name ?? string.Empty;
