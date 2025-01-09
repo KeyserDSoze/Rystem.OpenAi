@@ -52,7 +52,9 @@ namespace Rystem.OpenAi
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
-                logger.AddError(errorMessage);
+                logger
+                    .AddError(errorMessage)
+                    .LogError();
                 throw new HttpRequestException(logger.ToString());
             }
 
@@ -142,7 +144,9 @@ namespace Rystem.OpenAi
             }
             catch (Exception ex)
             {
-                logger.AddException(ex);
+                logger
+                    .AddException(ex)
+                    .LogError();
                 throw new FormatException(logger.ToString(), ex);
             }
         }

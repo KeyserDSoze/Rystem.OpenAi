@@ -20,8 +20,5 @@ namespace Rystem.OpenAi
         IOpenAiLogger StartTimer();
         void LogInformation();
         void LogError();
-        void LogWarning();
-        void LogDebug();
-        void LogTrace();
     }
 }
