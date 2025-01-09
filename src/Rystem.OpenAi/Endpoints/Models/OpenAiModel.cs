@@ -6,8 +6,8 @@ namespace Rystem.OpenAi.Models
 {
     internal sealed class OpenAiModel : OpenAiBuilder<IOpenAiModel>, IOpenAiModel
     {
-        public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Model)
+        public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.Model)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -19,13 +19,31 @@ namespace Rystem.OpenAi.Models
             }
         }
         public ValueTask<ModelResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
-            => DefaultServices.HttpClientWrapper.GetAsync<ModelResult>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}", null), null, DefaultServices.Configuration, cancellationToken);
+            => DefaultServices.HttpClientWrapper
+                .GetAsync<ModelResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}", null),
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
         public async Task<ResponseAsArray<ModelResult>> ListAsync(CancellationToken cancellationToken = default)
         {
-            var response = await DefaultServices.HttpClientWrapper.GetAsync<ResponseAsArray<ModelResult>>(DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty, null), null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                            .GetAsync<ResponseAsArray<ModelResult>>(
+                                DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty, null),
+                                null,
+                                DefaultServices.Configuration,
+                                Logger,
+                                cancellationToken);
             return response;
         }
         public ValueTask<DeleteResponse> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
-           => DefaultServices.HttpClientWrapper.DeleteAsync<DeleteResponse>(DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}", null), null, DefaultServices.Configuration, cancellationToken);
+           => DefaultServices.HttpClientWrapper
+                .DeleteAsync<DeleteResponse>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}", null),
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
     }
 }

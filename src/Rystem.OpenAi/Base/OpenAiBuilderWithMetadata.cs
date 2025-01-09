@@ -8,8 +8,8 @@ namespace Rystem.OpenAi
         where TRequest : IOpenAiRequestWithMetadata, new()
         where TModel : ModelName
     {
-        public OpenAiBuilderWithMetadata(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
-            : base(factory, configurationFactory, types)
+        public OpenAiBuilderWithMetadata(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger, params OpenAiType[] types)
+            : base(factory, configurationFactory, logger, types)
         {
         }
         public T AddMetadata(string key, string value)

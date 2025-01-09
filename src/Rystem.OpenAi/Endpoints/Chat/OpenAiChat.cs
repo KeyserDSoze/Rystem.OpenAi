@@ -14,8 +14,8 @@ namespace Rystem.OpenAi.Chat
     {
         private const string FunctionType = "function";
 
-        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Chat)
+        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.Chat)
         {
             Request.Model = ChatModelName.Gpt4_o;
         }
@@ -38,7 +38,14 @@ namespace Rystem.OpenAi.Chat
         {
             Request.Stream = false;
             Request.StreamOptions = null;
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<ChatResult>(DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null), Request, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<ChatResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null),
+                    Request,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             if (response.Usage != null)
                 AddUsages(response.Usage);
             return response;
@@ -60,6 +67,7 @@ namespace Rystem.OpenAi.Chat
                     HttpMethod.Post,
                     null,
                     DefaultServices.Configuration,
+                    Logger,
                     null,
                     cancellationToken))
             {

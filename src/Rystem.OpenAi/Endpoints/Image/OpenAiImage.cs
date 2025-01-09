@@ -14,8 +14,8 @@ namespace Rystem.OpenAi.Image
         private string? _maskName;
         private ImageSize _size;
         private ImageQuality _quality;
-        public OpenAiImage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Image)
+        public OpenAiImage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.Image)
         {
             Request.Model = ImageModelName.Dalle3;
             Request.NumberOfResults = 1;
@@ -96,7 +96,14 @@ namespace Rystem.OpenAi.Image
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
-            return DefaultServices.HttpClientWrapper.PostAsync<ImageResult>(uri, request, null, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper
+                    .PostAsync<ImageResult>(
+                        uri,
+                        request,
+                        null,
+                        DefaultServices.Configuration,
+                        Logger,
+                        cancellationToken);
         }
         /// <summary>
         /// Create, Variate or Edit an image given a prompt.
@@ -108,7 +115,14 @@ namespace Rystem.OpenAi.Image
         {
             Request.ResponseFormat = FormatResultImage.B64Json.AsString();
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
-            return DefaultServices.HttpClientWrapper.PostAsync<ImageResultForBase64>(uri, request, null, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper
+                    .PostAsync<ImageResultForBase64>(
+                        uri,
+                        request,
+                        null,
+                        DefaultServices.Configuration,
+                        Logger,
+                        cancellationToken);
         }
         /// <summary>
         /// An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where image should be edited. Must be a valid PNG file, less than 4MB, and have the same dimensions as image.

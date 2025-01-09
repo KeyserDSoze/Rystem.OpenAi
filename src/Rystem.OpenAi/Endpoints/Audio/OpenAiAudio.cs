@@ -9,8 +9,9 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
-        public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
+        public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory,
+            IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
         {
             Request.Model = AudioModelName.Whisper;
         }
@@ -44,7 +45,14 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<AudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         internal const string ResponseFormatVerboseJson = "verbose_json";
@@ -73,7 +81,14 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseSegmentAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<VerboseSegmentAudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         private static readonly StringContent s_wordContent = new("word");
@@ -99,7 +114,14 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseWordAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<VerboseWordAudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         public async ValueTask<AudioResult> TranslateAsync(CancellationToken cancellationToken = default)
@@ -118,7 +140,14 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<AudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<AudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         public async ValueTask<VerboseSegmentAudioResult> VerboseTranslateAsSegmentsAsync(CancellationToken cancellationToken = default)
@@ -138,7 +167,14 @@ namespace Rystem.OpenAi.Audio
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
 
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseSegmentAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<VerboseSegmentAudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         public async ValueTask<VerboseWordAudioResult> VerboseTranslateAsWordsAsync(CancellationToken cancellationToken = default)
@@ -157,7 +193,14 @@ namespace Rystem.OpenAi.Audio
             if (Request.Temperature != null)
                 content.Add(new StringContent(Request.Temperature.ToString()!), "temperature");
             Request.Dispose();
-            var response = await DefaultServices.HttpClientWrapper.PostAsync<VerboseWordAudioResult>(DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null), content, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync<VerboseWordAudioResult>(
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    content,
+                    null,
+                    DefaultServices.Configuration,
+                    Logger,
+                    cancellationToken);
             return response;
         }
         public IOpenAiAudio WithFile(byte[] file, string fileName = "default")

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi
@@ -8,12 +7,16 @@ namespace Rystem.OpenAi
     {
         private protected readonly IFactory<DefaultServices> Factory;
         private protected readonly IFactory<OpenAiConfiguration> ConfigurationFactory;
+        private protected readonly IOpenAiLogger Logger;
         private protected readonly OpenAiType[] Types;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger, params OpenAiType[] types)
         {
             Factory = factory;
             ConfigurationFactory = configurationFactory;
+            Logger = logger
+                .CreateId()
+                .ConfigureTypes(types);
             Types = types;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
@@ -35,8 +38,8 @@ namespace Rystem.OpenAi
         where TModel : ModelName
     {
         internal TRequest Request { get; }
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, params OpenAiType[] types)
-            : base(factory, configurationFactory, types)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger, params OpenAiType[] types)
+            : base(factory, configurationFactory, logger, types)
         {
             Request = new TRequest();
         }
