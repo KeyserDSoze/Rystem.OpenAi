@@ -6,8 +6,8 @@ namespace Rystem.OpenAi.Moderation
 {
     internal sealed class OpenAiModeration : OpenAiBuilder<IOpenAiModeration, ModerationsRequest, ModerationModelName>, IOpenAiModeration
     {
-        public OpenAiModeration(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.Moderation)
+        public OpenAiModeration(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.Moderation)
         {
             Request.Model = ModerationModelName.OmniLatest;
         }
@@ -26,7 +26,14 @@ namespace Rystem.OpenAi.Moderation
         public ValueTask<ModerationResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
         {
             Request.Input = input;
-            return DefaultServices.HttpClientWrapper.PostAsync<ModerationResult>(DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty, null), Request, null, DefaultServices.Configuration, cancellationToken);
+            return DefaultServices.HttpClientWrapper
+                    .PostAsync<ModerationResult>(
+                        DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty, null),
+                        Request,
+                        null,
+                        DefaultServices.Configuration,
+                        Logger,
+                        cancellationToken);
         }
     }
 }

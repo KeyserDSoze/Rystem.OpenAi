@@ -8,8 +8,8 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest, SpeechModelName>, IOpenAiSpeech
     {
-        public OpenAiSpeech(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.AudioSpeech)
+        public OpenAiSpeech(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.AudioSpeech)
         {
             Request.Speed = 1;
             Request.Voice = AudioVoice.Alloy.ToString().ToLower();
@@ -28,7 +28,13 @@ namespace Rystem.OpenAi.Audio
             Request.ResponseFormat = responseFormat;
             Request.Input = input;
             Usages.Add(new OpenAiCost { Units = Request.Input?.Length ?? 0, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Tokens });
-            var response = await DefaultServices.HttpClientWrapper.PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty, null), Request, null, DefaultServices.Configuration, cancellationToken);
+            var response = await DefaultServices.HttpClientWrapper
+                .PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty, null),
+                Request,
+                null,
+                DefaultServices.Configuration,
+                Logger,
+                cancellationToken);
             return response;
         }
         public ValueTask<Stream> Mp3Async(string input, CancellationToken cancellationToken = default)

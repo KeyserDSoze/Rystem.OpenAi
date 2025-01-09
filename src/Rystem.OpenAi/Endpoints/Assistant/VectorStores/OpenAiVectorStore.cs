@@ -8,8 +8,8 @@ namespace Rystem.OpenAi.Assistant
     internal sealed class OpenAiVectorStore : OpenAiBuilderWithMetadata<IOpenAiVectorStore, VectorStoreRequest, ChatModelName>, IOpenAiVectorStore
     {
         private string? _vectorStoreId;
-        public OpenAiVectorStore(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory)
-            : base(factory, configurationFactory, OpenAiType.VectorStore)
+        public OpenAiVectorStore(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
+            : base(factory, configurationFactory, logger, OpenAiType.VectorStore)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         {
             if (_vectorStoreId == null)
                 throw new System.Exception("Vector Store Id is required. Use WithId method.");
-            return new OpenAiVectorStoreFile(_vectorStoreId, DefaultServices);
+            return new OpenAiVectorStoreFile(_vectorStoreId, DefaultServices, Logger);
         }
 
         public IOpenAiVectorStore WithId(string id)
@@ -69,6 +69,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
+                        Logger,
                         cancellationToken);
             _vectorStoreId = response.Id;
             return response;
@@ -83,6 +84,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
+                        Logger,
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<VectorStoreResult>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -102,6 +104,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, string.Empty, Forced, string.Empty, querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
+                        Logger,
                         cancellationToken);
         }
         public ValueTask<VectorStoreResult> RetrieveAsync(CancellationToken cancellationToken = default)
@@ -114,6 +117,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
+                        Logger,
                         cancellationToken);
         }
         public ValueTask<VectorStoreResult> UpdateAsync(CancellationToken cancellationToken = default)
@@ -127,6 +131,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
+                        Logger,
                         cancellationToken);
         }
     }

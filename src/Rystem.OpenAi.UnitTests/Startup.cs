@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Rystem.PlayFramework.Test.Api;
 using Rystem.Test.XUnit;
 
@@ -28,6 +29,7 @@ namespace Rystem.OpenAi.UnitTests
             var resourceName2 = Environment.GetEnvironmentVariable("Azure2ResourceName") ?? configuration["Azure2:ResourceName"];
             var azureApiKey3 = Environment.GetEnvironmentVariable("Azure3ApiKey") ?? configuration["Azure3:ApiKey"];
             var resourceName3 = Environment.GetEnvironmentVariable("Azure3ResourceName") ?? configuration["Azure3:ResourceName"];
+            services.AddLogging(builder => builder.AddConsole());
             services.AddHttpClient("client", x =>
             {
                 x.BaseAddress = new Uri("http://localhost");
@@ -102,6 +104,7 @@ namespace Rystem.OpenAi.UnitTests
         protected override ValueTask ConfigureServerServicesAsync(IServiceCollection services, IConfiguration configuration)
         {
             services.AddServices(configuration);
+            services.AddLogging(builder => builder.AddConsole());
             return ValueTask.CompletedTask;
         }
         protected override ValueTask ConfigureServerMiddlewareAsync(IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider)

@@ -16,33 +16,6 @@ namespace Rystem.OpenAi
 {
     public static class HttpClientWrapperExtensions
     {
-        private sealed class ErrorResponse
-        {
-            [JsonPropertyName("error")]
-            public required string Error { get; set; }
-            [JsonPropertyName("request")]
-            public required string Request { get; set; }
-            [JsonPropertyName("method")]
-            public required string Method { get; set; }
-            [JsonPropertyName("streaming")]
-            public required bool Streaming { get; set; }
-            [JsonPropertyName("content")]
-            public object? Content { get; set; }
-            [JsonPropertyName("response")]
-            public object? Response { get; set; }
-            public override string ToString()
-            {
-                return $"""
-                
-                Error: {Error}
-                Request: {Request}
-                Method: {Method}
-                Streaming: {Streaming}
-                Content: {(Content is string ? Content : Content?.ToJson(s_options))}
-                Response: {(Response is string ? Response : Response?.ToJson(s_options))}
-                """;
-            }
-        }
         private static readonly JsonSerializerOptions s_options = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -52,6 +25,7 @@ namespace Rystem.OpenAi
             HttpMethod method,
             object? message,
             bool isStreaming,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
         {
             var request = new HttpRequestMessage(method, url);
@@ -78,15 +52,8 @@ namespace Rystem.OpenAi
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
-                var error = new ErrorResponse
-                {
-                    Error = errorMessage,
-                    Request = url,
-                    Method = method.Method,
-                    Streaming = isStreaming,
-                    Content = message
-                };
-                throw new HttpRequestException(error.ToString());
+                logger.AddError(errorMessage);
+                throw new HttpRequestException(logger.ToString());
             }
 
         }
@@ -96,51 +63,58 @@ namespace Rystem.OpenAi
             object? message,
             bool isStreaming,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
                 await configuration.EnrichClientAsync(wrapper);
-            return await PerformRequestAsync(wrapper, url, method, message, isStreaming, cancellationToken);
+            return await PerformRequestAsync(wrapper, url, method, message, isStreaming, logger, cancellationToken);
         }
         internal static ValueTask<TResponse> DeleteAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Delete, headers, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Delete, headers, configuration, logger, cancellationToken);
         internal static ValueTask<TResponse> GetAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Get, headers, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, null, HttpMethod.Get, headers, configuration, logger, cancellationToken);
         internal static ValueTask<TResponse> PatchAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Patch, headers, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Patch, headers, configuration, logger, cancellationToken);
         internal static ValueTask<TResponse> PutAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Put, headers, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Put, headers, configuration, logger, cancellationToken);
         internal static ValueTask<TResponse> PostAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Post, headers, configuration, cancellationToken);
+            => ExecuteWithResponseAsync<TResponse>(wrapper, url, message, HttpMethod.Post, headers, configuration, logger, cancellationToken);
         internal static async ValueTask<TResponse> ExecuteWithResponseAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
@@ -152,24 +126,24 @@ namespace Rystem.OpenAi
                     wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
-            var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
+            logger
+                .ConfigureUrl(url)
+                .ConfigureMethod(method.Method)
+                .WithoutStreaming()
+                .AddContent(message)
+                .StartTimer();
+            var response = await wrapper.PerformRequestAsync(url, method, message, false, logger, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
+            logger.AddResponse(responseAsString);
             try
             {
+                logger.LogInformation();
                 return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
             }
             catch (Exception ex)
             {
-                var error = new ErrorResponse
-                {
-                    Error = ex.Message,
-                    Request = url,
-                    Method = method.Method,
-                    Streaming = false,
-                    Content = message,
-                    Response = responseAsString
-                };
-                throw new FormatException(error.ToString(), ex);
+                logger.AddException(ex);
+                throw new FormatException(logger.ToString(), ex);
             }
         }
         internal static ValueTask<Stream> PostAsync(this HttpClientWrapper wrapper,
@@ -177,14 +151,16 @@ namespace Rystem.OpenAi
             object? message,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
-            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, headers, configuration, cancellationToken);
+            => ExecuteAndResponseAsStreamAsync(wrapper, url, message, HttpMethod.Post, headers, configuration, logger, cancellationToken);
         internal static async ValueTask<Stream> ExecuteAndResponseAsStreamAsync(this HttpClientWrapper wrapper,
             string url,
             object? message,
             HttpMethod method,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             CancellationToken cancellationToken)
         {
             if (configuration.NeedClientEnrichment)
@@ -196,19 +172,29 @@ namespace Rystem.OpenAi
                     wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
-            var response = await wrapper.PerformRequestAsync(url, method, message, false, cancellationToken);
+            logger
+                .ConfigureUrl(url)
+                .ConfigureMethod(method.Method)
+                .WithoutStreaming()
+                .AddContent(message)
+                .StartTimer();
+            var response = await wrapper.PerformRequestAsync(url, method, message, false, logger, cancellationToken);
             var responseAsStream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var memoryStream = new MemoryStream();
             await responseAsStream.CopyToAsync(memoryStream, cancellationToken);
             memoryStream.Seek(0, SeekOrigin.Begin);
+            logger
+                .AddResponse(nameof(Stream))
+                .LogInformation();
             return memoryStream;
         }
         internal static async IAsyncEnumerable<TResponse> StreamAsync<TResponse>(this HttpClientWrapper wrapper,
             string url,
             object? message,
-            HttpMethod httpMethod,
+            HttpMethod method,
             Dictionary<string, string>? headers,
             OpenAiConfiguration configuration,
+            IOpenAiLogger logger,
             Func<Stream, HttpResponseMessage, CancellationToken, IAsyncEnumerable<TResponse>>? streamReader,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
@@ -221,11 +207,25 @@ namespace Rystem.OpenAi
                     wrapper.Client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
-            var response = await wrapper.PerformRequestAsync(url, httpMethod, message, true, cancellationToken);
+            logger
+                .ConfigureUrl(url)
+                .ConfigureMethod(method.Method)
+                .WithStreaming()
+                .AddContent(message)
+                .StartTimer();
+            var response = await wrapper.PerformRequestAsync(url, method, message, true, logger, cancellationToken);
             using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
             var items = streamReader != null ? streamReader(stream, response, cancellationToken) : DefaultStreamReader<TResponse>(stream, response, cancellationToken);
             await foreach (var item in items)
+            {
+                logger
+                    .AddResponse(item)
+                    .Count()
+                    .LogInformation();
                 yield return item!;
+                logger
+                    .StartTimer();
+            }
         }
         private static async IAsyncEnumerable<TResponse> DefaultStreamReader<TResponse>(Stream stream, HttpResponseMessage response, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
