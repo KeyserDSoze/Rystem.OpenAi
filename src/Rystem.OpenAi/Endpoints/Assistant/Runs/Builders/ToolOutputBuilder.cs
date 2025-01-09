@@ -10,7 +10,7 @@
             _entity = entity;
             _request = request;
         }
-        public T Builder => _entity;
+        public T And() => _entity;
         public ToolOutputBuilder<T> AddToolOutput(string toolCallId, string output)
         {
             _request.ToolOutputs ??= [];
