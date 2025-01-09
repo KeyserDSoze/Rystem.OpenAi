@@ -98,7 +98,12 @@ namespace Rystem.OpenAi.UnitTests
                    {
                        chatClient.ForceModel("gpt-4");
                    };
-               }, "Azure3");
+               }, "Azure3")
+               .ConfigureOpenAiLogging(x =>
+               {
+                   x.Request = LogLevel.Information;
+                   x.Error = LogLevel.Error;
+               });
             return services;
         }
         protected override ValueTask ConfigureServerServicesAsync(IServiceCollection services, IConfiguration configuration)

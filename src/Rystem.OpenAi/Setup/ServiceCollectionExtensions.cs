@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Rystem.OpenAi;
@@ -94,11 +96,23 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddFactory<IOpenAiRun, OpenAiRun>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiVectorStore, OpenAiVectorStore>(integrationName, ServiceLifetime.Transient);
-            services.AddTransient<IOpenAiLogger, OpenAiLogger>();
+            services
+                .TryAddTransient<IOpenAiLogger, OpenAiLogger>();
+            services
+                .TryAddSingleton(new OpenAiLoggingConfiguration());
             //services
             //    .AddFactory<IOpenAiBilling, OpenAiBilling>(integrationName, ServiceLifetime.Transient);
             //services
             //    .AddFactory<IOpenAiDeployment, OpenAiDeployment>(integrationName, ServiceLifetime.Transient);
+            return services;
+        }
+        public static IServiceCollection ConfigureOpenAiLogging(this IServiceCollection services,
+            Action<OpenAiLoggingConfiguration> configuration)
+        {
+            var logConfiguration = new OpenAiLoggingConfiguration();
+            configuration(logConfiguration);
+            services.RemoveAll<OpenAiLoggingConfiguration>();
+            services.TryAddSingleton(logConfiguration);
             return services;
         }
     }
