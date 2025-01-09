@@ -20,7 +20,7 @@ namespace Rystem.OpenAi
         private readonly IServiceCollection _services = new ServiceCollection();
         public IServiceCollection Services => _services;
         private IServiceProvider? _serviceProvider;
-        public IOpenAiServiceLocatorConfigurator AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default)
+        public IOpenAiServiceLocatorConfigurator AddOpenAi(Action<OpenAiSettings> settings, AnyOf<string?, Enum>? integrationName = default)
         {
             _services.AddOpenAi(settings, integrationName);
             return this;
@@ -32,7 +32,7 @@ namespace Rystem.OpenAi
             _services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
             return this;
         }
-        public IOpenAi Create(string? integrationName = default)
+        public IOpenAi Create(AnyOf<string?, Enum>? integrationName = default)
         {
             _serviceProvider ??= _services.BuildServiceProvider();
             var factory = _serviceProvider.GetService<IFactory<IOpenAi>>()!;
@@ -40,25 +40,25 @@ namespace Rystem.OpenAi
                 integrationName = string.Empty;
             return factory.Create(integrationName)!;
         }
-        public IOpenAiAudio CreateAudio(string? integrationName = null)
+        public IOpenAiAudio CreateAudio(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Audio;
-        public IOpenAiSpeech CreateSpeech(string? integrationName = null)
+        public IOpenAiSpeech CreateSpeech(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Speech;
-        public IOpenAiChat CreateChat(string? integrationName = null)
+        public IOpenAiChat CreateChat(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Chat;
-        public IOpenAiEmbedding CreateEmbedding(string? integrationName = null)
+        public IOpenAiEmbedding CreateEmbedding(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Embeddings;
-        public IOpenAiFile CreateFile(string? integrationName = null)
+        public IOpenAiFile CreateFile(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).File;
-        public IOpenAiFineTune CreateFineTune(string? integrationName = null)
+        public IOpenAiFineTune CreateFineTune(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).FineTune;
-        public IOpenAiImage CreateImage(string? integrationName = null)
+        public IOpenAiImage CreateImage(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Image;
-        public IOpenAiModel CreateModel(string? integrationName = null)
+        public IOpenAiModel CreateModel(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Model;
-        public IOpenAiModeration CreateModeration(string? integrationName = null)
+        public IOpenAiModeration CreateModeration(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Moderation;
-        public IOpenAiManagement CreateManagement(string? integrationName = null)
+        public IOpenAiManagement CreateManagement(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Management;
         public IOpenAiUtility Utility()
         {

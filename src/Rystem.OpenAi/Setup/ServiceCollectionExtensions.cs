@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddOpenAi(this IServiceCollection services,
             Action<OpenAiSettings> settings,
-            string? integrationName = default)
+            AnyOf<string?, Enum>? integrationName = null)
         {
             var openAiSettings = new OpenAiSettings();
             settings.Invoke(openAiSettings);

@@ -11,7 +11,7 @@ namespace Rystem.OpenAi
         /// <param name="settings">Configuration settings for OpenAI.</param>
         /// <param name="integrationName">Optional name for the integration.</param>
         /// <returns>The current service locator instance.</returns>
-        IOpenAiServiceLocatorConfigurator AddOpenAi(Action<OpenAiSettings> settings, string? integrationName = default);
+        IOpenAiServiceLocatorConfigurator AddOpenAi(Action<OpenAiSettings> settings, AnyOf<string?, Enum>? integrationName = default);
 
         /// <summary>
         /// Adds a custom service implementation to the service collection.
