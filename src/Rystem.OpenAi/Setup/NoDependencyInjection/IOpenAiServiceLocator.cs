@@ -1,4 +1,5 @@
 ﻿using System;
+using Rystem.OpenAi.Assistant;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
@@ -81,14 +82,36 @@ namespace Rystem.OpenAi
         /// <param name="integrationName">Optional name for the integration.</param>
         /// <returns>An instance of IOpenAiModeration.</returns>
         IOpenAiModeration CreateModeration(AnyOf<string?, Enum>? integrationName = null);
-
         /// <summary>
         /// Creates an instance of IOpenAiManagement with an optional integration name.
         /// </summary>
         /// <param name="integrationName">Optional name for the integration.</param>
         /// <returns>An instance of IOpenAiManagement.</returns>
         IOpenAiManagement CreateManagement(AnyOf<string?, Enum>? integrationName = null);
-
+        /// <summary>
+        /// Creates an instance of IOpenAiAssistant with an optional integration name.
+        /// </summary>
+        /// <param name="integrationName">Optional name for the integration.</param>
+        /// <returns>An instance of IOpenAiAssistant.</returns>
+        IOpenAiAssistant CreateAssistant(AnyOf<string?, Enum>? integrationName = null);
+        /// <summary>
+        /// Creates an instance of IOpenAiThread with an optional integration name.
+        /// </summary>
+        /// <param name="integrationName">Optional name for the integration.</param>
+        /// <returns>An instance of IOpenAiThread.</returns>
+        IOpenAiThread CreateThread(AnyOf<string?, Enum>? integrationName = null);
+        /// <summary>
+        /// Creates an instance of IOpenAiRun with an optional integration name.
+        /// </summary>
+        /// <param name="integrationName">Optional name for the integration.</param>
+        /// <returns>An instance of IOpenAiRun.</returns>
+        IOpenAiRun CreateRun(AnyOf<string?, Enum>? integrationName = null);
+        /// <summary>
+        /// Creates an instance of IOpenAiVectorStore with an optional integration name.
+        /// </summary>
+        /// <param name="integrationName">Optional name for the integration.</param>
+        /// <returns>An instance of IOpenAiVectorStore.</returns>
+        IOpenAiVectorStore CreateVectorStore(AnyOf<string?, Enum>? integrationName = null);
         /// <summary>
         /// Retrieves the utility services for OpenAI.
         /// </summary>

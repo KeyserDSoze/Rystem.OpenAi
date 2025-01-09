@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Rystem.OpenAi.Assistant;
 using Rystem.OpenAi.Audio;
 using Rystem.OpenAi.Chat;
 using Rystem.OpenAi.Embedding;
@@ -60,6 +61,14 @@ namespace Rystem.OpenAi
             => Create(integrationName).Moderation;
         public IOpenAiManagement CreateManagement(AnyOf<string?, Enum>? integrationName = null)
             => Create(integrationName).Management;
+        public IOpenAiAssistant CreateAssistant(AnyOf<string?, Enum>? integrationName = null)
+            => Create(integrationName).Assistant;
+        public IOpenAiThread CreateThread(AnyOf<string?, Enum>? integrationName = null)
+            => Create(integrationName).Thread;
+        public IOpenAiRun CreateRun(AnyOf<string?, Enum>? integrationName = null)
+            => Create(integrationName).Run;
+        public IOpenAiVectorStore CreateVectorStore(AnyOf<string?, Enum>? integrationName = null)
+            => Create(integrationName).VectorStore;
         public IOpenAiUtility Utility()
         {
             _serviceProvider ??= _services.BuildServiceProvider();
