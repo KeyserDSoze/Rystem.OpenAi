@@ -12,6 +12,9 @@ jobs:
     environment: OpenAi.Nuget
     
     steps:
+      - name: Delay for 5 minutes
+        run: sleep 300
+
       - name: Publish package
         uses: KeyserDSoze/DefaultAction/pushing_nuget_with_symbols@v1.0.1
         with:
