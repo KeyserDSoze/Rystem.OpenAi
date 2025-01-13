@@ -41,9 +41,9 @@ namespace Rystem.OpenAi.Files
         public ValueTask<FileResult> UploadFileAsync(byte[] file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
         {
             var currentPurpose = purpose.ToLabel();
-            var fileContent = new ByteArrayContent(file);
+            using var fileContent = new ByteArrayContent(file);
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-            var content = new MultipartFormDataContent
+            using var content = new MultipartFormDataContent
             {
                 { new StringContent(currentPurpose), Purpose },
                 { fileContent, FileContent, fileName }

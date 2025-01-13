@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,8 +32,8 @@ namespace Rystem.OpenAi.Files
         {
             if (part.CanSeek)
                 part.Seek(0, SeekOrigin.Begin);
-            var fileContent = new ByteArrayContent(await part.ToArrayAsync());
-            var content = new MultipartFormDataContent
+            using var fileContent = new ByteArrayContent(await part.ToArrayAsync());
+            using var content = new MultipartFormDataContent
             {
                 { fileContent, PartialFileContent }
             };
