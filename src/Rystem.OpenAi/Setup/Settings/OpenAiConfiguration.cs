@@ -175,7 +175,7 @@ namespace Rystem.OpenAi
                 return version;
             else if (settings.DefaultVersion != null)
                 return settings.DefaultVersion;
-            else if (settings.Azure != null)
+            else if (settings.Azure.HasConfiguration)
             {
                 if (type == OpenAiType.Assistant || type == OpenAiType.Thread || type == OpenAiType.VectorStore)
                     return AzureDefaultVersionAssistant;
