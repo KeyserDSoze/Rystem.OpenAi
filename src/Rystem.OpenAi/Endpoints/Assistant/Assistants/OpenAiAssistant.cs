@@ -181,7 +181,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, string.Empty, null),
+                        OpenAiType.Assistant, _version, null, string.Empty, null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -194,7 +194,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Assistant, _version, null, $"/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                          Logger,
@@ -214,7 +214,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<AssistantRequest>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, string.Empty, querystring),
+                        OpenAiType.Assistant, _version, null, string.Empty, querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                          Logger,
@@ -225,7 +225,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Assistant, _version, null, $"/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                          Logger,
@@ -237,7 +237,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<AssistantRequest>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Assistant, string.Empty, Forced, $"/{id}", null),
+                        OpenAiType.Assistant, _version, null, $"/{id}", null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,

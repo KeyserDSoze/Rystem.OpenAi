@@ -10,12 +10,18 @@ namespace Rystem.OpenAi.Assistant
         private readonly DefaultServices _defaultServices;
         private readonly IOpenAiLogger _logger;
         private readonly VectorStoreFileRequest _request = new();
-
-        public OpenAiVectorStoreFile(string vectorStoreId, DefaultServices defaultServices, IOpenAiLogger logger)
+        private string? _version;
+        public OpenAiVectorStoreFile(string vectorStoreId, DefaultServices defaultServices, IOpenAiLogger logger, string? version)
         {
             _vectorStoreId = vectorStoreId;
             _defaultServices = defaultServices;
             _logger = logger;
+            _version = version;
+        }
+        public IOpenAiVectorStoreFile WithVersion(string version)
+        {
+            _version = version;
+            return this;
         }
         public IOpenAiVectorStoreFile WithFile(string fileId)
         {
@@ -35,7 +41,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreFile>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/files", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files", null),
                         _request,
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
@@ -47,7 +53,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/files/{id}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
                         _logger,
@@ -67,7 +73,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<VectorStoreFile>>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/files", querystring),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
                         _logger,
@@ -78,7 +84,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 GetAsync<VectorStoreFile>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/files/{id}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
                         _logger,
@@ -89,7 +95,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreFileBatch>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/file_batches", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches", null),
                         _request,
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
@@ -101,7 +107,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                  PostAsync<VectorStoreFileBatch>(
                      _defaultServices.Configuration.GetUri(
-                         OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/file_batches/{id}/cancel", null),
+                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches/{id}/cancel", null),
                          null,
                          BetaRequest.OpenAiBetaHeaders,
                          _defaultServices.Configuration,
@@ -122,7 +128,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<VectorStoreFile>>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/file_batches/{batchId}/files", querystring),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches/{batchId}/files", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
                         _logger,
@@ -133,7 +139,7 @@ namespace Rystem.OpenAi.Assistant
             return _defaultServices.HttpClientWrapper.
                 GetAsync<VectorStoreFileBatch>(
                     _defaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, false, $"/{_vectorStoreId}/file_batches/{id}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
                         _logger,

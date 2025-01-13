@@ -13,6 +13,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("Azure")]
         public async ValueTask CreateAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;

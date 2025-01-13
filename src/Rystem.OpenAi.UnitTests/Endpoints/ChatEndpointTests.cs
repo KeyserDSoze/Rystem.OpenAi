@@ -20,7 +20,6 @@ namespace Rystem.OpenAi.Test
         public async ValueTask CreateChatCompletionAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
-
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })

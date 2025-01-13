@@ -1,9 +1,13 @@
-﻿using Azure.Core;
-
-namespace Rystem.OpenAi
+﻿namespace Rystem.OpenAi
 {
-    public interface IOpenAiBase<out T, TModel>
+    public interface IOpenAiBase<out T>
+        where T : class
+    {
+        T WithVersion(string version);
+    }
+    public interface IOpenAiBase<out T, TModel> : IOpenAiBase<T>
         where TModel : ModelName
+        where T : class
     {
         /// <summary>
         /// ID of the model to use.

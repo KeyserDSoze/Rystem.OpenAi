@@ -40,7 +40,7 @@ namespace Rystem.OpenAi.Chat
             Request.StreamOptions = null;
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<ChatResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.Chat, _version, Request.Model!, string.Empty, null),
                     Request,
                     null,
                     DefaultServices.Configuration,
@@ -62,7 +62,7 @@ namespace Rystem.OpenAi.Chat
                 };
             await foreach (var result in DefaultServices.HttpClientWrapper.
                 StreamAsync<ChunkChatResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.Chat, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.Chat, _version, Request.Model!, string.Empty, null),
                     Request,
                     HttpMethod.Post,
                     null,

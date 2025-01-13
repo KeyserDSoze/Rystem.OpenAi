@@ -62,7 +62,7 @@ namespace Rystem.OpenAi.Assistant
             var threadResponse = await DefaultServices.HttpClientWrapper.
                 PostAsync<ThreadResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, string.Empty, null),
+                        OpenAiType.Thread, _version, null, string.Empty, null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -79,7 +79,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -92,7 +92,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ThreadResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -106,7 +106,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<ThreadResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}", null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -123,7 +123,7 @@ namespace Rystem.OpenAi.Assistant
                     var response = await DefaultServices.HttpClientWrapper.
                                             PostAsync<ThreadMessageResponse>(
                                                 DefaultServices.Configuration.GetUri(
-                                                    OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/messages", null),
+                                                    OpenAiType.Thread, _version, null, $"/{_threadId}/messages", null),
                                                     message,
                                                     BetaRequest.OpenAiBetaHeaders,
                                                     DefaultServices.Configuration,
@@ -140,7 +140,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/messages/{id}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/messages/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -153,7 +153,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ThreadMessageResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/messages/{id}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/messages/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -175,7 +175,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<ThreadMessageResponse>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/messages", querystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/messages", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -189,7 +189,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<ThreadMessageResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/messages/{id}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/messages/{id}", null),
                         Request.Messages?.LastOrDefault(),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,

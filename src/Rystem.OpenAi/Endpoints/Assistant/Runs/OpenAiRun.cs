@@ -344,7 +344,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, _version, null, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -359,7 +359,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 StreamAsync(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, _version, null, _threadId == null ? RunsPath : $"/{_threadId}{RunsPath}", _fileSearchIncludingQuerystring),
                         Request,
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
@@ -409,7 +409,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/cancel", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}/cancel", null),
                         null,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -430,7 +430,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<RunResult>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs", querystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -442,7 +442,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -455,7 +455,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}", null),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}", null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -475,7 +475,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<RunResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
                         _toolOutputRequest,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -489,7 +489,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 StreamAsync(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}/submit_tool_outputs", _fileSearchIncludingQuerystring),
                         _toolOutputRequest,
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
@@ -518,7 +518,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<RunStepResult>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{id}/steps", querystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}/steps", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -530,7 +530,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<RunStepResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.Thread, string.Empty, Forced, $"/{_threadId}/runs/{runId}/steps/{id}", _fileSearchIncludingQuerystring),
+                        OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{runId}/steps/{id}", _fileSearchIncludingQuerystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,

@@ -95,7 +95,7 @@ namespace Rystem.OpenAi.Image
         private ValueTask<ImageResult> ExecuteAsync<T>(string endpoint, T request, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();
-            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, _version, Request.Model!, endpoint, null);
             return DefaultServices.HttpClientWrapper
                     .PostAsync<ImageResult>(
                         uri,
@@ -114,7 +114,7 @@ namespace Rystem.OpenAi.Image
         private ValueTask<ImageResultForBase64> ExecuteAsBase64Async<T>(string endpoint, T request, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.B64Json.AsString();
-            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, Request.Model!, Forced, endpoint, null);
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.Image, _version, Request.Model!, endpoint, null);
             return DefaultServices.HttpClientWrapper
                     .PostAsync<ImageResultForBase64>(
                         uri,

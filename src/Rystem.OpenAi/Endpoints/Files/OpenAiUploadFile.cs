@@ -8,7 +8,8 @@ namespace Rystem.OpenAi.Files
         private readonly OpenAiFile _openAiFile;
         private readonly IOpenAiLogger _logger;
         private readonly FilePartialStartRequest _request;
-        public OpenAiUploadFile(OpenAiFile openAiFile, string fileName, IOpenAiLogger logger)
+        private string? _version;
+        public OpenAiUploadFile(OpenAiFile openAiFile, string fileName, IOpenAiLogger logger, string? version)
         {
             _openAiFile = openAiFile;
             _logger = logger;
@@ -16,19 +17,24 @@ namespace Rystem.OpenAi.Files
             {
                 FileName = fileName
             };
+            _version = version;
         }
-
+        public IOpenAiUploadFile WithVersion(string version)
+        {
+            _version = version;
+            return this;
+        }
         public async ValueTask<IOpenAiPartUploadFile> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             var response = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FileResult>(
-                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, string.Empty, null),
+                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, string.Empty, null),
                     _request,
                     null,
                     _openAiFile.DefaultServices.Configuration,
                     _logger,
                     cancellationToken);
-            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _logger);
+            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _logger, _version);
         }
         public IOpenAiUploadFile WithContentType(string contentType = "application/json")
         {

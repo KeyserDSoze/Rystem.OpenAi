@@ -23,7 +23,7 @@ namespace Rystem.PlayFramework.Test.Api
             {
                 x.ApiKey = configuration["OpenAi2:ApiKey"]!;
                 x.Azure.ResourceName = configuration["OpenAi2:ResourceName"]!;
-                x.Version = "2024-08-01-preview";
+                x.DefaultVersion = "2024-08-01-preview";
                 //x.Azure.MapDeployment(configuration["OpenAi2:ModelName"]!, configuration["OpenAi2:ModelName"]!);
                 x.DefaultRequestConfiguration.Chat = chatClient =>
                 {
