@@ -53,31 +53,31 @@ namespace Rystem.OpenAi
         }
         internal void ConfigureEndpoints()
         {
-            var querystringForVersion = Settings.Azure.HasConfiguration ? "?api-version={0}" : string.Empty;
-            var basePath = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai{{1}}" : "api.openai.com/{0}{1}";
-            var basePathWithModel = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{{2}}{{1}}" : "api.openai.com/{0}{1}{2}";
+            var basePath = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai" : "api.openai.com/{0}";
+            var basePathWithModel = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{{2}}" : "api.openai.com/{0}";
+            var endPath = Settings.Azure.HasConfiguration ? "{1}?api-version={0}" : "{1}";
             if (Settings.Azure.HasConfiguration)
             {
                 SetManagedIdentityForAzure();
             }
             var uriHelper = new UriHelperConfigurator
             {
-                ChatUri = $"https://{basePathWithModel}/chat/completions{querystringForVersion}",
-                EmbeddingUri = $"https://{basePathWithModel}/embeddings{querystringForVersion}",
-                FileUri = $"https://{basePathWithModel}/files{querystringForVersion}",
-                UploadUri = $"https://{basePathWithModel}/uploads{querystringForVersion}",
-                FineTuneUri = $"https://{basePathWithModel}/fine_tuning/jobs{querystringForVersion}",
-                ModelUri = $"https://{basePath}/models{querystringForVersion}",
-                ModerationUri = $"https://{basePathWithModel}/moderations{querystringForVersion}",
-                ImageUri = $"https://{basePathWithModel}/images{querystringForVersion}",
-                AudioTranscriptionUri = $"https://{basePathWithModel}/audio/transcriptions{querystringForVersion}",
-                AudioTranslationUri = $"https://{basePathWithModel}/audio/translations{querystringForVersion}",
-                AudioSpeechUri = $"https://{basePathWithModel}/audio/speech{querystringForVersion}",
-                BillingUri = $"https://{basePath}/dashboard/billing/usage{querystringForVersion}",
-                AssistantUri = $"https://{basePath}/assistants{querystringForVersion}",
-                ThreadUri = $"https://{basePath}/threads{querystringForVersion}",
-                VectorStoreUri = $"https://{basePath}/vector_stores{querystringForVersion}",
-                DeploymentUri = $"https://{basePath}/deployments{querystringForVersion}"
+                ChatUri = $"https://{basePathWithModel}/chat/completions{endPath}",
+                EmbeddingUri = $"https://{basePathWithModel}/embeddings{endPath}",
+                FileUri = $"https://{basePathWithModel}/files{endPath}",
+                UploadUri = $"https://{basePathWithModel}/uploads{endPath}",
+                FineTuneUri = $"https://{basePathWithModel}/fine_tuning/jobs{endPath}",
+                ModelUri = $"https://{basePath}/models{endPath}",
+                ModerationUri = $"https://{basePathWithModel}/moderations{endPath}",
+                ImageUri = $"https://{basePathWithModel}/images{endPath}",
+                AudioTranscriptionUri = $"https://{basePathWithModel}/audio/transcriptions{endPath}",
+                AudioTranslationUri = $"https://{basePathWithModel}/audio/translations{endPath}",
+                AudioSpeechUri = $"https://{basePathWithModel}/audio/speech{endPath}",
+                BillingUri = $"https://{basePath}/dashboard/billing/usage{endPath}",
+                AssistantUri = $"https://{basePath}/assistants{endPath}",
+                ThreadUri = $"https://{basePath}/threads{endPath}",
+                VectorStoreUri = $"https://{basePath}/vector_stores{endPath}",
+                DeploymentUri = $"https://{basePath}/deployments{endPath}"
             };
 
             GetUri = (type, version, model, appendBeforeQueryString, querystring)
