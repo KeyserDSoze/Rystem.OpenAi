@@ -14,7 +14,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
+        [InlineData("Azure4")]
         public async ValueTask CreateAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
-        [InlineData("Azure2")]
+        [InlineData("Azure4")]
         public async ValueTask CreateWithBase64Async(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
@@ -47,11 +47,11 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("AzureForDalle2")]
         public async ValueTask EditAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Image);
-
             //var location = Assembly.GetExecutingAssembly().Location;
             //location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
             //using var readableStream = File.OpenRead($"{location}\\Files\\cuteotter.png");
@@ -77,6 +77,7 @@ namespace Rystem.OpenAi.Test
         }
         [Theory]
         [InlineData("")]
+        [InlineData("AzureForDalle2")]
         public async ValueTask VariateAsync(string name)
         {
             var openAiApi = _openAiFactory.Create(name)!;

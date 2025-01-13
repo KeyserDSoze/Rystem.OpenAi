@@ -29,13 +29,14 @@ namespace Rystem.OpenAi.Files
         }
         public async ValueTask<FilePartResult> AddPartAsync(Stream part, CancellationToken cancellationToken = default)
         {
-            var memoryStream = new MemoryStream();
-            await part.CopyToAsync(memoryStream, cancellationToken);
-            var fileContent = new ByteArrayContent(memoryStream.ToArray());
+            if (part.CanSeek)
+                part.Seek(0, SeekOrigin.Begin);
+            var fileContent = new ByteArrayContent(await part.ToArrayAsync());
             var content = new MultipartFormDataContent
             {
                 { fileContent, PartialFileContent }
             };
+
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FilePartResult>(
                     _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
