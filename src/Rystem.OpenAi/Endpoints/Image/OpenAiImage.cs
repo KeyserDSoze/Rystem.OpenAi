@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
@@ -76,22 +77,34 @@ namespace Rystem.OpenAi.Image
             CheckPromptLength(prompt);
             return ExecuteAsBase64Async(GenerationEndpoint, Request, cancellationToken);
         }
-        public ValueTask<ImageResult> EditAsync(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
+        public async ValueTask<ImageResult> EditAsync(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
             CheckPromptLength(prompt);
-            return ExecuteAsync(EditEndpoint, CreateRequest(file, fileName, true), cancellationToken);
+            using var request = CreateRequest(file, fileName, true);
+            var response = await ExecuteAsync(EditEndpoint, request, cancellationToken);
+            return response;
         }
-        public ValueTask<ImageResultForBase64> EditAsBase64Async(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
+        public async ValueTask<ImageResultForBase64> EditAsBase64Async(string prompt, Stream file, string fileName = "image", CancellationToken cancellationToken = default)
         {
             Request.Prompt = prompt;
             CheckPromptLength(prompt);
-            return ExecuteAsBase64Async(EditEndpoint, CreateRequest(file, fileName, true), cancellationToken);
+            using var request = CreateRequest(file, fileName, true);
+            var response = await ExecuteAsBase64Async(EditEndpoint, request, cancellationToken);
+            return response;
         }
-        public ValueTask<ImageResult> VariateAsync(Stream file, string fileName = "image", CancellationToken cancellationToken = default)
-            => ExecuteAsync(VariationEndpoint, CreateRequest(file, fileName, false), cancellationToken);
-        public ValueTask<ImageResultForBase64> VariateAsBase64Async(Stream file, string fileName = "image", CancellationToken cancellationToken = default)
-            => ExecuteAsBase64Async(VariationEndpoint, CreateRequest(file, fileName, false), cancellationToken);
+        public async ValueTask<ImageResult> VariateAsync(Stream file, string fileName = "image", CancellationToken cancellationToken = default)
+        {
+            using var request = CreateRequest(file, fileName, false);
+            var response = await ExecuteAsync(VariationEndpoint, request, cancellationToken);
+            return response;
+        }
+        public async ValueTask<ImageResultForBase64> VariateAsBase64Async(Stream file, string fileName = "image", CancellationToken cancellationToken = default)
+        {
+            using var request = CreateRequest(file, fileName, false);
+            var response = await ExecuteAsBase64Async(VariationEndpoint, request, cancellationToken);
+            return response;
+        }
         private ValueTask<ImageResult> ExecuteAsync<T>(string endpoint, T request, CancellationToken cancellationToken = default)
         {
             Request.ResponseFormat = FormatResultImage.Url.AsString();

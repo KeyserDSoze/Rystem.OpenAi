@@ -38,7 +38,7 @@ namespace Rystem.OpenAi.Files
             memoryStream.Position = 0;
             return await UploadFileAsync(memoryStream.ToArray(), fileName, contentType, purpose, cancellationToken);
         }
-        public ValueTask<FileResult> UploadFileAsync(byte[] file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
+        public async ValueTask<FileResult> UploadFileAsync(byte[] file, string fileName, string contentType = "application/json", PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
         {
             var currentPurpose = purpose.ToLabel();
             using var fileContent = new ByteArrayContent(file);
@@ -48,7 +48,7 @@ namespace Rystem.OpenAi.Files
                 { new StringContent(currentPurpose), Purpose },
                 { fileContent, FileContent, fileName }
             };
-            return DefaultServices.HttpClientWrapper
+            var result = await DefaultServices.HttpClientWrapper
                 .PostAsync<FileResult>(
                     DefaultServices.Configuration.GetUri(OpenAiType.File, _version, fileName, string.Empty, null),
                     content,
@@ -56,6 +56,7 @@ namespace Rystem.OpenAi.Files
                     DefaultServices.Configuration,
                     Logger,
                     cancellationToken);
+            return result;
         }
         public ValueTask<FileResult> UploadFileAsync(byte[] file, string fileName, MimeType mimeType, PurposeFileUpload purpose = PurposeFileUpload.FineTune, CancellationToken cancellationToken = default)
             => UploadFileAsync(file, fileName, mimeType.Name, purpose, cancellationToken);
