@@ -213,10 +213,13 @@ You may install different version for each endpoint.
             {
                 settings.ApiKey = azureApiKey;
                 //default version for all endpoints
-                settings.Version = "2024-08-01-preview";
+                settings.DefaultVersion = "2024-08-01-preview";
                 //different version for chat endpoint
-                settings
-                    .UseVersionForChat("2023-03-15-preview");
+                settings.DefaultRequestConfiguration.Chat = chatClient =>
+                    {
+                        chatClient.ForceModel("gpt-4");
+                        chatClient.WithVersion("2024-08-01-preview");
+                    };
             });
 ```
 
@@ -242,8 +245,11 @@ In the next example we have two different configurations, one with OpenAi and a 
     services.AddOpenAi(settings =>
     {
         settings.ApiKey = azureApiKey;
-        settings
-            .UseVersionForChat("2023-03-15-preview");
+        settings.DefaultRequestConfiguration.Chat = chatClient =>
+            {
+                chatClient.ForceModel("gpt-4");
+                chatClient.WithVersion("2024-08-01-preview");
+            };
         settings.Azure.ResourceName = resourceName;
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
@@ -1502,22 +1508,18 @@ During setup of your OpenAi service you may add your custom price table with set
 ```csharp
     services.AddOpenAi(settings =>
     {
-        //custom version for chat endpoint
-        settings
-            .UseVersionForChat("2024-08-01-preview");
         //resource name for Azure
         settings.Azure.ResourceName = resourceName;
         //app registration configuration for Azure authentication
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
-        //map deployment for Azure for every request for chat endpoint with gpt-4 model.
-        settings
-            .MapDeploymentForEveryRequests(OpenAiType.Chat, "gpt-4");
         //default request configuration for chat endpoint, this method is ran during the creation of the chat service.
         settings.DefaultRequestConfiguration.Chat = chatClient =>
         {
             chatClient.ForceModel("gpt-4");
+            //custom version for chat endpoint
+            chatClient.WithVersion("2024-08-01-preview");
         };
         //add a price for kind of cost for model you want to add. Here an example with gpt-4 model.
         settings.PriceBuilder
@@ -1554,42 +1556,23 @@ Only for Azure you have to deploy a model to use model in your application. You 
     services.AddOpenAi(settings =>
     {
         settings.ApiKey = azureApiKey;
-        settings
-            .UseVersionForChat("2023-03-15-preview");
         settings.Azure.ResourceName = resourceName;
         settings.Azure.AppRegistration.ClientId = clientId;
         settings.Azure.AppRegistration.ClientSecret = clientSecret;
         settings.Azure.AppRegistration.TenantId = tenantId;
-        settings.Azure
-            .MapDeploymentTextModel("text-curie-001", TextModelType.CurieText)
-            .MapDeploymentTextModel("text-davinci-003", TextModelType.DavinciText3)
-            .MapDeploymentEmbeddingModel("OpenAiDemoModel", EmbeddingModelType.AdaTextEmbedding)
-            .MapDeploymentChatModel("gpt35turbo", ChatModelType.Gpt35Turbo0301)
-            .MapDeploymentCustomModel("ada001", "text-ada-001");
+        settings.DefaultRequestConfiguration.Chat = chatClient =>
+        {
+            chatClient.ForceModel("gpt-4");
+            //custom version for chat endpoint
+            chatClient.WithVersion("2024-08-01-preview");
+        };
         settings.Price
             .SetFineTuneForAda(0.0004M, 0.0016M)
             .SetAudioForTranslation(0.006M);
     }, "Azure");
 ```
 
-During startup you can configure other deployments on your application or on Azure.
-
-```csharp
-    var app = builder.Build();
-    await app.Services.MapDeploymentsAutomaticallyAsync(true);
-```
-
-or a specific integration or list of integration that you setup previously.
-
-```csharp
-    await app.Services.MapDeploymentsAutomaticallyAsync(true, "Azure", "Azure2");
-```
-
 You can do this step with No dependency injection integration too.
-
-MapDeploymentsAutomaticallyAsync is a extensions method for IServiceProvider, with true you can automatically install on Azure the deployments you setup on application.
-In the other parameter you can choose which integration runs this automatic update. In the example it's running for the default integration.
-With the Management endpoint you can programmatically configure or manage deployments on Azure.
 
 You can create a new deployment
 
