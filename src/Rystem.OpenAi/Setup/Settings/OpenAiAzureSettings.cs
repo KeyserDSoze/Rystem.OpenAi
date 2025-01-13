@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Rystem.OpenAi
+﻿namespace Rystem.OpenAi
 {
     public sealed class OpenAiAzureSettings
     {

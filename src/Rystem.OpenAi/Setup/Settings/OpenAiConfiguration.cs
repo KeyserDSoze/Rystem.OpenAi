@@ -163,12 +163,9 @@ namespace Rystem.OpenAi
                 };
             }
         }
-
-        internal const string Asterisk = "*";
         private const string OpenAiDefaultVersion = "v1";
         private const string AzureDefaultVersion = "2024-10-21";
         private const string AzureDefaultVersionAssistant = "2024-05-01-preview";
-
         private static string? GetVersion(OpenAiSettings settings, string? version, OpenAiType type)
         {
             if (version != null)
