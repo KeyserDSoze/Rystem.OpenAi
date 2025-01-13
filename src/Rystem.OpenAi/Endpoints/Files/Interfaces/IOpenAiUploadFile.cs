@@ -3,14 +3,8 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.Files
 {
-    public interface IOpenAiUploadFile
+    public interface IOpenAiUploadFile : IOpenAiBase<IOpenAiUploadFile>
     {
-        /// <summary>
-        /// The version of the API to use.
-        /// </summary>
-        /// <param name="version"></param>
-        /// <returns></returns>
-        IOpenAiUploadFile WithVersion(string version);
         /// <summary>
         /// The number of bytes in the file you are uploading.
         /// </summary>

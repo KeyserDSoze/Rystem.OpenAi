@@ -8,7 +8,7 @@ namespace Rystem.OpenAi.Files
     /// <summary>
     /// Files are used to upload documents that can be used with features like <see href="https://platform.openai.com/docs/api-reference/fine-tunes">Fine-tuning</see>.
     /// </summary>
-    public interface IOpenAiFile
+    public interface IOpenAiFile : IOpenAiBase<IOpenAiFile>
     {
         /// <summary>
         /// Returns a list of files that belong to the user's organization.

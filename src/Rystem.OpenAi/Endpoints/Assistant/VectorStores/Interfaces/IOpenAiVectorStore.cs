@@ -7,7 +7,7 @@ namespace Rystem.OpenAi.Assistant
     /// <summary>
     /// Interface for OpenAI Vector Store interactions, providing methods to create, manage, and retrieve vector stores and their associated files.
     /// </summary>
-    public interface IOpenAiVectorStore : IOpenAiWithMetadata<IOpenAiVectorStore>
+    public interface IOpenAiVectorStore : IOpenAiWithMetadata<IOpenAiVectorStore>, IOpenAiBase<IOpenAiVectorStore>
     {
         /// <summary>
         /// Manages files within a specific vector store.

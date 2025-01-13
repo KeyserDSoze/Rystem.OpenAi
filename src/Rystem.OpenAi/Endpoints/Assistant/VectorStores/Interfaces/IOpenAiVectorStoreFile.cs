@@ -7,14 +7,8 @@ namespace Rystem.OpenAi.Assistant
     /// <summary>
     /// Interface for OpenAI Vector Store File interactions, providing methods to manage files and file batches in a vector store.
     /// </summary>
-    public interface IOpenAiVectorStoreFile
+    public interface IOpenAiVectorStoreFile : IOpenAiBase<IOpenAiVectorStoreFile>
     {
-        /// <summary>
-        /// Configures the version for the API.
-        /// </summary>
-        /// <param name="version"></param>
-        /// <returns></returns>
-        IOpenAiVectorStoreFile WithVersion(string version);
         /// <summary>
         /// Configures the vector store file with a single file ID.
         /// </summary>
