@@ -1,17 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Rystem.OpenAi.Audio;
-using Rystem.OpenAi.Chat;
 
 namespace Rystem.OpenAi.Assistant
 {
     /// <summary>
     /// Interface for OpenAI Thread interactions, providing methods to build, manage, and execute threads with OpenAI services.
     /// </summary>
-    public interface IOpenAiThread
+    public interface IOpenAiThread : IOpenAiBase<IOpenAiThread>
     {
         /// <summary>
         /// Adds metadata to the entire thread.

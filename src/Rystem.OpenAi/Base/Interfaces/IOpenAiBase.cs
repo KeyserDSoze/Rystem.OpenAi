@@ -3,6 +3,11 @@
     public interface IOpenAiBase<out T>
         where T : class
     {
+        /// <summary>
+        /// Version of the API to use.
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
         T WithVersion(string version);
     }
     public interface IOpenAiBase<out T, TModel> : IOpenAiBase<T>
