@@ -46,18 +46,15 @@ namespace Rystem.OpenAi.UnitTests
             services.AddOpenAi(settings =>
             {
                 //settings.ApiKey = azureApiKey;
-                settings.Version = "2024-08-01-preview";
-                settings
-                    .UseVersionForChat("2024-08-01-preview");
+                settings.DefaultVersion = "2024-08-01-preview";
                 settings.Azure.ResourceName = resourceName;
                 settings.Azure.AppRegistration.ClientId = clientId;
                 settings.Azure.AppRegistration.ClientSecret = clientSecret;
                 settings.Azure.AppRegistration.TenantId = tenantId;
-                settings
-                    .MapDeploymentForEveryRequests(OpenAiType.Chat, "gpt-4");
                 settings.DefaultRequestConfiguration.Chat = chatClient =>
                 {
                     chatClient.ForceModel("gpt-4");
+                    chatClient.WithVersion("2024-08-01-preview");
                 };
                 settings.PriceBuilder
                     .AddModel("gpt-4",
@@ -70,13 +67,15 @@ namespace Rystem.OpenAi.UnitTests
                 {
                     settings.ApiKey = azureApiKey2;
                     settings.Azure.ResourceName = resourceName2;
-                    settings.Version = "2024-02-01";
-                    settings.UseVersionForAudioSpeech("2024-05-01-preview");
-                    settings.UseVersionForAudioTranscription("2024-06-01");
-                    settings.UseVersionForAudioTranslation("2024-06-01");
-                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioSpeech, "tts-hd");
-                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranscription, "whisper");
-                    settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranslation, "whisper");
+                    settings.DefaultVersion = "2024-02-01";
+                    settings.DefaultRequestConfiguration.Speech = audioClient =>
+                    {
+                        audioClient.ForceModel("2024-05-01-preview");
+                    };
+                    settings.DefaultRequestConfiguration.Audio = audioClient =>
+                    {
+                        audioClient.ForceModel("2024-06-01");
+                    };
                     settings.DefaultRequestConfiguration.Chat = chatClient =>
                     {
                         chatClient.ForceModel("gpt-4");
@@ -87,13 +86,20 @@ namespace Rystem.OpenAi.UnitTests
                {
                    settings.ApiKey = azureApiKey3;
                    settings.Azure.ResourceName = resourceName3;
-                   settings.Version = "2024-02-01";
-                   settings.UseVersionForAudioSpeech("2024-05-01-preview");
-                   settings.UseVersionForAudioTranscription("2024-06-01");
-                   settings.UseVersionForAudioTranslation("2024-06-01");
-                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioSpeech, "tts-hd");
-                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranscription, "whisper");
-                   settings.MapDeploymentForEveryRequests(OpenAiType.AudioTranslation, "whisper");
+                   settings.DefaultVersion = "2024-02-01";
+                   settings.DefaultVersion = "2024-02-01";
+                   settings.DefaultRequestConfiguration.Speech = audioClient =>
+                   {
+                       audioClient.ForceModel("2024-05-01-preview");
+                   };
+                   settings.DefaultRequestConfiguration.Audio = audioClient =>
+                   {
+                       audioClient.ForceModel("2024-06-01");
+                   };
+                   settings.DefaultRequestConfiguration.Chat = chatClient =>
+                   {
+                       chatClient.ForceModel("gpt-4");
+                   };
                    settings.DefaultRequestConfiguration.Chat = chatClient =>
                    {
                        chatClient.ForceModel("gpt-4");

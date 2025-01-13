@@ -29,7 +29,7 @@ namespace Rystem.OpenAi.Audio
             Request.Input = input;
             Usages.Add(new OpenAiCost { Units = Request.Input?.Length ?? 0, Kind = KindOfCost.AudioInput, UnitOfMeasure = UnitOfMeasure.Tokens });
             var response = await DefaultServices.HttpClientWrapper
-                .PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, Request.Model!, Forced, string.Empty, null),
+                .PostAsync(DefaultServices.Configuration.GetUri(OpenAiType.AudioSpeech, _version, Request.Model!, string.Empty, null),
                 Request,
                 null,
                 DefaultServices.Configuration,

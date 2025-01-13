@@ -36,7 +36,7 @@ namespace Rystem.OpenAi.Embedding
             Request.Input = _inputs;
             var response = await DefaultServices.HttpClientWrapper
                             .PostAsync<EmbeddingResult>(
-                                DefaultServices.Configuration.GetUri(OpenAiType.Embedding, Request.Model!, Forced, string.Empty, null),
+                                DefaultServices.Configuration.GetUri(OpenAiType.Embedding, _version, Request.Model!, string.Empty, null),
                                 Request,
                                 null,
                                 DefaultServices.Configuration,

@@ -47,7 +47,7 @@ namespace Rystem.OpenAi.Audio
 
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<AudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,
@@ -83,7 +83,7 @@ namespace Rystem.OpenAi.Audio
 
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<VerboseSegmentAudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,
@@ -116,7 +116,7 @@ namespace Rystem.OpenAi.Audio
 
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<VerboseWordAudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranscription, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,
@@ -142,7 +142,7 @@ namespace Rystem.OpenAi.Audio
 
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<AudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,
@@ -169,7 +169,7 @@ namespace Rystem.OpenAi.Audio
 
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<VerboseSegmentAudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,
@@ -195,7 +195,7 @@ namespace Rystem.OpenAi.Audio
             Request.Dispose();
             var response = await DefaultServices.HttpClientWrapper
                 .PostAsync<VerboseWordAudioResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, Request.Model!, Forced, string.Empty, null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.AudioTranslation, _version, Request.Model!, string.Empty, null),
                     content,
                     null,
                     DefaultServices.Configuration,

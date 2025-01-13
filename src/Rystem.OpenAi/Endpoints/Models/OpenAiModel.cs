@@ -21,7 +21,7 @@ namespace Rystem.OpenAi.Models
         public ValueTask<ModelResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClientWrapper
                 .GetAsync<ModelResult>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, $"/{id}", null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, string.Empty, $"/{id}", null),
                     null,
                     DefaultServices.Configuration,
                     Logger,
@@ -30,7 +30,7 @@ namespace Rystem.OpenAi.Models
         {
             var response = await DefaultServices.HttpClientWrapper
                             .GetAsync<ResponseAsArray<ModelResult>>(
-                                DefaultServices.Configuration.GetUri(OpenAiType.Model, string.Empty, Forced, string.Empty, null),
+                                DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, string.Empty, string.Empty, null),
                                 null,
                                 DefaultServices.Configuration,
                                 Logger,
@@ -40,7 +40,7 @@ namespace Rystem.OpenAi.Models
         public ValueTask<DeleteResponse> DeleteAsync(string fineTuneId, CancellationToken cancellationToken = default)
            => DefaultServices.HttpClientWrapper
                 .DeleteAsync<DeleteResponse>(
-                    DefaultServices.Configuration.GetUri(OpenAiType.Model, fineTuneId, Forced, $"/{fineTuneId}", null),
+                    DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, fineTuneId, $"/{fineTuneId}", null),
                     null,
                     DefaultServices.Configuration,
                     Logger,

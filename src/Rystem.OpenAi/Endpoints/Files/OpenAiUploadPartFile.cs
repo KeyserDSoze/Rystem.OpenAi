@@ -13,13 +13,20 @@ namespace Rystem.OpenAi.Files
         private readonly string _uploadId;
         private readonly IOpenAiLogger _logger;
         private readonly PartIds _parts = new();
-        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLogger logger)
+        private string? _version;
+        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLogger logger, string? version)
         {
             _openAiFile = openAiFile;
             _uploadId = uploadId;
             _logger = logger;
+            _version = version;
         }
         private const string PartialFileContent = "data";
+        public IOpenAiPartUploadFile WithVersion(string version)
+        {
+            _version = version;
+            return this;
+        }
         public async ValueTask<FilePartResult> AddPartAsync(Stream part, CancellationToken cancellationToken = default)
         {
             var memoryStream = new MemoryStream();
@@ -31,7 +38,7 @@ namespace Rystem.OpenAi.Files
             };
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FilePartResult>(
-                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/parts", null),
+                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
                     content,
                     null,
                     _openAiFile.DefaultServices.Configuration,
@@ -45,7 +52,7 @@ namespace Rystem.OpenAi.Files
         {
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FileResult>(
-                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/cancel", null),
+                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/cancel", null),
                     s_default,
                     null,
                     _openAiFile.DefaultServices.Configuration,
@@ -57,7 +64,7 @@ namespace Rystem.OpenAi.Files
         {
             var result = await _openAiFile.DefaultServices.HttpClientWrapper.
                 PostAsync<FileResult>(
-                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, string.Empty, false, $"/{_uploadId}/complete", null),
+                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/complete", null),
                     _parts,
                     null,
                     _openAiFile.DefaultServices.Configuration,

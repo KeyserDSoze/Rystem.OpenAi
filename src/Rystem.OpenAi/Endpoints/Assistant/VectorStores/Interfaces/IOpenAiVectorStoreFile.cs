@@ -10,6 +10,12 @@ namespace Rystem.OpenAi.Assistant
     public interface IOpenAiVectorStoreFile
     {
         /// <summary>
+        /// Configures the version for the API.
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        IOpenAiVectorStoreFile WithVersion(string version);
+        /// <summary>
         /// Configures the vector store file with a single file ID.
         /// </summary>
         /// <param name="fileId">The ID of the file to associate with the vector store.</param>

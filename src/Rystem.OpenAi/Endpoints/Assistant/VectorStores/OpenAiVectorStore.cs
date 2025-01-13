@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Assistant
         {
             if (_vectorStoreId == null)
                 throw new System.Exception("Vector Store Id is required. Use WithId method.");
-            return new OpenAiVectorStoreFile(_vectorStoreId, DefaultServices, Logger);
+            return new OpenAiVectorStoreFile(_vectorStoreId, DefaultServices, Logger, _version);
         }
 
         public IOpenAiVectorStore WithId(string id)
@@ -65,7 +65,7 @@ namespace Rystem.OpenAi.Assistant
             var response = await DefaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, string.Empty, null),
+                        OpenAiType.VectorStore, _version, null, string.Empty, null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
@@ -81,7 +81,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 DeleteAsync<DeleteResponse>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -101,7 +101,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<ResponseAsArray<VectorStoreResult>>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, string.Empty, querystring),
+                        OpenAiType.VectorStore, _version, null, string.Empty, querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -114,7 +114,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 GetAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
                         Logger,
@@ -127,7 +127,7 @@ namespace Rystem.OpenAi.Assistant
             return DefaultServices.HttpClientWrapper.
                 PostAsync<VectorStoreResult>(
                     DefaultServices.Configuration.GetUri(
-                        OpenAiType.VectorStore, string.Empty, Forced, $"/{_vectorStoreId}", null),
+                        OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}", null),
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,

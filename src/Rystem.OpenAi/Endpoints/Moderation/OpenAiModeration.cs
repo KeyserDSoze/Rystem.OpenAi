@@ -28,7 +28,7 @@ namespace Rystem.OpenAi.Moderation
             Request.Input = input;
             return DefaultServices.HttpClientWrapper
                     .PostAsync<ModerationResult>(
-                        DefaultServices.Configuration.GetUri(OpenAiType.Moderation, Request.Model!, Forced, string.Empty, null),
+                        DefaultServices.Configuration.GetUri(OpenAiType.Moderation, _version, Request.Model!, string.Empty, null),
                         Request,
                         null,
                         DefaultServices.Configuration,
