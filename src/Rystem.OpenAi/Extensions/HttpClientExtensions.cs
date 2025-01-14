@@ -57,7 +57,6 @@ namespace Rystem.OpenAi
                     .LogError();
                 throw new HttpRequestException(logger.ToString());
             }
-
         }
         internal static async Task<HttpResponseMessage> ExecuteAsync(this HttpClientWrapper wrapper,
             string url,
@@ -136,10 +135,11 @@ namespace Rystem.OpenAi
                 .StartTimer();
             var response = await wrapper.PerformRequestAsync(url, method, message, false, logger, cancellationToken);
             var responseAsString = await response.Content.ReadAsStringAsync(cancellationToken);
-            logger.AddResponse(responseAsString);
             try
             {
-                logger.LogInformation();
+                logger
+                    .AddResponse(responseAsString)
+                    .LogInformation();
                 return !string.IsNullOrWhiteSpace(responseAsString) ? JsonSerializer.Deserialize<TResponse>(responseAsString)! : default!;
             }
             catch (Exception ex)
