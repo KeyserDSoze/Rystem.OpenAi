@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,12 +33,13 @@ namespace Rystem.OpenAi.Files
         {
             if (part.CanSeek)
                 part.Seek(0, SeekOrigin.Begin);
-            using var fileContent = new ByteArrayContent(await part.ToArrayAsync());
-            using var content = new MultipartFormDataContent
+            var formData = new Dictionary<string, string>
             {
-                { fileContent, PartialFileContent }
+                {
+                    PartialFileContent, System.Text.Encoding.UTF8.GetString( await part.ToArrayAsync())
+                }
             };
-
+            using var content = new FormUrlEncodedContent(formData);
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FilePartResult>(
                     _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
