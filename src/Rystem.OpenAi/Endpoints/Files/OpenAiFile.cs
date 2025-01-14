@@ -9,8 +9,8 @@ namespace Rystem.OpenAi.Files
 {
     internal sealed class OpenAiFile : OpenAiBuilder<IOpenAiFile>, IOpenAiFile
     {
-        public OpenAiFile(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.File)
+        public OpenAiFile(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.File)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -27,7 +27,7 @@ namespace Rystem.OpenAi.Files
                     DefaultServices.Configuration.GetUri(OpenAiType.File, _version, null, string.Empty, null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         private const string Purpose = "purpose";
         private const string FileContent = "file";
@@ -54,7 +54,7 @@ namespace Rystem.OpenAi.Files
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return result;
         }
@@ -68,7 +68,7 @@ namespace Rystem.OpenAi.Files
                     DefaultServices.Configuration.GetUri(OpenAiType.File, _version, fileId, $"/{fileId}", null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         public ValueTask<FileResult> RetrieveAsync(string fileId, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClientWrapper
@@ -76,7 +76,7 @@ namespace Rystem.OpenAi.Files
                     DefaultServices.Configuration.GetUri(OpenAiType.File, _version, fileId, $"/{fileId}", null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         public async Task<string> RetrieveFileContentAsStringAsync(string fileId, CancellationToken cancellationToken = default)
         {
@@ -87,7 +87,7 @@ namespace Rystem.OpenAi.Files
                     null,
                     false,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
@@ -100,7 +100,7 @@ namespace Rystem.OpenAi.Files
                     null,
                     false,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             var memoryStream = new MemoryStream();
             await response.Content.CopyToAsync(memoryStream, cancellationToken).NoContext();
@@ -108,6 +108,6 @@ namespace Rystem.OpenAi.Files
             return memoryStream;
         }
         public IOpenAiUploadFile CreateUpload(string fileName)
-            => new OpenAiUploadFile(this, fileName, Logger, _version);
+            => new OpenAiUploadFile(this, fileName, LoggerFactory, _version);
     }
 }

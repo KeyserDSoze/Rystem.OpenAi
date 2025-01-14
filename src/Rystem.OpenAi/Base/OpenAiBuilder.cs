@@ -8,16 +8,15 @@ namespace Rystem.OpenAi
     {
         private protected readonly IFactory<DefaultServices> Factory;
         private protected readonly IFactory<OpenAiConfiguration> ConfigurationFactory;
-        private protected readonly IOpenAiLogger Logger;
+        private protected readonly IOpenAiLoggerFactory LoggerFactory;
         private protected readonly OpenAiType[] Types;
         private protected string? _version;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger, params OpenAiType[] types)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory, params OpenAiType[] types)
         {
             Factory = factory;
             ConfigurationFactory = configurationFactory;
-            Logger = logger
-                .CreateId()
+            LoggerFactory = loggerFactory
                 .ConfigureTypes(types);
             Types = types;
         }
@@ -45,8 +44,8 @@ namespace Rystem.OpenAi
         where TModel : ModelName
     {
         internal TRequest Request { get; }
-        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger, params OpenAiType[] types)
-            : base(factory, configurationFactory, logger, types)
+        public OpenAiBuilder(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory, params OpenAiType[] types)
+            : base(factory, configurationFactory, loggerFactory, types)
         {
             Request = new TRequest();
         }

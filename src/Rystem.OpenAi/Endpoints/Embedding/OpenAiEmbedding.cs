@@ -8,8 +8,8 @@ namespace Rystem.OpenAi.Embedding
     internal sealed class OpenAiEmbedding : OpenAiBuilder<IOpenAiEmbedding, EmbeddingRequest, EmbeddingModelName>, IOpenAiEmbedding
     {
         private readonly List<string> _inputs = [];
-        public OpenAiEmbedding(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Embedding)
+        public OpenAiEmbedding(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Embedding)
         {
             Request.Model = EmbeddingModelName.Text_embedding_3_large;
         }
@@ -40,7 +40,7 @@ namespace Rystem.OpenAi.Embedding
                                 Request,
                                 null,
                                 DefaultServices.Configuration,
-                                Logger,
+                                LoggerFactory.Create(),
                                 cancellationToken);
             if (response.Usage != null)
                 Usages.Add(new OpenAiCost { Units = response.Usage.TotalTokens, UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.Input });

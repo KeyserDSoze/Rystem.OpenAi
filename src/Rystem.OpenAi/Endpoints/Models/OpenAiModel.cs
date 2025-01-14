@@ -6,8 +6,8 @@ namespace Rystem.OpenAi.Models
 {
     internal sealed class OpenAiModel : OpenAiBuilder<IOpenAiModel>, IOpenAiModel
     {
-        public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Model)
+        public OpenAiModel(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Model)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.Models
                     DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, string.Empty, $"/{id}", null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         public async Task<ResponseAsArray<ModelResult>> ListAsync(CancellationToken cancellationToken = default)
         {
@@ -33,7 +33,7 @@ namespace Rystem.OpenAi.Models
                                 DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, string.Empty, string.Empty, null),
                                 null,
                                 DefaultServices.Configuration,
-                                Logger,
+                                LoggerFactory.Create(),
                                 cancellationToken);
             return response;
         }
@@ -43,7 +43,7 @@ namespace Rystem.OpenAi.Models
                     DefaultServices.Configuration.GetUri(OpenAiType.Model, _version, fineTuneId, $"/{fineTuneId}", null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
     }
 }

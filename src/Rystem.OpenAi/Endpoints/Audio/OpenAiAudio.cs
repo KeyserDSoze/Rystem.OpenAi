@@ -10,8 +10,8 @@ namespace Rystem.OpenAi.Audio
     internal sealed class OpenAiAudio : OpenAiBuilder<IOpenAiAudio, AudioRequest, AudioModelName>, IOpenAiAudio
     {
         public OpenAiAudio(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory,
-            IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
+            IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.AudioTranscription, OpenAiType.AudioTranslation)
         {
             Request.Model = AudioModelName.Whisper;
         }
@@ -51,7 +51,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }
@@ -87,7 +87,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }
@@ -120,7 +120,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }
@@ -146,7 +146,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }
@@ -173,7 +173,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }
@@ -199,7 +199,7 @@ namespace Rystem.OpenAi.Audio
                     content,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             return response;
         }

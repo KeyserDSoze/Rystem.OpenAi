@@ -11,14 +11,14 @@ namespace Rystem.OpenAi.Files
     {
         private readonly OpenAiFile _openAiFile;
         private readonly string _uploadId;
-        private readonly IOpenAiLogger _logger;
+        private readonly IOpenAiLoggerFactory _loggerFactory;
         private readonly PartIds _parts = new();
         private string? _version;
-        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLogger logger, string? version)
+        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLoggerFactory loggerFactory, string? version)
         {
             _openAiFile = openAiFile;
             _uploadId = uploadId;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _version = version;
         }
         private const string PartialFileContent = "data";
@@ -43,7 +43,7 @@ namespace Rystem.OpenAi.Files
                     content,
                     null,
                     _openAiFile.DefaultServices.Configuration,
-                    _logger,
+                    _loggerFactory.Create(),
                     cancellationToken);
             _parts.Parts.Add(result.Id!);
             return result;
@@ -57,7 +57,7 @@ namespace Rystem.OpenAi.Files
                     s_default,
                     null,
                     _openAiFile.DefaultServices.Configuration,
-                    _logger,
+                    _loggerFactory.Create(),
                     cancellationToken);
             return result;
         }
@@ -69,7 +69,7 @@ namespace Rystem.OpenAi.Files
                     _parts,
                     null,
                     _openAiFile.DefaultServices.Configuration,
-                    _logger,
+                    _loggerFactory.Create(),
                     cancellationToken);
             return result;
         }

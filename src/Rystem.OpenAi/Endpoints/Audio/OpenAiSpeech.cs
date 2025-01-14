@@ -8,8 +8,8 @@ namespace Rystem.OpenAi.Audio
 {
     internal sealed class OpenAiSpeech : OpenAiBuilder<IOpenAiSpeech, AudioSpeechRequest, SpeechModelName>, IOpenAiSpeech
     {
-        public OpenAiSpeech(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.AudioSpeech)
+        public OpenAiSpeech(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.AudioSpeech)
         {
             Request.Speed = 1;
             Request.Voice = AudioVoice.Alloy.ToString().ToLower();
@@ -33,7 +33,7 @@ namespace Rystem.OpenAi.Audio
                 Request,
                 null,
                 DefaultServices.Configuration,
-                Logger,
+                LoggerFactory.Create(),
                 cancellationToken);
             return response;
         }

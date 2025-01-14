@@ -99,6 +99,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services
                 .TryAddTransient<IOpenAiLogger, OpenAiLogger>();
             services
+                .TryAddTransient<IOpenAiLoggerFactory, OpenAiLoggerFactory>();
+            services
                 .TryAddSingleton(new OpenAiLoggingConfiguration());
             //services
             //    .AddFactory<IOpenAiBilling, OpenAiBilling>(integrationName, ServiceLifetime.Transient);
