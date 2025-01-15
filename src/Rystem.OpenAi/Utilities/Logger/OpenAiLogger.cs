@@ -56,7 +56,8 @@ namespace Rystem.OpenAi
         }
         public IOpenAiLogger AddContent(object? content)
         {
-            _logBringer.Content = content;
+            if (_logBringer.Content == null)
+                _logBringer.Content = content;
             return this;
         }
         public IOpenAiLogger AddResponse(object? response)

@@ -52,6 +52,8 @@ namespace Rystem.OpenAi
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(errorMessage))
+                    errorMessage = $"Status code: {response.StatusCode} with reason: {response.ReasonPhrase}";
                 logger
                     .AddError(errorMessage)
                     .LogError();

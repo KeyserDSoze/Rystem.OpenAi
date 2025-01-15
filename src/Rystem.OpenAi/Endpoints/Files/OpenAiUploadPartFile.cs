@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
 using System.Threading;
@@ -16,12 +17,15 @@ namespace Rystem.OpenAi.Files
         private readonly IOpenAiLoggerFactory _loggerFactory;
         private readonly PartIds _parts = new();
         private string? _version;
-        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLoggerFactory loggerFactory, string? version)
+        private readonly FilePartialStartRequest _filePartialStartRequest;
+
+        public OpenAiUploadPartFile(OpenAiFile openAiFile, string uploadId, IOpenAiLoggerFactory loggerFactory, string? version, FilePartialStartRequest filePartialStartRequest)
         {
             _openAiFile = openAiFile;
             _uploadId = uploadId;
             _loggerFactory = loggerFactory;
             _version = version;
+            _filePartialStartRequest = filePartialStartRequest;
         }
         private const string PartialFileContent = "data";
         public IOpenAiPartUploadFile WithVersion(string version)
@@ -33,20 +37,17 @@ namespace Rystem.OpenAi.Files
         {
             if (part.CanSeek)
                 part.Seek(0, SeekOrigin.Begin);
-            var formData = new Dictionary<string, string>
-            {
-                {
-                    PartialFileContent, System.Text.Encoding.UTF8.GetString( await part.ToArrayAsync())
-                }
-            };
-            using var content = new FormUrlEncodedContent(formData);
+            var partialContent = $"data=\"{(await part.ToArrayAsync()).ToBase64()}\"";
+            var logger = _loggerFactory.Create();
+            logger
+                .AddContent(partialContent);
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
                 .PostAsync<FilePartResult>(
                     _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
-                    content,
+                    new StringContent(partialContent, Encoding.UTF8, _filePartialStartRequest.MimeType),
                     null,
                     _openAiFile.DefaultServices.Configuration,
-                    _loggerFactory.Create(),
+                    logger,
                     cancellationToken);
             _parts.Parts.Add(result.Id!);
             return result;

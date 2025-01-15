@@ -34,7 +34,7 @@ namespace Rystem.OpenAi.Files
                     _openAiFile.DefaultServices.Configuration,
                     _loggerFactory.Create(),
                     cancellationToken);
-            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _loggerFactory, _version);
+            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _loggerFactory, _version, _request);
         }
         public IOpenAiUploadFile WithContentType(string contentType = "application/json")
         {
