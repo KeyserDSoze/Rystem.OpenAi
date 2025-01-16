@@ -6,8 +6,8 @@ namespace Rystem.OpenAi.Moderation
 {
     internal sealed class OpenAiModeration : OpenAiBuilder<IOpenAiModeration, ModerationsRequest, ModerationModelName>, IOpenAiModeration
     {
-        public OpenAiModeration(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Moderation)
+        public OpenAiModeration(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Moderation)
         {
             Request.Model = ModerationModelName.OmniLatest;
         }
@@ -32,7 +32,7 @@ namespace Rystem.OpenAi.Moderation
                         Request,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
     }

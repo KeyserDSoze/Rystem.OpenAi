@@ -7,7 +7,7 @@ namespace Rystem.OpenAi
     {
         private readonly OpenAiLoggingConfiguration _configuration;
         private readonly ILogger<IOpenAi>? _logger;
-        private readonly LogBringer _logBringer;
+        private LogBringer _logBringer;
         public OpenAiLogger(OpenAiLoggingConfiguration configuration, ILogger<IOpenAi>? logger = null)
         {
             _configuration = configuration;
@@ -56,7 +56,8 @@ namespace Rystem.OpenAi
         }
         public IOpenAiLogger AddContent(object? content)
         {
-            _logBringer.Content = content;
+            if (_logBringer.Content == null)
+                _logBringer.Content = content;
             return this;
         }
         public IOpenAiLogger AddResponse(object? response)
@@ -84,17 +85,28 @@ namespace Rystem.OpenAi
             _logBringer.StartTime = DateTimeOffset.UtcNow;
             return this;
         }
-        public void LogInformation()
+        public IOpenAiLogger LogInformation()
         {
             _logBringer.EndTime = DateTimeOffset.UtcNow;
             if (!_configuration.TurnOff)
                 _logger?.Log(_configuration.Request, "{LogBringer}", _logBringer.ToString());
+            return this;
         }
-        public void LogError()
+        public IOpenAiLogger LogError()
         {
             _logBringer.EndTime = DateTimeOffset.UtcNow;
             if (!_configuration.TurnOff)
                 _logger?.Log(_configuration.Error, "{LogBringer}", _logBringer.ToString());
+            return this;
+        }
+        public IOpenAiLogger Reset()
+        {
+            _logBringer = new LogBringer
+            {
+                Types = _logBringer.Types,
+                FactoryName = _logBringer.FactoryName,
+            };
+            return this;
         }
         public override string ToString()
             => _logBringer.ToString();

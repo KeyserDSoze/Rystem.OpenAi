@@ -14,8 +14,8 @@ namespace Rystem.OpenAi.Chat
     {
         private const string FunctionType = "function";
 
-        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Chat)
+        public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Chat)
         {
             Request.Model = ChatModelName.Gpt4_o;
         }
@@ -44,7 +44,7 @@ namespace Rystem.OpenAi.Chat
                     Request,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
             if (response.Usage != null)
                 AddUsages(response.Usage);
@@ -67,7 +67,7 @@ namespace Rystem.OpenAi.Chat
                     HttpMethod.Post,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     null,
                     cancellationToken))
             {

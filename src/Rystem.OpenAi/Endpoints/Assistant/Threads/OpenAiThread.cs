@@ -11,8 +11,8 @@ namespace Rystem.OpenAi.Assistant
     internal sealed class OpenAiThread : OpenAiBuilder<IOpenAiThread, ThreadRequest, ChatModelName>, IOpenAiThread
     {
         private string? _threadId;
-        public OpenAiThread(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Thread)
+        public OpenAiThread(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Thread)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -66,7 +66,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
             _threadId = threadResponse.Id;
             return threadResponse;
@@ -82,7 +82,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ThreadResponse> RetrieveAsync(CancellationToken cancellationToken = default)
@@ -95,7 +95,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
 
@@ -110,7 +110,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public async IAsyncEnumerable<ThreadMessageResponse> AddMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -127,7 +127,7 @@ namespace Rystem.OpenAi.Assistant
                                                     message,
                                                     BetaRequest.OpenAiBetaHeaders,
                                                     DefaultServices.Configuration,
-                                                    Logger,
+                                                    LoggerFactory.Create(),
                                                     cancellationToken);
                     yield return response;
                 }
@@ -143,7 +143,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/messages/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ThreadMessageResponse> RetrieveMessageAsync(string id, CancellationToken cancellationToken = default)
@@ -156,7 +156,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/messages/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<ThreadMessageResponse>> ListMessagesAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -178,7 +178,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/messages", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ThreadMessageResponse> UpdateMessageAsync(string id, CancellationToken cancellationToken = default)
@@ -193,7 +193,7 @@ namespace Rystem.OpenAi.Assistant
                         Request.Messages?.LastOrDefault(),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
     }

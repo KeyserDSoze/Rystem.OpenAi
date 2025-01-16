@@ -6,13 +6,13 @@ namespace Rystem.OpenAi.Files
     internal sealed class OpenAiUploadFile : IOpenAiUploadFile
     {
         private readonly OpenAiFile _openAiFile;
-        private readonly IOpenAiLogger _logger;
+        private readonly IOpenAiLoggerFactory _loggerFactory;
         private readonly FilePartialStartRequest _request;
         private string? _version;
-        public OpenAiUploadFile(OpenAiFile openAiFile, string fileName, IOpenAiLogger logger, string? version)
+        public OpenAiUploadFile(OpenAiFile openAiFile, string fileName, IOpenAiLoggerFactory loggerFactory, string? version)
         {
             _openAiFile = openAiFile;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _request = new()
             {
                 FileName = fileName
@@ -32,9 +32,9 @@ namespace Rystem.OpenAi.Files
                     _request,
                     null,
                     _openAiFile.DefaultServices.Configuration,
-                    _logger,
+                    _loggerFactory.Create(),
                     cancellationToken);
-            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _logger, _version);
+            return new OpenAiUploadPartFile(_openAiFile, response.Id!, _loggerFactory, _version, _request);
         }
         public IOpenAiUploadFile WithContentType(string contentType = "application/json")
         {

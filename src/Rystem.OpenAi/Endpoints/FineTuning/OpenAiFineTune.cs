@@ -16,8 +16,8 @@ namespace Rystem.OpenAi.FineTune
     internal sealed class OpenAiFineTune : OpenAiBuilder<IOpenAiFineTune, FineTuneRequest, FineTuningModelName>, IOpenAiFineTune
     {
         private const string WandBLabel = "wandb";
-        public OpenAiFineTune(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.FineTuning)
+        public OpenAiFineTune(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.FineTuning)
         {
             Request.Model = FineTuningModelName.Gpt_4o_2024_08_06;
         }
@@ -48,7 +48,7 @@ namespace Rystem.OpenAi.FineTune
                     uri,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         }
 
@@ -58,7 +58,7 @@ namespace Rystem.OpenAi.FineTune
                     DefaultServices.Configuration.GetUri(OpenAiType.FineTuning, _version, fineTuneId, $"/{fineTuneId}", null),
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         public ValueTask<FineTuneResult> CancelAsync(string fineTuneId, CancellationToken cancellationToken = default)
             => DefaultServices.HttpClientWrapper
@@ -67,7 +67,7 @@ namespace Rystem.OpenAi.FineTune
                     null,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
         public ValueTask<ResponseAsArray<FineTuneCheckPointResult>> CheckPointEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
         {
@@ -83,7 +83,7 @@ namespace Rystem.OpenAi.FineTune
                         uri,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<FineTuneEvent>> ListEventsAsync(string fineTuneId, int take = 20, int skip = 0, CancellationToken cancellationToken = default)
@@ -100,7 +100,7 @@ namespace Rystem.OpenAi.FineTune
                         uri,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public IAsyncEnumerable<FineTuneResult> ListAsStreamAsync(int take = 20, int skip = 0, CancellationToken cancellationToken = default)
@@ -119,7 +119,7 @@ namespace Rystem.OpenAi.FineTune
                         HttpMethod.Get,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         ReadFineTuneStreamAsync,
                         cancellationToken);
         }
@@ -140,7 +140,7 @@ namespace Rystem.OpenAi.FineTune
                         HttpMethod.Get,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         ReadEventsStreamAsync,
                         cancellationToken);
         }
@@ -213,7 +213,7 @@ namespace Rystem.OpenAi.FineTune
                     Request,
                     null,
                     DefaultServices.Configuration,
-                    Logger,
+                    LoggerFactory.Create(),
                     cancellationToken);
 
         /// <summary>

@@ -6,6 +6,12 @@ namespace Rystem.OpenAi.Files
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }
+        [JsonPropertyName("azure_block_id")]
+        public string? ExternalId
+        {
+            get => Id;
+            set => Id = value;
+        }
         [JsonPropertyName("object")]
         public string? Object { get; set; }
         [JsonPropertyName("upload_id")]

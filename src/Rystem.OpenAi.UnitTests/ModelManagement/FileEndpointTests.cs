@@ -88,7 +88,7 @@ namespace Rystem.OpenAi.Test
             Assert.Empty(results?.Data!);
 
             var upload = openAiApi.File
-                .CreateUpload(fileName)
+                .CreatePartialUpload(fileName)
                 .WithPurpose(PurposeFileUpload.FineTune)
                 .WithContentType("application/json")
                 .WithSize(editableFile.Length);
@@ -99,7 +99,7 @@ namespace Rystem.OpenAi.Test
             var completeResult = await execution.CompleteAsync();
 
             Assert.True(completeResult.Id?.Length > 10);
-            Assert.Contains("file", completeResult.Id);
+            Assert.Contains(PurposeFileUpload.FineTune.ToString().ToLower(), completeResult.Id.ToLower());
         }
     }
 }

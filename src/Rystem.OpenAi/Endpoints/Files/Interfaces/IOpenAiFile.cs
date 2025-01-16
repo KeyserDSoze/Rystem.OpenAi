@@ -78,6 +78,6 @@ namespace Rystem.OpenAi.Files
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        IOpenAiUploadFile CreateUpload(string fileName);
+        IOpenAiUploadFile CreatePartialUpload(string fileName);
     }
 }

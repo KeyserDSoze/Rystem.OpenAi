@@ -15,8 +15,8 @@ namespace Rystem.OpenAi.Image
         private string? _maskName;
         private ImageSize _size;
         private ImageQuality _quality;
-        public OpenAiImage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Image)
+        public OpenAiImage(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Image)
         {
             Request.Model = ImageModelName.Dalle3;
             Request.NumberOfResults = 1;
@@ -115,7 +115,7 @@ namespace Rystem.OpenAi.Image
                         request,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         /// <summary>
@@ -134,7 +134,7 @@ namespace Rystem.OpenAi.Image
                         request,
                         null,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         /// <summary>

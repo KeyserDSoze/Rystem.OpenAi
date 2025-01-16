@@ -8,14 +8,14 @@ namespace Rystem.OpenAi.Assistant
     {
         private readonly string _vectorStoreId;
         private readonly DefaultServices _defaultServices;
-        private readonly IOpenAiLogger _logger;
+        private readonly IOpenAiLoggerFactory _loggerFactory;
         private readonly VectorStoreFileRequest _request = new();
         private string? _version;
-        public OpenAiVectorStoreFile(string vectorStoreId, DefaultServices defaultServices, IOpenAiLogger logger, string? version)
+        public OpenAiVectorStoreFile(string vectorStoreId, DefaultServices defaultServices, IOpenAiLoggerFactory loggerFactory, string? version)
         {
             _vectorStoreId = vectorStoreId;
             _defaultServices = defaultServices;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
             _version = version;
         }
         public IOpenAiVectorStoreFile WithVersion(string version)
@@ -45,7 +45,7 @@ namespace Rystem.OpenAi.Assistant
                         _request,
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<DeleteResponse> DeleteAsync(string id, CancellationToken cancellationToken = default)
@@ -56,7 +56,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<VectorStoreFile>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -76,7 +76,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<VectorStoreFile> RetrieveAsync(string id, CancellationToken cancellationToken = default)
@@ -87,7 +87,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/files/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<VectorStoreFileBatch> CreateBatchAsync(CancellationToken cancellationToken = default)
@@ -99,7 +99,7 @@ namespace Rystem.OpenAi.Assistant
                         _request,
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<VectorStoreFileBatch> CancelBatchAsync(string id, CancellationToken cancellationToken = default)
@@ -111,7 +111,7 @@ namespace Rystem.OpenAi.Assistant
                          null,
                          BetaRequest.OpenAiBetaHeaders,
                          _defaultServices.Configuration,
-                         _logger,
+                         _loggerFactory.Create(),
                          cancellationToken);
         }
         public ValueTask<ResponseAsArray<VectorStoreFile>> ListFilesInBatchAsync(string batchId, int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -131,7 +131,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches/{batchId}/files", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<VectorStoreFileBatch> RetrieveBatchAsync(string id, CancellationToken cancellationToken = default)
@@ -142,7 +142,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.VectorStore, _version, null, $"/{_vectorStoreId}/file_batches/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         _defaultServices.Configuration,
-                        _logger,
+                        _loggerFactory.Create(),
                         cancellationToken);
         }
     }

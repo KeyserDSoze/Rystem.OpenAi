@@ -20,8 +20,8 @@ namespace Rystem.OpenAi.Assistant
         private string? _threadId = null;
         private Dictionary<string, string>? _fileSearchIncludingQuerystring = null;
         private const string RunsPath = "/runs";
-        public OpenAiRun(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Thread)
+        public OpenAiRun(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Thread)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -348,7 +348,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public IAsyncEnumerable<AnyOf<RunResult, ThreadMessageResponse, ThreadChunkMessageResponse>> StreamAsync(string assistantId, CancellationToken cancellationToken = default)
@@ -364,7 +364,7 @@ namespace Rystem.OpenAi.Assistant
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         ReadRunStepStreamAsync,
                         cancellationToken);
         }
@@ -413,7 +413,7 @@ namespace Rystem.OpenAi.Assistant
                         null,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<RunResult>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -433,7 +433,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/runs", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<RunResult> RetrieveAsync(string id, CancellationToken cancellationToken = default)
@@ -445,7 +445,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
 
@@ -459,7 +459,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         private ToolOutputRequest? _toolOutputRequest;
@@ -479,7 +479,7 @@ namespace Rystem.OpenAi.Assistant
                         _toolOutputRequest,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public IAsyncEnumerable<AnyOf<RunResult, ThreadMessageResponse, ThreadChunkMessageResponse>> ContinueStreamAsync(string id, CancellationToken cancellationToken)
@@ -494,7 +494,7 @@ namespace Rystem.OpenAi.Assistant
                         HttpMethod.Post,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         ReadRunStepStreamAsync,
                         cancellationToken);
         }
@@ -521,7 +521,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{id}/steps", querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<RunStepResult> GetStepAsync(string runId, string id, CancellationToken cancellationToken)
@@ -533,7 +533,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Thread, _version, null, $"/{_threadId}/runs/{runId}/steps/{id}", _fileSearchIncludingQuerystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         private void CheckThreadId()

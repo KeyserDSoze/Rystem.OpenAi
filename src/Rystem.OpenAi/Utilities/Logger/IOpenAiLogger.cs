@@ -18,7 +18,7 @@ namespace Rystem.OpenAi
         IOpenAiLogger AddError(string error);
         IOpenAiLogger Count();
         IOpenAiLogger StartTimer();
-        void LogInformation();
-        void LogError();
+        IOpenAiLogger LogInformation();
+        IOpenAiLogger LogError();
     }
 }

@@ -10,8 +10,8 @@ namespace Rystem.OpenAi.Assistant
 {
     internal sealed class OpenAiAssistant : OpenAiBuilder<IOpenAiAssistant, AssistantRequest, ChatModelName>, IOpenAiAssistant
     {
-        public OpenAiAssistant(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLogger logger)
-            : base(factory, configurationFactory, logger, OpenAiType.Assistant)
+        public OpenAiAssistant(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
+            : base(factory, configurationFactory, loggerFactory, OpenAiType.Assistant)
         {
         }
         private protected override void ConfigureFactory(string name)
@@ -185,7 +185,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                        Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
 
@@ -197,7 +197,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Assistant, _version, null, $"/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                         Logger,
+                        LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<ResponseAsArray<AssistantRequest>> ListAsync(int take = 20, string? elementId = null, bool getAfterTheElementId = true, AssistantOrder order = AssistantOrder.Descending, CancellationToken cancellationToken = default)
@@ -217,7 +217,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Assistant, _version, null, string.Empty, querystring),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                         Logger,
+                         LoggerFactory.Create(),
                         cancellationToken);
         }
         public ValueTask<AssistantRequest> RetrieveAsync(string id, CancellationToken cancellationToken = default)
@@ -228,7 +228,7 @@ namespace Rystem.OpenAi.Assistant
                         OpenAiType.Assistant, _version, null, $"/{id}", null),
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                         Logger,
+                         LoggerFactory.Create(),
                         cancellationToken);
         }
 
@@ -241,7 +241,7 @@ namespace Rystem.OpenAi.Assistant
                         Request,
                         BetaRequest.OpenAiBetaHeaders,
                         DefaultServices.Configuration,
-                         Logger,
+                         LoggerFactory.Create(),
                         cancellationToken);
         }
     }
