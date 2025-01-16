@@ -107,7 +107,7 @@ namespace Rystem.OpenAi.Files
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
-        public IOpenAiUploadFile CreateUpload(string fileName)
+        public IOpenAiUploadFile CreatePartialUpload(string fileName)
             => new OpenAiUploadFile(this, fileName, LoggerFactory, _version);
     }
 }

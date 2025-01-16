@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +26,7 @@ namespace Rystem.OpenAi.Files
             _filePartialStartRequest = filePartialStartRequest;
         }
         private const string PartialFileContent = "data";
+        private const string PartialFileContentName = "chunk";
         public IOpenAiPartUploadFile WithVersion(string version)
         {
             _version = version;
@@ -37,18 +36,18 @@ namespace Rystem.OpenAi.Files
         {
             if (part.CanSeek)
                 part.Seek(0, SeekOrigin.Begin);
-            var partialContent = $"data=\"{(await part.ToArrayAsync()).ToBase64()}\"";
-            var logger = _loggerFactory.Create();
-            logger
-                .AddContent(partialContent);
+            using var content = new MultipartFormDataContent();
+            using var streamContent = new StreamContent(part);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            content.Add(streamContent, PartialFileContent, _filePartialStartRequest.FileName ?? PartialFileContentName);
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
-                .PostAsync<FilePartResult>(
-                    _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
-                    new StringContent(partialContent, Encoding.UTF8, _filePartialStartRequest.MimeType),
-                    null,
-                    _openAiFile.DefaultServices.Configuration,
-                    logger,
-                    cancellationToken);
+            .PostAsync<FilePartResult>(
+                _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
+                content,
+                null,
+                _openAiFile.DefaultServices.Configuration,
+                _loggerFactory.Create(),
+                cancellationToken);
             _parts.Parts.Add(result.Id!);
             return result;
         }
