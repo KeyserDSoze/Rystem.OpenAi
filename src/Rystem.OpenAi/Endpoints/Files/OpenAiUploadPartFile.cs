@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
@@ -13,7 +14,7 @@ namespace Rystem.OpenAi.Files
         private readonly OpenAiFile _openAiFile;
         private readonly string _uploadId;
         private readonly IOpenAiLoggerFactory _loggerFactory;
-        private readonly PartIds _parts = new();
+        private readonly List<PartIdsWithIndex> _parts = [];
         private string? _version;
         private readonly FilePartialStartRequest _filePartialStartRequest;
 
@@ -27,19 +28,33 @@ namespace Rystem.OpenAi.Files
         }
         private const string PartialFileContent = "data";
         private const string PartialFileContentName = "chunk";
+        private static readonly MediaTypeHeaderValue s_octetStream = new("application/octet-stream");
         public IOpenAiPartUploadFile WithVersion(string version)
         {
             _version = version;
             return this;
         }
-        public async ValueTask<FilePartResult> AddPartAsync(Stream part, CancellationToken cancellationToken = default)
+        public async ValueTask<FilePartResult> AddPartAsync(Stream part, int index, CancellationToken cancellationToken = default)
         {
             if (part.CanSeek)
                 part.Seek(0, SeekOrigin.Begin);
-            using var content = new MultipartFormDataContent();
             using var streamContent = new StreamContent(part);
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            content.Add(streamContent, PartialFileContent, _filePartialStartRequest.FileName ?? PartialFileContentName);
+            var result = await AddPartAsync(streamContent, index, cancellationToken);
+            return result;
+        }
+        public async ValueTask<FilePartResult> AddPartAsync(byte[] part, int index, CancellationToken cancellationToken = default)
+        {
+            using var content = new ByteArrayContent(part);
+            var result = await AddPartAsync(content, index, cancellationToken);
+            return result;
+        }
+        private async ValueTask<FilePartResult> AddPartAsync(HttpContent part, int index, CancellationToken cancellationToken)
+        {
+            part.Headers.ContentType = s_octetStream;
+            using var content = new MultipartFormDataContent
+            {
+                { part, PartialFileContent, _filePartialStartRequest.FileName ?? PartialFileContentName }
+            };
             var result = await _openAiFile.DefaultServices.HttpClientWrapper
             .PostAsync<FilePartResult>(
                 _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/parts", null),
@@ -48,7 +63,11 @@ namespace Rystem.OpenAi.Files
                 _openAiFile.DefaultServices.Configuration,
                 _loggerFactory.Create(),
                 cancellationToken);
-            _parts.Parts.Add(result.Id!);
+            _parts.Add(new PartIdsWithIndex
+            {
+                Id = result.Id!,
+                Index = index
+            });
             return result;
         }
         private static readonly object s_default = new();
@@ -69,7 +88,10 @@ namespace Rystem.OpenAi.Files
             var result = await _openAiFile.DefaultServices.HttpClientWrapper.
                 PostAsync<FileResult>(
                     _openAiFile.DefaultServices.Configuration.GetUri(OpenAiType.Upload, _version, null, $"/{_uploadId}/complete", null),
-                    _parts,
+                    new PartIds
+                    {
+                        Parts = _parts.OrderBy(x => x.Index).Select(x => x.Id)
+                    },
                     null,
                     _openAiFile.DefaultServices.Configuration,
                     _loggerFactory.Create(),
@@ -79,7 +101,12 @@ namespace Rystem.OpenAi.Files
         private sealed class PartIds
         {
             [JsonPropertyName("part_ids")]
-            public List<string> Parts { get; } = [];
+            public required IEnumerable<string> Parts { get; init; }
+        }
+        private sealed class PartIdsWithIndex
+        {
+            public required string Id { get; set; }
+            public required int Index { get; set; }
         }
     }
 }
