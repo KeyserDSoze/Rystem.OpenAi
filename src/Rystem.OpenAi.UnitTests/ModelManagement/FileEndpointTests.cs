@@ -94,7 +94,56 @@ namespace Rystem.OpenAi.Test
                 .WithSize(editableFile.Length);
 
             var execution = await upload.ExecuteAsync();
-            var partResult = await execution.AddPartAsync(editableFile);
+            var partResult = await execution.AddPartAsync(editableFile, 0);
+            Assert.True(partResult.Id?.Length > 7);
+            var completeResult = await execution.CompleteAsync();
+
+            Assert.True(completeResult.Id?.Length > 10);
+            Assert.Contains(PurposeFileUpload.FineTune.ToString().ToLower(), completeResult.Id.ToLower());
+        }
+        [Theory]
+        [InlineData("")]
+        [InlineData("Azure")]
+        public async ValueTask PartialUploadAsArrayOfBytesAsync(string name)
+        {
+            var openAiApi = _openAiFactory.Create(name)!;
+            Assert.NotNull(openAiApi.File);
+            var fileName = "data-test-file.jsonl";
+            var location = Assembly.GetExecutingAssembly().Location;
+            location = string.Join('\\', location.Split('\\').Take(location.Split('\\').Length - 1));
+            using var readableStream = File.OpenRead($"{location}\\Files\\data-test-file.jsonl");
+            var editableFile = new MemoryStream();
+            await readableStream.CopyToAsync(editableFile);
+            editableFile.Position = 0;
+
+            var results = await openAiApi.File
+                .AllAsync();
+            foreach (var result in results?.Data!)
+                await openAiApi.File.DeleteAsync(result.Id!);
+            results = await openAiApi.File
+               .AllAsync();
+
+            Assert.Empty(results?.Data!);
+
+            var upload = openAiApi.File
+                .CreatePartialUpload(fileName)
+                .WithPurpose(PurposeFileUpload.FineTune)
+                .WithContentType("application/json")
+                .WithSize(editableFile.Length);
+
+            var execution = await upload.ExecuteAsync();
+            var originalArray = editableFile.ToArray();
+            var midIndex = originalArray.Length / 2;
+
+            // Split the array
+            var firstHalf = new byte[midIndex];
+            var secondHalf = new byte[originalArray.Length - midIndex];
+            Array.Copy(originalArray, 0, firstHalf, 0, midIndex);
+            Array.Copy(originalArray, midIndex, secondHalf, 0, originalArray.Length - midIndex);
+
+            var partResult = await execution.AddPartAsync(secondHalf, 1);
+            Assert.True(partResult.Id?.Length > 7);
+            partResult = await execution.AddPartAsync(firstHalf, 0);
             Assert.True(partResult.Id?.Length > 7);
             var completeResult = await execution.CompleteAsync();
 
