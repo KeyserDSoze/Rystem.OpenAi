@@ -13,14 +13,7 @@ namespace Rystem.OpenAi.RealTime
         /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the real-time session response.</returns>
         ValueTask<RealTimeSessionResponse> CreateSessionAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Sets the model to be used for the real-time session.
-        /// </summary>
-        /// <param name="model">The model name.</param>
-        /// <returns>The current instance of <see cref="IOpenAiRealTime"/>.</returns>
-        IOpenAiRealTime WithModel(string model);
-
+        RealTimeClient GetClient(string ephemeralKey);
         /// <summary>
         /// Sets the temperature for the real-time session.
         /// </summary>

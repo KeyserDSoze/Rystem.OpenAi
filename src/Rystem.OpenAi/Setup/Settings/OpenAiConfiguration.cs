@@ -57,6 +57,7 @@ namespace Rystem.OpenAi
             var basePath = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai" : "api.openai.com/{0}";
             var basePathWithModel = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{{2}}" : "api.openai.com/{0}";
             var endPath = Settings.Azure.HasConfiguration ? "{1}?api-version={0}" : "{1}";
+            var endPathWithModel = Settings.Azure.HasConfiguration ? "{1}?api-version={0}&deployment={2}" : "{1}";
             if (Settings.Azure.HasConfiguration)
             {
                 SetManagedIdentityForAzure();
@@ -79,7 +80,7 @@ namespace Rystem.OpenAi
                 ThreadUri = $"https://{basePath}/threads{endPath}",
                 VectorStoreUri = $"https://{basePath}/vector_stores{endPath}",
                 DeploymentUri = $"https://{basePath}/deployments{endPath}",
-                RealTimeUri = $"https://{basePathWithModel}/realtime/sessions{endPath}"
+                RealTimeUri = $"https://{basePath}/realtime{endPathWithModel}"
             };
 
             GetUri = (type, version, model, appendBeforeQueryString, querystring)

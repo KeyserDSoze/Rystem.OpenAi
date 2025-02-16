@@ -137,6 +137,27 @@ namespace Rystem.OpenAi.UnitTests
                             .ForceModel(ImageModelName.Dalle2);
                    };
                }, "AzureForDalle2")
+               .AddOpenAi(x =>
+               {
+                   x.ApiKey = configuration["Azure6:ApiKey"]!;
+                   x.Azure.ResourceName = configuration["Azure6:ResourceName"]!;
+                   x.DefaultVersion = "2024-08-01-preview";
+                   x.DefaultRequestConfiguration.Chat = chatClient =>
+                   {
+                       chatClient.ForceModel(configuration["Azure6:ModelName"]!);
+                   };
+                   x.DefaultRequestConfiguration.RealTime = realTimeClient =>
+                   {
+                       realTimeClient.WithVersion("2024-12-17");
+                       realTimeClient.ForceModel(configuration["Azure6:RealTimeModelName"]!);
+                       realTimeClient.WithInputAudioTranscription().WithModel(configuration["Azure6:AudioModelName"]!);
+                   };
+                   x.PriceBuilder
+                   .AddModel(ChatModelName.Gpt_4o,
+                   new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
+                   new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
+                   new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });
+               }, "Azure6")
                .ConfigureOpenAiLogging(x =>
                {
                    x.Request = LogLevel.Information;

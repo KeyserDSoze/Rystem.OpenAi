@@ -26,21 +26,27 @@ namespace Rystem.OpenAi.RealTime
                 configuration.Settings.DefaultRequestConfiguration.RealTime.Invoke(this);
             }
         }
+        private const string SessionPath = "/sessions";
         public ValueTask<RealTimeSessionResponse> CreateSessionAsync(CancellationToken cancellationToken = default)
         {
             return DefaultServices.HttpClientWrapper
                     .PostAsync<RealTimeSessionResponse>(
-                        DefaultServices.Configuration.GetUri(OpenAiType.RealTime, _version, Request.Model!, string.Empty, null),
+                        DefaultServices.Configuration.GetUri(OpenAiType.RealTime, _version, Request.Model!, SessionPath, null),
                         Request,
                         null,
                         DefaultServices.Configuration,
                         LoggerFactory.Create(),
                         cancellationToken);
         }
-        public IOpenAiRealTime WithModel(string model)
+
+        private const string HttpProtocolStarter = "https://";
+        private const string WebSocketProtocolStarter = "wss://";
+
+        public RealTimeClient GetClient(string ephemeralKey)
         {
-            Request.Model = model;
-            return this;
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.RealTime, _version, Request.Model!, string.Empty, null);
+            uri = uri.Replace(HttpProtocolStarter, WebSocketProtocolStarter);
+            return new RealTimeClient(uri, ephemeralKey);
         }
         public IOpenAiRealTime WithTemperature(double value)
         {
