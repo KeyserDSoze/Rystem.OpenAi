@@ -23,7 +23,7 @@ namespace Rystem.OpenAi.Test
             Assert.NotNull(openAiApi.Chat);
             var results = await openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .WithTemperature(1)
                 .ExecuteAsync();
             var cost = openAiApi.Chat.CalculateCost();
@@ -59,7 +59,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in chat
                 .AddMessage(new SystemChatMessage("You are a friend of mine."))
                 .AddMessage(new UserChatMessage("Hello!! How are you?"))
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .WithTemperature(1)
                 .WithStopSequence("adult")
                 .AddStopSequence("information")
@@ -90,7 +90,7 @@ namespace Rystem.OpenAi.Test
             await foreach (var x in openAiApi.Chat
                 .AddMessage(new ChatMessage { Role = ChatRole.System, Content = "You are a friend of mine." })
                 .AddMessage(new ChatMessage { Role = ChatRole.User, Content = "Hello!! How are you?" })
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .WithTemperature(1)
                 .WithNumberOfChoicesPerPrompt(2)
                 .ExecuteAsStreamAsync())
@@ -113,7 +113,7 @@ namespace Rystem.OpenAi.Test
             var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .AddMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .AddFunctionTool(new FunctionTool
                 {
                     Name = functionName,
@@ -160,7 +160,7 @@ namespace Rystem.OpenAi.Test
             var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .AddMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .AddFunctionTool<WeatherRequest>(functionName, "Get the current weather in a given location");
 
             var response = await request
@@ -191,7 +191,7 @@ namespace Rystem.OpenAi.Test
             //var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .AddMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .ForceResponseFormat<WeatherRequest>();
 
             var response = await request
@@ -231,7 +231,7 @@ namespace Rystem.OpenAi.Test
             var functionName = "get_current_weather";
             var request = openAiApi.Chat
                 .AddUserMessage("What is the weather like in Boston?")
-                .WithModel(ChatModelName.Gpt4_o)
+                .WithModel(ChatModelName.Gpt_4o)
                 .AddFunctionTool(new FunctionTool
                 {
                     Name = functionName,

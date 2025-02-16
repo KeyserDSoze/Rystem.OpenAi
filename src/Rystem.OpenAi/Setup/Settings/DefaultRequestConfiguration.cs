@@ -8,6 +8,7 @@ using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
 using Rystem.OpenAi.Models;
 using Rystem.OpenAi.Moderation;
+using Rystem.OpenAi.RealTime;
 
 namespace Rystem.OpenAi
 {
@@ -27,5 +28,6 @@ namespace Rystem.OpenAi
         public Action<IOpenAiThread>? Thread { get; set; }
         public Action<IOpenAiRun>? Run { get; set; }
         public Action<IOpenAiVectorStore>? VectorStore { get; set; }
+        public Action<IOpenAiRealTime>? RealTime { get; set; }
     }
 }

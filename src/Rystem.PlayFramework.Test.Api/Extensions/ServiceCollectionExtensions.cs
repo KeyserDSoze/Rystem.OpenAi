@@ -30,7 +30,7 @@ namespace Rystem.PlayFramework.Test.Api
                     chatClient.ForceModel(configuration["OpenAi2:ModelName"]!);
                 };
                 x.PriceBuilder
-                .AddModel(ChatModelName.Gpt4_o,
+                .AddModel(ChatModelName.Gpt_4o,
                 new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
                 new OpenAiCost { Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00000125m },
                 new OpenAiCost { Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens, Units = 0.00001m });

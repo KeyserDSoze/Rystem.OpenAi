@@ -50,6 +50,7 @@ namespace Rystem.OpenAi
             public required string AssistantUri { get; init; }
             public required string ThreadUri { get; init; }
             public required string VectorStoreUri { get; init; }
+            public required string RealTimeUri { get; init; }
         }
         internal void ConfigureEndpoints()
         {
@@ -77,7 +78,8 @@ namespace Rystem.OpenAi
                 AssistantUri = $"https://{basePath}/assistants{endPath}",
                 ThreadUri = $"https://{basePath}/threads{endPath}",
                 VectorStoreUri = $"https://{basePath}/vector_stores{endPath}",
-                DeploymentUri = $"https://{basePath}/deployments{endPath}"
+                DeploymentUri = $"https://{basePath}/deployments{endPath}",
+                RealTimeUri = $"https://{basePath}/realtime/sessions{endPath}"
             };
 
             GetUri = (type, version, model, appendBeforeQueryString, querystring)
@@ -108,6 +110,7 @@ namespace Rystem.OpenAi
                 OpenAiType.Assistant => PassForQuerystringCheck(querystring, string.Format(uriHelper.AssistantUri, versionForRequest, appendBeforeQueryString, model)),
                 OpenAiType.Thread => PassForQuerystringCheck(querystring, string.Format(uriHelper.ThreadUri, versionForRequest, appendBeforeQueryString, model)),
                 OpenAiType.VectorStore => PassForQuerystringCheck(querystring, string.Format(uriHelper.VectorStoreUri, versionForRequest, appendBeforeQueryString, model)),
+                OpenAiType.RealTime => string.Format(uriHelper.RealTimeUri, versionForRequest, appendBeforeQueryString, model),
                 _ => string.Format(uriHelper.ModelUri, versionForRequest, appendBeforeQueryString, model),
             };
 
