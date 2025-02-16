@@ -22,12 +22,21 @@ namespace Rystem.PlayFramework.Test.Api
             services.AddOpenAi(x =>
             {
                 x.ApiKey = configuration["OpenAi2:ApiKey"]!;
-                x.Azure.ResourceName = configuration["OpenAi2:ResourceName"]!;
+            }, "openai");
+            services.AddOpenAi(x =>
+            {
+                x.ApiKey = configuration["OpenAi:ApiKey"]!;
+                x.Azure.ResourceName = configuration["OpenAi:ResourceName"]!;
                 x.DefaultVersion = "2024-08-01-preview";
-                //x.Azure.MapDeployment(configuration["OpenAi2:ModelName"]!, configuration["OpenAi2:ModelName"]!);
                 x.DefaultRequestConfiguration.Chat = chatClient =>
                 {
-                    chatClient.ForceModel(configuration["OpenAi2:ModelName"]!);
+                    chatClient.ForceModel(configuration["OpenAi:ModelName"]!);
+                };
+                x.DefaultRequestConfiguration.RealTime = realTimeClient =>
+                {
+                    realTimeClient.WithVersion("2024-12-17");
+                    realTimeClient.ForceModel(configuration["OpenAi:RealTimeModelName"]!);
+                    realTimeClient.WithInputAudioTranscription().WithModel(configuration["OpenAi:AudioModelName"]!);
                 };
                 x.PriceBuilder
                 .AddModel(ChatModelName.Gpt_4o,

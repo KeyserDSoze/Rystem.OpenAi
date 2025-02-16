@@ -80,7 +80,7 @@ namespace Rystem.OpenAi
     .AddModel(EmbeddingModelName.Text_embedding_3_large,
         new OpenAiCost { Units = 0.00000013m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens })
 
-    .AddModel(RealTimeModelName.Gpt_4o_realtime_preview,
+    .AddModel(RealTimeModelName.Gpt_4o_realtime_preview_2024_12_17,
         new OpenAiCost { Units = 0.000005m, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
         new OpenAiCost { Units = 0.0000025m, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
         new OpenAiCost { Units = 0.00002m, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens },

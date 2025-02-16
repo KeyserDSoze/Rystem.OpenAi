@@ -13,6 +13,4 @@ namespace Rystem.OpenAi.RealTime
         [JsonPropertyName("expires_at")]
         public long? ExpiresAt { get; set; }
     }
-
-    #endregion
 }

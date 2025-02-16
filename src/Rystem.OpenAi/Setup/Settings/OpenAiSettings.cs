@@ -18,7 +18,7 @@ namespace Rystem.OpenAi
         /// <summary>
         /// If you not set a retry policy, the default value is 3 retries every 0.5 seconds.
         /// </summary>
-        public bool RetryPolicy { get; set; } = true;
+        public bool RetryPolicy { get; set; }
         /// <summary>
         /// Sample with 3 retries every 0.5 seconds:
         /// Policy<HttpResponseMessage>

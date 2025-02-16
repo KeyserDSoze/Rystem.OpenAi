@@ -79,7 +79,7 @@ namespace Rystem.OpenAi
                 ThreadUri = $"https://{basePath}/threads{endPath}",
                 VectorStoreUri = $"https://{basePath}/vector_stores{endPath}",
                 DeploymentUri = $"https://{basePath}/deployments{endPath}",
-                RealTimeUri = $"https://{basePath}/realtime/sessions{endPath}"
+                RealTimeUri = $"https://{basePathWithModel}/realtime/sessions{endPath}"
             };
 
             GetUri = (type, version, model, appendBeforeQueryString, querystring)
