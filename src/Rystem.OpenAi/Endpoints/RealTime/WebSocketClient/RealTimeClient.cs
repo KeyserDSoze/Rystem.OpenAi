@@ -8,19 +8,69 @@ using System.Threading.Tasks;
 
 namespace Rystem.OpenAi.RealTime
 {
+    //todo: remove public from classes and setup the interfaces, implements all kind of messages, check for Role to use the Role as the chat endpoint
+    //todo: check the json integration with options that should come from the standard nullable json serialization
+    public sealed class RealTimeConversationItemBuilder
+    {
+        private const string ConversationItemCreateType = "conversation.item.create";
+        private const string MessageType = "message";
+        private const string RealTimeItemObject = "realtime.item";
+        private const string InputTextType = "input_text";
+        private readonly RealTimeClient _client;
+        private readonly string? _previousItemId;
+        private readonly string? _eventId;
+        private readonly RealTimeClientConversationItem _item;
+        public RealTimeConversationItemBuilder(RealTimeClient client, string? previousItemId, string? eventId = null)
+        {
+            _client = client;
+            _previousItemId = previousItemId;
+            _eventId = eventId ?? _client.GenerateEventId();
+            _item = new();
+        }
+        public RealTimeConversationItemBuilder WithUserMessage(string text)
+        {
+            _item.Type = MessageType;
+            _item.Object = RealTimeItemObject;
+            _item.Role = "user";
+            _item.Content =
+            [
+                new RealTimeClientConversationContent
+                {
+                    Type = InputTextType,
+                    Text = text
+                }
+            ];
+            return this;
+        }
+        public async ValueTask SendAsync()
+        {
+            var evt = new RealTimeClientConversationItemCreateEvent
+            {
+                EventId = _eventId,
+                Type = ConversationItemCreateType,
+                PreviousItemId = _previousItemId,
+                Item = _item
+            };
+            await _client.SendEventAsync(evt);
+        }
+    }
     /// <summary>
     /// Encapsulates a WebSocket connection to the Realtime API and provides helper methods to send events.
     /// </summary>
     public sealed class RealTimeClient : IDisposable, IAsyncDisposable
     {
+        private const string AndQueryString = "&";
+        private const string QuestionMarkQueryString = "?";
         private readonly Uri _uri;
         private readonly ClientWebSocket _webSocket;
         private readonly CancellationTokenSource _cts;
         private readonly Dictionary<string, List<Action<RealTimeClientEvent>>> _eventHandlers;
 
-        public RealTimeClient(string url, string token)
+        public RealTimeClient(string url, string? apiKey, string? token)
         {
-            _uri = new Uri($"{url}{(url.Contains('?') ? "&" : "?")}token={Uri.EscapeDataString(token)}");
+            if (apiKey == null && token == null)
+                throw new ArgumentException("Either apiKey or token must be provided.");
+            _uri = new Uri($"{url}{(url.Contains('?') ? AndQueryString : QuestionMarkQueryString)}{(token == null ? $"api-key={Uri.EscapeDataString(apiKey!)}" : $"token={Uri.EscapeDataString(token)}")}");
             _webSocket = new ClientWebSocket();
             _eventHandlers = [];
             _cts = new CancellationTokenSource();
@@ -53,10 +103,10 @@ namespace Rystem.OpenAi.RealTime
         /// </summary>
         private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[8192];
+            var buffer = new byte[8192];
             while (!cancellationToken.IsCancellationRequested)
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 WebSocketReceiveResult result;
                 do
                 {
@@ -69,11 +119,11 @@ namespace Rystem.OpenAi.RealTime
                     sb.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
                 } while (!result.EndOfMessage);
 
-                string message = sb.ToString();
+                var message = sb.ToString();
                 try
                 {
                     // For demonstration, deserialize into the base RealtimeEvent.
-                    RealTimeClientEvent evt = JsonSerializer.Deserialize<RealTimeClientEvent>(message);
+                    var evt = message.FromJson<RealTimeClientEvent>(HttpClientWrapperExtensions.JsonSerializationOptions);
                     DispatchEvent(evt);
                 }
                 catch (Exception ex)
@@ -113,7 +163,7 @@ namespace Rystem.OpenAi.RealTime
         public void On(string eventType, Action<RealTimeClientEvent> handler)
         {
             if (!_eventHandlers.ContainsKey(eventType))
-                _eventHandlers[eventType] = new List<Action<RealTimeClientEvent>>();
+                _eventHandlers[eventType] = [];
             _eventHandlers[eventType].Add(handler);
         }
 
@@ -122,35 +172,33 @@ namespace Rystem.OpenAi.RealTime
         /// </summary>
         public void Off(string eventType, Action<RealTimeClientEvent> handler)
         {
-            if (_eventHandlers.ContainsKey(eventType))
-                _eventHandlers[eventType].Remove(handler);
+            if (_eventHandlers.TryGetValue(eventType, out var value))
+                value.Remove(handler);
         }
 
         /// <summary>
         /// Sends an event (as a JSON payload) to the server.
         /// </summary>
-        public async Task SendEventAsync(object evt)
+        internal async Task SendEventAsync(object evt)
         {
             if (_webSocket.State != WebSocketState.Open)
             {
                 Console.WriteLine("WebSocket is not open.");
                 return;
             }
-            string json = JsonSerializer.Serialize(evt, new JsonSerializerOptions { IgnoreNullValues = true });
-            byte[] bytes = Encoding.UTF8.GetBytes(json);
+            var json = evt.ToJson(HttpClientWrapperExtensions.JsonSerializationOptions);
+            var bytes = Encoding.UTF8.GetBytes(json);
             await _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
         /// <summary>
         /// Generates a random event ID.
         /// </summary>
-        private string GenerateEventId() => "evt_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        internal string GenerateEventId() => string.Concat("evt_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
 
-        // ─── HELPER METHODS TO SEND CLIENT EVENTS ─────────────────────
-
-        public async Task SessionUpdateAsync(RealTimeClientSessionUpdateData session, string eventId = null)
+        public async Task SessionUpdateAsync(RealTimeClientSessionUpdateData session, string? eventId = null)
         {
-            RealTimeClientSessionUpdateEvent evt = new RealTimeClientSessionUpdateEvent
+            var evt = new RealTimeClientSessionUpdateEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "session.update",
@@ -159,20 +207,20 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task InputAudioBufferAppendAsync(string audio, string eventId = null)
+        public async Task InputAudioBufferAppendAsync(byte[] audio, string? eventId = null)
         {
-            RealTimeClientInputAudioBufferAppendEvent evt = new RealTimeClientInputAudioBufferAppendEvent
+            var evt = new RealTimeClientInputAudioBufferAppendEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "input_audio_buffer.append",
-                Audio = audio
+                Audio = audio.ToBase64()
             };
             await SendEventAsync(evt);
         }
 
-        public async Task InputAudioBufferCommitAsync(string eventId = null)
+        public async Task InputAudioBufferCommitAsync(string? eventId = null)
         {
-            RealTimeClientInputAudioBufferCommitEvent evt = new RealTimeClientInputAudioBufferCommitEvent
+            var evt = new RealTimeClientInputAudioBufferCommitEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "input_audio_buffer.commit"
@@ -180,9 +228,9 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task InputAudioBufferClearAsync(string eventId = null)
+        public async Task InputAudioBufferClearAsync(string? eventId = null)
         {
-            RealTimeClientInputAudioBufferClearEvent evt = new RealTimeClientInputAudioBufferClearEvent
+            var evt = new RealTimeClientInputAudioBufferClearEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "input_audio_buffer.clear"
@@ -190,21 +238,12 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task ConversationItemCreateAsync(string previousItemId, RealTimeClientConversationItem item, string eventId = null)
-        {
-            RealTimeClientConversationItemCreateEvent evt = new RealTimeClientConversationItemCreateEvent
-            {
-                EventId = eventId ?? GenerateEventId(),
-                Type = "conversation.item.create",
-                PreviousItemId = previousItemId,
-                Item = item
-            };
-            await SendEventAsync(evt);
-        }
+        public RealTimeConversationItemBuilder ConversationItemCreate(string? previousItemId, string? eventId = null)
+            => new RealTimeConversationItemBuilder(this, previousItemId, eventId);
 
-        public async Task ConversationItemTruncateAsync(string itemId, int contentIndex, int audioEndMs, string eventId = null)
+        public async Task ConversationItemTruncateAsync(string itemId, int contentIndex, int audioEndMs, string? eventId = null)
         {
-            RealTimeClientConversationItemTruncateEvent evt = new RealTimeClientConversationItemTruncateEvent
+            var evt = new RealTimeClientConversationItemTruncateEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "conversation.item.truncate",
@@ -215,9 +254,9 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task ConversationItemDeleteAsync(string itemId, string eventId = null)
+        public async Task ConversationItemDeleteAsync(string itemId, string? eventId = null)
         {
-            RealTimeClientConversationItemDeleteEvent evt = new RealTimeClientConversationItemDeleteEvent
+            var evt = new RealTimeClientConversationItemDeleteEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "conversation.item.delete",
@@ -226,9 +265,9 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task ResponseCreateAsync(RealTimeClientResponseCreateData response, string eventId = null)
+        public async Task ResponseCreateAsync(RealTimeClientResponseCreateData response, string? eventId = null)
         {
-            RealTimeClientResponseCreateEvent evt = new RealTimeClientResponseCreateEvent
+            var evt = new RealTimeClientResponseCreateEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "response.create",
@@ -237,9 +276,9 @@ namespace Rystem.OpenAi.RealTime
             await SendEventAsync(evt);
         }
 
-        public async Task ResponseCancelAsync(string responseId = null, string eventId = null)
+        public async Task ResponseCancelAsync(string responseId, string? eventId = null)
         {
-            RealTimeClientResponseCancelEvent evt = new RealTimeClientResponseCancelEvent
+            var evt = new RealTimeClientResponseCancelEvent
             {
                 EventId = eventId ?? GenerateEventId(),
                 Type = "response.cancel",

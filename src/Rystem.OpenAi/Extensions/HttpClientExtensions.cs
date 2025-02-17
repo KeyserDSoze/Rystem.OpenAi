@@ -16,7 +16,7 @@ namespace Rystem.OpenAi
 {
     public static class HttpClientWrapperExtensions
     {
-        private static readonly JsonSerializerOptions s_options = new()
+        internal static readonly JsonSerializerOptions JsonSerializationOptions = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
@@ -37,7 +37,7 @@ namespace Rystem.OpenAi
                 }
                 else
                 {
-                    var jsonContent = message.ToJson(s_options);
+                    var jsonContent = message.ToJson(JsonSerializationOptions);
                     var stringContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
                     request.Content = stringContent;
                 }

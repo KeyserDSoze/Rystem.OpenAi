@@ -9,8 +9,11 @@ namespace Rystem.OpenAi.RealTime
     {
         [JsonPropertyName("type")]
         public string? Type { get; set; }
-
         [JsonPropertyName("text")]
         public string? Text { get; set; }
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+        [JsonPropertyName("transcript")]
+        public string? Transcript { get; set; }
     }
 }

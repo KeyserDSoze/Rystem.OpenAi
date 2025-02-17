@@ -16,14 +16,18 @@ namespace Rystem.OpenAi.Test
         [InlineData("Azure6")]
         public async ValueTask AllAsync(string name)
         {
+            var isOnAzure = name.Contains("Azure");
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.RealTime);
-            var session = await openAiApi.RealTime.CreateSessionAsync();
-            Assert.NotNull(session);
-            Assert.NotNull(session.ClientSecret?.Value);
-            var client = openAiApi.RealTime.GetClient(session.ClientSecret.Value);
+            var session = isOnAzure ? null : await openAiApi.RealTime.CreateSessionAsync();
+            var client = isOnAzure ?
+                await openAiApi.RealTime.GetAuthenticatedClientAsync() :
+                openAiApi.RealTime.GetClientWithEphemeralKey(session!.ClientSecret!.Value!);
             Assert.NotNull(client);
             await client.ConnectAsync();
+            var itemCreator = client.ConversationItemCreate(null);
+            itemCreator.WithUserMessage("Hello");
+            await itemCreator.SendAsync();
             await client.DisconnectAsync();
         }
     }

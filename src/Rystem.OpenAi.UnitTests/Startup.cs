@@ -148,7 +148,7 @@ namespace Rystem.OpenAi.UnitTests
                    };
                    x.DefaultRequestConfiguration.RealTime = realTimeClient =>
                    {
-                       realTimeClient.WithVersion("2024-12-17");
+                       realTimeClient.WithVersion("2024-10-01-preview");
                        realTimeClient.ForceModel(configuration["Azure6:RealTimeModelName"]!);
                        realTimeClient.WithInputAudioTranscription().WithModel(configuration["Azure6:AudioModelName"]!);
                    };

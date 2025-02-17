@@ -13,7 +13,17 @@ namespace Rystem.OpenAi.RealTime
         /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the real-time session response.</returns>
         ValueTask<RealTimeSessionResponse> CreateSessionAsync(CancellationToken cancellationToken = default);
-        RealTimeClient GetClient(string ephemeralKey);
+        /// <summary>
+        /// Gets a real-time client with an ephemeral key.
+        /// </summary>
+        /// <param name="ephemeralKey"></param>
+        /// <returns></returns>
+        RealTimeClient GetClientWithEphemeralKey(string ephemeralKey);
+        /// <summary>
+        /// Gets an authenticated real-time client asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        Task<RealTimeClient> GetAuthenticatedClientAsync();
         /// <summary>
         /// Sets the temperature for the real-time session.
         /// </summary>

@@ -42,11 +42,18 @@ namespace Rystem.OpenAi.RealTime
         private const string HttpProtocolStarter = "https://";
         private const string WebSocketProtocolStarter = "wss://";
 
-        public RealTimeClient GetClient(string ephemeralKey)
+        public RealTimeClient GetClientWithEphemeralKey(string ephemeralKey)
         {
             var uri = DefaultServices.Configuration.GetUri(OpenAiType.RealTime, _version, Request.Model!, string.Empty, null);
             uri = uri.Replace(HttpProtocolStarter, WebSocketProtocolStarter);
-            return new RealTimeClient(uri, ephemeralKey);
+            return new RealTimeClient(uri, null, ephemeralKey);
+        }
+        public async Task<RealTimeClient> GetAuthenticatedClientAsync()
+        {
+            var uri = DefaultServices.Configuration.GetUri(OpenAiType.RealTime, _version, Request.Model!, string.Empty, null);
+            uri = uri.Replace(HttpProtocolStarter, WebSocketProtocolStarter);
+            var apiKey = DefaultServices.Configuration.GetToken != null ? await DefaultServices.Configuration.GetToken() : null;
+            return new RealTimeClient(uri, apiKey, null);
         }
         public IOpenAiRealTime WithTemperature(double value)
         {

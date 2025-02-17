@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 [assembly: InternalsVisibleTo("Rystem.OpenAi.Test")]
 namespace Rystem.OpenAi
@@ -16,6 +17,7 @@ namespace Rystem.OpenAi
     {
         internal OpenAiUriMaker GetUri { get; private set; } = null!;
         internal Func<HttpClientWrapper, Task>? BeforeRequest { get; private set; }
+        internal Func<Task<string>>? GetToken { get; private set; }
         public bool NeedClientEnrichment => BeforeRequest != null;
         public AnyOf<string?, Enum> Name { get; }
         internal Task EnrichClientAsync(HttpClientWrapper wrapper)
@@ -30,7 +32,60 @@ namespace Rystem.OpenAi
         {
             Settings = settings;
             Name = name ?? string.Empty;
+            SetManagedIdentityForAzure(settings);
             ConfigureEndpoints();
+        }
+        private void SetManagedIdentityForAzure(OpenAiSettings settings)
+        {
+            if (!string.IsNullOrWhiteSpace(settings.ApiKey))
+            {
+                GetToken = () => Task.FromResult(settings.ApiKey);
+            }
+            else if (Settings.Azure.HasConfiguration)
+            {
+                var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
+                if (Settings.Azure.HasManagedIdentity)
+                {
+                    var credential = Settings.Azure.ManagedIdentity.UseDefault ?
+                        new DefaultAzureCredential() :
+                        new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                        {
+                            ManagedIdentityClientId = Settings.Azure.ManagedIdentity.Id
+                        });
+                    GetToken = async () =>
+                    {
+                        var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
+                        return accessToken.Token;
+                    };
+                    BeforeRequest = async wrapper =>
+                    {
+                        var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
+                        wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.Token);
+                    };
+                }
+                else if (Settings.Azure.HasAppRegistration)
+                {
+                    var credential = ConfidentialClientApplicationBuilder.Create(Settings.Azure.AppRegistration.ClientId)
+                        .WithClientSecret(Settings.Azure.AppRegistration.ClientSecret)
+                        .WithAuthority(AadAuthorityAudience.AzureAdMyOrg, true)
+                        .WithTenantId(Settings.Azure.AppRegistration.TenantId)
+                        .Build();
+                    GetToken = async () =>
+                    {
+                        var accessToken = await credential
+                                             .AcquireTokenForClient(scopes)
+                                             .ExecuteAsync();
+                        return accessToken.AccessToken;
+                    };
+                    BeforeRequest = async wrapper =>
+                    {
+                        var accessToken = await credential
+                                            .AcquireTokenForClient(scopes)
+                                            .ExecuteAsync();
+                        wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.AccessToken);
+                    };
+                }
+            }
         }
         private sealed class UriHelperConfigurator
         {
@@ -58,10 +113,6 @@ namespace Rystem.OpenAi
             var basePathWithModel = Settings.Azure.HasConfiguration ? $"{Settings.Azure.ResourceName}.openai.azure.com/openai/deployments/{{2}}" : "api.openai.com/{0}";
             var endPath = Settings.Azure.HasConfiguration ? "{1}?api-version={0}" : "{1}";
             var endPathWithModel = Settings.Azure.HasConfiguration ? "{1}?api-version={0}&deployment={2}" : "{1}";
-            if (Settings.Azure.HasConfiguration)
-            {
-                SetManagedIdentityForAzure();
-            }
             var uriHelper = new UriHelperConfigurator
             {
                 ChatUri = $"https://{basePathWithModel}/chat/completions{endPath}",
@@ -134,39 +185,6 @@ namespace Rystem.OpenAi
             return uri;
         }
         private const string AuthorizationScheme = "Bearer";
-        private void SetManagedIdentityForAzure()
-        {
-            var scopes = new[] { $"https://cognitiveservices.azure.com/.default" };
-            if (Settings.Azure.HasManagedIdentity)
-            {
-                var credential = Settings.Azure.ManagedIdentity.UseDefault ?
-                    new DefaultAzureCredential() :
-                    new DefaultAzureCredential(new DefaultAzureCredentialOptions
-                    {
-                        ManagedIdentityClientId = Settings.Azure.ManagedIdentity.Id
-                    });
-                BeforeRequest = async wrapper =>
-                {
-                    var accessToken = await credential.GetTokenAsync(new TokenRequestContext(scopes));
-                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.Token);
-                };
-            }
-            else if (Settings.Azure.HasAppRegistration)
-            {
-                var credential = ConfidentialClientApplicationBuilder.Create(Settings.Azure.AppRegistration.ClientId)
-                    .WithClientSecret(Settings.Azure.AppRegistration.ClientSecret)
-                    .WithAuthority(AadAuthorityAudience.AzureAdMyOrg, true)
-                    .WithTenantId(Settings.Azure.AppRegistration.TenantId)
-                    .Build();
-                BeforeRequest = async wrapper =>
-                {
-                    var accessToken = await credential
-                                        .AcquireTokenForClient(scopes)
-                                        .ExecuteAsync();
-                    wrapper.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(AuthorizationScheme, accessToken.AccessToken);
-                };
-            }
-        }
         private const string OpenAiDefaultVersion = "v1";
         private const string AzureDefaultVersion = "2024-10-21";
         private const string AzureDefaultVersionAssistant = "2024-05-01-preview";
