@@ -24,7 +24,7 @@ namespace Rystem.OpenAi.RealTime
         {
             _client = client;
             _previousItemId = previousItemId;
-            _eventId = eventId ?? _client.GenerateEventId();
+            _eventId = eventId ?? RealTimeClient.GenerateEventId();
             _item = new();
         }
         public RealTimeConversationItemBuilder WithUserMessage(string text)
@@ -194,7 +194,7 @@ namespace Rystem.OpenAi.RealTime
         /// <summary>
         /// Generates a random event ID.
         /// </summary>
-        internal string GenerateEventId() => string.Concat("evt_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
+        internal static string GenerateEventId() => string.Concat("evt_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
 
         public async Task SessionUpdateAsync(RealTimeClientSessionUpdateData session, string? eventId = null)
         {
@@ -239,7 +239,7 @@ namespace Rystem.OpenAi.RealTime
         }
 
         public RealTimeConversationItemBuilder ConversationItemCreate(string? previousItemId, string? eventId = null)
-            => new RealTimeConversationItemBuilder(this, previousItemId, eventId);
+            => new(this, previousItemId, eventId);
 
         public async Task ConversationItemTruncateAsync(string itemId, int contentIndex, int audioEndMs, string? eventId = null)
         {
