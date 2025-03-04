@@ -39,7 +39,7 @@ namespace Rystem.OpenAi.Test
             var openAiApi = _openAiFactory.Create(name)!;
             Assert.NotNull(openAiApi.Model);
 
-            var result = await openAiApi.Model.RetrieveAsync(ChatModelName.Gpt4_o);
+            var result = await openAiApi.Model.RetrieveAsync(ChatModelName.Gpt_4o);
             Assert.NotNull(result);
 
             //Assert.NotNull(result.CreatedUnixTime);

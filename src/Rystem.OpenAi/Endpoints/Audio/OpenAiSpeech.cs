@@ -12,7 +12,7 @@ namespace Rystem.OpenAi.Audio
             : base(factory, configurationFactory, loggerFactory, OpenAiType.AudioSpeech)
         {
             Request.Speed = 1;
-            Request.Voice = AudioVoice.Alloy.ToString().ToLower();
+            Request.Voice = AudioVoice.Alloy.AsString();
             Request.Model = SpeechModelName.TtsHd;
         }
         private protected override void ConfigureFactory(string name)
@@ -58,7 +58,7 @@ namespace Rystem.OpenAi.Audio
         }
         public IOpenAiSpeech WithVoice(AudioVoice audioVoice)
         {
-            Request.Voice = audioVoice.ToString().ToLower();
+            Request.Voice = audioVoice.AsString();
             return this;
         }
     }

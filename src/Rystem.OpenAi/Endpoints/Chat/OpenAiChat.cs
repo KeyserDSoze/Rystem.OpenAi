@@ -17,7 +17,7 @@ namespace Rystem.OpenAi.Chat
         public OpenAiChat(IFactory<DefaultServices> factory, IFactory<OpenAiConfiguration> configurationFactory, IOpenAiLoggerFactory loggerFactory)
             : base(factory, configurationFactory, loggerFactory, OpenAiType.Chat)
         {
-            Request.Model = ChatModelName.Gpt4_o;
+            Request.Model = ChatModelName.Gpt_4o;
         }
         private protected override void ConfigureFactory(string name)
         {

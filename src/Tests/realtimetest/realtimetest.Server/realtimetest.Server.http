@@ -1,0 +1,6 @@
+@realtimetest.Server_HostAddress = http://localhost:5176
+
+GET {{realtimetest.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

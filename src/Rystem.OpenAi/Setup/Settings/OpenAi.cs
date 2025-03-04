@@ -17,6 +17,7 @@
         Deployment,
         Assistant,
         Thread,
-        VectorStore
+        VectorStore,
+        RealTime
     }
 }

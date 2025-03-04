@@ -8,6 +8,7 @@ using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
 using Rystem.OpenAi.Models;
 using Rystem.OpenAi.Moderation;
+using Rystem.OpenAi.RealTime;
 
 namespace Rystem.OpenAi
 {
@@ -28,6 +29,7 @@ namespace Rystem.OpenAi
         private readonly IFactory<IOpenAiThread> _openAiThreadFactory;
         private readonly IFactory<IOpenAiRun> _openAiRunFactory;
         private readonly IFactory<IOpenAiVectorStore> _openAiVectorStoreFactory;
+        private readonly IFactory<IOpenAiRealTime> _openAiRealTimeFactory;
 #pragma warning disable CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public OpenAi(
             IFactory<OpenAiConfiguration> configurationFactory,
@@ -44,7 +46,8 @@ namespace Rystem.OpenAi
             IFactory<IOpenAiAssistant> openAiAssistantFactory,
             IFactory<IOpenAiThread> openAiThreadFactory,
             IFactory<IOpenAiRun> openAiRunFactory,
-            IFactory<IOpenAiVectorStore> openAiVectorStoreFactory)
+            IFactory<IOpenAiVectorStore> openAiVectorStoreFactory,
+            IFactory<IOpenAiRealTime> openAiRealTimeFactory)
         {
             _configurationFactory = configurationFactory;
             _openAiAudioFactory = openAiAudioFactory;
@@ -61,6 +64,7 @@ namespace Rystem.OpenAi
             _openAiThreadFactory = openAiThreadFactory;
             _openAiRunFactory = openAiRunFactory;
             _openAiVectorStoreFactory = openAiVectorStoreFactory;
+            _openAiRealTimeFactory = openAiRealTimeFactory;
         }
 #pragma warning restore CS9264 // Non-nullable property must contain a non-null value when exiting constructor. Consider adding the 'required' modifier, or declaring the property as nullable, or adding '[field: MaybeNull, AllowNull]' attributes.
         public IOpenAiAudio Audio => field ??= _openAiAudioFactory.Create(_factoryName)!;
@@ -77,6 +81,7 @@ namespace Rystem.OpenAi
         public IOpenAiThread Thread => field ??= _openAiThreadFactory.Create(_factoryName)!;
         public IOpenAiRun Run => field ??= _openAiRunFactory.Create(_factoryName)!;
         public IOpenAiVectorStore VectorStore => field ??= _openAiVectorStoreFactory.Create(_factoryName)!;
+        public IOpenAiRealTime RealTime => field ??= _openAiRealTimeFactory.Create(_factoryName)!;
         public OpenAiConfiguration Configuration => field ??= _configurationFactory.Create(_factoryName)!;
         private string? _factoryName;
         public void SetFactoryName(string name)

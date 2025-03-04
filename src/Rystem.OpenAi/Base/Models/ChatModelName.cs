@@ -3,7 +3,7 @@
     public sealed class ChatModelName : ModelName
     {
         internal ChatModelName(string name) : base(name) { }
-        public static ChatModelName Gpt4_o { get; } = "gpt-4o";
+        public static ChatModelName Gpt_4o { get; } = "gpt-4o";
         public static ChatModelName Gpt_4o_2024_11_20 { get; } = "gpt-4o-2024-11-20";
         public static ChatModelName Gpt_4o_2024_08_06 { get; } = "gpt-4o-2024-08-06";
         public static ChatModelName Gpt_4o_audio_preview { get; } = "gpt-4o-audio-preview";

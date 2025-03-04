@@ -60,14 +60,10 @@ namespace Rystem.OpenAi
             if (StartTime != default && EndTime != default)
                 builder.AppendLine($"Execution Time: {ExecutionTimeInMicroseconds} microseconds");
             if (Content != null)
-                builder.AppendLine($"Content: {(Content is string ? Content : Content?.ToJson(s_options))}");
+                builder.AppendLine($"Content: {(Content is string ? Content : Content?.ToJson(HttpClientWrapperExtensions.JsonSerializationOptions))}");
             if (Response != null)
-                builder.AppendLine($"Response: {(Response is string ? Response : Response?.ToJson(s_options))}");
+                builder.AppendLine($"Response: {(Response is string ? Response : Response?.ToJson(HttpClientWrapperExtensions.JsonSerializationOptions))}");
             return builder.ToString();
         }
-        private static readonly JsonSerializerOptions s_options = new()
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
     }
 }

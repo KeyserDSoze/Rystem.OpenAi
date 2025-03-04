@@ -15,6 +15,7 @@ using Rystem.OpenAi.FineTune;
 using Rystem.OpenAi.Image;
 using Rystem.OpenAi.Models;
 using Rystem.OpenAi.Moderation;
+using Rystem.OpenAi.RealTime;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -96,6 +97,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AddFactory<IOpenAiRun, OpenAiRun>(integrationName, ServiceLifetime.Transient);
             services
                 .AddFactory<IOpenAiVectorStore, OpenAiVectorStore>(integrationName, ServiceLifetime.Transient);
+            services
+                .AddFactory<IOpenAiRealTime, OpenAiRealTime>(integrationName, ServiceLifetime.Transient);
             services
                 .TryAddTransient<IOpenAiLogger, OpenAiLogger>();
             services
