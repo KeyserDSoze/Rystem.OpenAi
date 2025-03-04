@@ -10,12 +10,12 @@ namespace Rystem.PlayFramework
     {
         private readonly IServiceCollection _services;
         internal IScene Scene { get; } = new Scene();
-        private readonly PlayHandler _playHander;
+        private readonly PlayHandler _playHandler;
         private readonly FunctionsHandler _functionsHandler;
         public SceneBuilder(IServiceCollection services)
         {
             _services = services;
-            _playHander = _services.GetSingletonService<PlayHandler>()!;
+            _playHandler = _services.GetSingletonService<PlayHandler>()!;
             _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
         }
         private static readonly Regex s_checkName = new("[^a-zA-Z0-9_-]{1,64}");
@@ -45,12 +45,12 @@ namespace Rystem.PlayFramework
         {
             var scenePathBuilder = new ScenePathBuilder();
             builder(scenePathBuilder);
-            _playHander[Scene.Name].AvailableApiPath.AddRange(scenePathBuilder.RegexForApiMapping);
+            _playHandler[Scene.Name].AvailableApiPath.AddRange(scenePathBuilder.RegexForApiMapping);
             return this;
         }
         public ISceneBuilder WithActors(Action<IActorBuilder> builder)
         {
-            var builderInstance = new ActorBuilder(_services, Scene.Name);
+            var builderInstance = new ActorBuilder(_services, Scene.Name, _playHandler, _functionsHandler);
             builder(builderInstance);
             return this;
         }
@@ -73,7 +73,7 @@ namespace Rystem.PlayFramework
             foreach (var method in methods)
             {
                 var functionName = $"{serviceName}_{currentType.Name}_{method.Name}";
-                _playHander[Scene.Name].Functions.Add(functionName);
+                _playHandler[Scene.Name].Functions.Add(functionName);
                 var description = method.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute;
                 var jsonFunctionObject = new FunctionToolMainProperty();
                 var jsonFunction = new FunctionTool
@@ -92,7 +92,7 @@ namespace Rystem.PlayFramework
                 var hasCancellationToken = method.GetParameters().Any(x => x.ParameterType == typeof(CancellationToken));
                 function.Service = new()
                 {
-                    Call = async (serviceProvider, bringer, cancellationToken) =>
+                    Call = async (serviceProvider, bringer, sceneContext, cancellationToken) =>
                     {
                         var service = serviceProvider.GetRequiredService<T>();
                         var result = hasCancellationToken ?

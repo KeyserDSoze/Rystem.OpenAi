@@ -150,12 +150,12 @@ namespace Rystem.PlayFramework
             }
             chatClient.AddUserMessage(message);
             var responses = chatClient.ExecuteAsStreamAsync(true, cancellationToken);
-            await foreach (var result in GetResponseAsync(scene.Name, scene.HttpClientName, chatClient, responses, cancellationToken))
+            await foreach (var result in GetResponseAsync(scene.Name, scene.HttpClientName, context, chatClient, responses, cancellationToken))
             {
                 yield return result;
             }
         }
-        private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, IOpenAiChat chatClient, IAsyncEnumerable<ChunkChatResult> chatResponses, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, SceneContext context, IOpenAiChat chatClient, IAsyncEnumerable<ChunkChatResult> chatResponses, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var chatFunctions = new List<InternalFunction>();
             await foreach (var chatResponse in chatResponses)
@@ -209,7 +209,7 @@ namespace Rystem.PlayFramework
                     }
                     else if (function.HasService)
                     {
-                        responseAsJson = await ExecuteServiceAsync(function.Service!, json, cancellationToken);
+                        responseAsJson = await ExecuteServiceAsync(function.Service!, json, context, cancellationToken);
                     }
                     yield return new AiSceneResponse
                     {
@@ -223,13 +223,13 @@ namespace Rystem.PlayFramework
                     chatClient.AddSystemMessage($"Response for function {chatFunction.Name}: {responseAsJson}");
                 }
                 var responses = chatClient.ExecuteAsStreamAsync(true, cancellationToken);
-                await foreach (var result in GetResponseAsync(sceneName, clientName, chatClient, responses, cancellationToken))
+                await foreach (var result in GetResponseAsync(sceneName, clientName, context, chatClient, responses, cancellationToken))
                 {
                     yield return result;
                 }
             }
         }
-        private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, string argumentAsJson, CancellationToken cancellationToken)
+        private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, string argumentAsJson, SceneContext context, CancellationToken cancellationToken)
         {
             var json = ParseJson(argumentAsJson);
             var serviceBringer = new ServiceBringer() { Parameters = [] };
@@ -237,7 +237,7 @@ namespace Rystem.PlayFramework
             {
                 await input.Value(json, serviceBringer);
             }
-            var response = await serviceHandler.Call(_serviceProvider, serviceBringer, cancellationToken);
+            var response = await serviceHandler.Call(_serviceProvider, serviceBringer, context, cancellationToken);
             return response.ToJson();
         }
         private async Task<string?> ExecuteHttpClientAsync(string? clientName, HttpHandler httpHandler, string argumentAsJson, CancellationToken cancellationToken)
