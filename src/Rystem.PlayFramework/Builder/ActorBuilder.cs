@@ -31,6 +31,7 @@ namespace Rystem.PlayFramework
         public IActorBuilder AddActor<T>(string name, string role, Action<Dictionary<string, string>> parameters)
             where T : class, IActor
         {
+            name = name.Replace(' ', '_');
             _services.AddKeyedTransient<T>(_sceneName);
             _playHandler[_sceneName].Functions.Add(name);
             var description = role;
