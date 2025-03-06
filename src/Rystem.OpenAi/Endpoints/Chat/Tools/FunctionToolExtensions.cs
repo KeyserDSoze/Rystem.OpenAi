@@ -33,7 +33,7 @@ namespace Rystem.OpenAi
                 if (parameter.ParameterType == typeof(CancellationToken))
                     continue;
                 var parameterName = parameter.Name ?? parameter.ParameterType.Name;
-                ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
+                ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject, null);
                 if (!parameter.IsNullable())
                     jsonFunctionObject.AddRequired(parameterName);
             }
@@ -61,7 +61,7 @@ namespace Rystem.OpenAi
             {
                 var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
                 var parameterName = attribute?.Name ?? property.Name ?? property.PropertyType.Name;
-                ToolPropertyHelper.Add(parameterName, property.PropertyType, jsonFunctionObject);
+                ToolPropertyHelper.Add(parameterName, property.PropertyType, jsonFunctionObject, null);
                 if (!property.IsNullable() || property.GetCustomAttribute<JsonRequiredAttribute>() != null)
                     jsonFunctionObject.AddRequired(parameterName);
             }

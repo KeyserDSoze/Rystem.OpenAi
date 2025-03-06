@@ -98,7 +98,7 @@ namespace Rystem.PlayFramework
                         {
                             if (type != typeof(CancellationToken) && !parameterInfo.CustomAttributes.Any(x => x.AttributeType == typeof(FromServicesAttribute) || x.AttributeType == typeof(FromFormAttribute)))
                             {
-                                ToolPropertyHelper.Add(name, type, jsonFunctionObject);
+                                ToolPropertyHelper.Add(name, type, jsonFunctionObject, null);
                                 if (!parameterInfo.IsNullable())
                                     jsonFunctionObject.AddRequired(name);
                                 return true;
