@@ -49,7 +49,7 @@ namespace Rystem.PlayFramework
             foreach (var parameter in dictionary)
             {
                 var parameterName = parameter.Key;
-                ToolPropertyHelper.Add(parameterName, typeof(string), jsonFunctionObject);
+                ToolPropertyHelper.Add(parameterName, typeof(string), jsonFunctionObject, parameter.Value);
                 jsonFunctionObject.AddRequired(parameterName);
             }
             function.Service = new()

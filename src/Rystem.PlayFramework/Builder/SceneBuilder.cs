@@ -121,7 +121,7 @@ namespace Rystem.PlayFramework
                     if (parameter.ParameterType == typeof(CancellationToken))
                         continue;
                     var parameterName = parameter.Name ?? parameter.ParameterType.Name;
-                    ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject);
+                    ToolPropertyHelper.Add(parameterName, parameter.ParameterType, jsonFunctionObject, null);
                     if (!parameter.IsNullable())
                         jsonFunctionObject.AddRequired(parameterName);
                     var parametersFiller = function.Service.Actions;

@@ -7,15 +7,15 @@ namespace Rystem.OpenAi
 {
     public static class ToolPropertyHelper
     {
-        public static void Add(string? parameterName, Type type, FunctionToolNonPrimitiveProperty jsonFunction)
+        public static void Add(string? parameterName, Type type, FunctionToolNonPrimitiveProperty jsonFunction, string? forceDescription)
         {
-            var description = type.GetCustomAttribute<DescriptionAttribute>();
+            var description = forceDescription ?? type.GetCustomAttribute<DescriptionAttribute>()?.Description ?? parameterName;
             if (type.IsPrimitive())
             {
                 jsonFunction.AddPrimitive(parameterName ?? type.Name, new FunctionToolPrimitiveProperty
                 {
                     Type = type.IsNumeric() ? "number" : "string",
-                    Description = description?.Description
+                    Description = description ?? "parameter"
                 });
             }
             else
@@ -26,7 +26,7 @@ namespace Rystem.OpenAi
                 {
                     if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
                     {
-                        Add(innerParameter.Name, innerParameter.PropertyType, innerFunction);
+                        Add(innerParameter.Name, innerParameter.PropertyType, innerFunction, null);
                     }
                 }
             }
