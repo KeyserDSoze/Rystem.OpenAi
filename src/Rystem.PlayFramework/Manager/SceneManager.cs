@@ -194,6 +194,7 @@ namespace Rystem.PlayFramework
         private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, SceneContext sceneContext, string argumentAsJson, CancellationToken cancellationToken)
         {
             var json = ParseJson(argumentAsJson);
+            sceneContext.Jsons.Add(json);
             var serviceBringer = new ServiceBringer() { Parameters = [] };
             foreach (var input in serviceHandler.Actions)
             {
