@@ -10,6 +10,7 @@ namespace Rystem.PlayFramework
         public IOpenAiChat? CurrentChatClient { get; set; }
         public Func<IOpenAiChat>? CreateNewDefaultChatClient { get; set; }
         public required Dictionary<object, object> Properties { get; init; }
+        public List<Dictionary<string, string>> Jsons { get; } = [];
         public T GetProperty<T>(object key)
         {
             if (Properties.TryGetValue(key, out var propertyValue))
