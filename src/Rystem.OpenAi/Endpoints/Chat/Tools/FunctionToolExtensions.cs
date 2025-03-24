@@ -57,11 +57,12 @@ namespace Rystem.OpenAi
                 Parameters = jsonFunctionObject,
                 Strict = strict
             };
-            foreach (var property in type.GetProperties())
+            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 var attribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
                 var parameterName = attribute?.Name ?? property.Name ?? property.PropertyType.Name;
-                ToolPropertyHelper.Add(parameterName, property.PropertyType, jsonFunctionObject, null);
+                var propertyDescription = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                ToolPropertyHelper.Add(parameterName, property.PropertyType, jsonFunctionObject, propertyDescription);
                 if (!property.IsNullable() || property.GetCustomAttribute<JsonRequiredAttribute>() != null)
                     jsonFunctionObject.AddRequired(parameterName);
             }
