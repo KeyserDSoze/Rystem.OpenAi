@@ -7,14 +7,14 @@ namespace Rystem.PlayFramework
     internal sealed class SceneServiceBuilder<T> : ISceneServiceBuilder<T>
         where T : class
     {
-        public List<MethodInfo> Methods { get; } = [];
+        public List<MethodBringer> Methods { get; } = [];
         private static readonly Regex s_regex = new("(?<=Convert\\().*?(?=\\.CreateDelegate\\()");
-        public ISceneServiceBuilder<T> WithMethod(Expression<Func<T, Delegate>> method)
+        public ISceneServiceBuilder<T> WithMethod(Expression<Func<T, Delegate>> method, string? name = null, string? description = null)
         {
             var body = s_regex.Match(method.Body.ToString()).Value;
             var currentMethod = FindMethodInInterfaces(typeof(T), body);
             if (currentMethod != null)
-                Methods.Add(currentMethod);
+                Methods.Add(new MethodBringer(currentMethod, name, description));
             else
                 throw new ArgumentNullException($"Method {body} not found in {typeof(T).Name}");
             return this;
