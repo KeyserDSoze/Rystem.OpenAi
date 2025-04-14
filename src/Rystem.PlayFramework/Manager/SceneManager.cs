@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;

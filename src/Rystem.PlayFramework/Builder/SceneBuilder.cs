@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;
@@ -54,14 +56,15 @@ namespace Rystem.PlayFramework
             builder(builderInstance);
             return this;
         }
+        private static readonly Regex s_regex = new Regex("^[a-zA-Z_][a-zA-Z0-9_]*$");
         public ISceneBuilder WithService<T>(Action<ISceneServiceBuilder<T>>? builder = null)
             where T : class
         {
-            var methods = new List<MethodInfo>();
+            var methods = new List<MethodBringer>();
             var currentType = typeof(T);
             if (builder == null)
             {
-                methods.AddRange(currentType.GetMethods(BindingFlags.Public | BindingFlags.Instance));
+                methods.AddRange(currentType.GetMethods(BindingFlags.Public | BindingFlags.Instance).Select(x => new MethodBringer(x, null)));
             }
             else
             {
@@ -72,32 +75,32 @@ namespace Rystem.PlayFramework
             var serviceName = typeof(T).Name;
             foreach (var method in methods)
             {
-                var functionName = $"{serviceName}_{currentType.Name}_{method.Name}";
+                var functionName = method.Name ?? s_regex.Replace($"{serviceName}_{currentType.Name}_{method.Info.Name}", string.Empty);
                 _playHandler[Scene.Name].Functions.Add(functionName);
-                var description = method.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute;
+                var description = method.Description ?? (method.Info.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute)?.Description ?? functionName;
                 var jsonFunctionObject = new FunctionToolMainProperty();
                 var jsonFunction = new FunctionTool
                 {
                     Name = functionName,
-                    Description = description?.Description ?? functionName,
+                    Description = description,
                     Parameters = jsonFunctionObject
                 };
                 var function = _functionsHandler[functionName];
                 function.Scenes.Add(Scene.Name);
                 function.Chooser = x => x.AddFunctionTool(jsonFunction);
-                var withoutReturn = method.ReturnType == typeof(void) || method.ReturnType == typeof(Task) || method.ReturnType == typeof(ValueTask);
-                var isGenericAsync = method.ReturnType.IsGenericType &&
-                    (method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)
-                    || method.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
-                var hasCancellationToken = method.GetParameters().Any(x => x.ParameterType == typeof(CancellationToken));
+                var withoutReturn = method.Info.ReturnType == typeof(void) || method.Info.ReturnType == typeof(Task) || method.Info.ReturnType == typeof(ValueTask);
+                var isGenericAsync = method.Info.ReturnType.IsGenericType &&
+                    (method.Info.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)
+                    || method.Info.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
+                var hasCancellationToken = method.Info.GetParameters().Any(x => x.ParameterType == typeof(CancellationToken));
                 function.Service = new()
                 {
                     Call = async (serviceProvider, bringer, sceneContext, cancellationToken) =>
                     {
                         var service = serviceProvider.GetRequiredService<T>();
                         var result = hasCancellationToken ?
-                            method.Invoke(service, [.. bringer.Parameters, cancellationToken]) :
-                            method.Invoke(service, [.. bringer.Parameters]);
+                            method.Info.Invoke(service, [.. bringer.Parameters, cancellationToken]) :
+                            method.Info.Invoke(service, [.. bringer.Parameters]);
                         if (result is Task task)
                             await task;
                         if (result is ValueTask valueTask)
@@ -116,7 +119,7 @@ namespace Rystem.PlayFramework
                             return default!;
                     }
                 };
-                foreach (var parameter in method.GetParameters())
+                foreach (var parameter in method.Info.GetParameters())
                 {
                     if (parameter.ParameterType == typeof(CancellationToken))
                         continue;
@@ -125,15 +128,73 @@ namespace Rystem.PlayFramework
                     if (!parameter.IsNullable())
                         jsonFunctionObject.AddRequired(parameterName);
                     var parametersFiller = function.Service.Actions;
+                    var parameterType = parameter.ParameterType;
                     if (!parametersFiller.ContainsKey(parameterName))
                         parametersFiller.Add(parameterName, (value, bringer) =>
                         {
-                            bringer.Parameters.Add(value[parameterName]);
+                            if (parameterType.IsPrimitive())
+                                bringer.Parameters.Add(value[parameterName].Cast(parameterType));
+                            else
+                                bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
                             return ValueTask.CompletedTask;
                         });
                 }
             }
             return this;
         }
+        private static readonly JsonSerializerOptions s_options = new()
+        {
+            Converters =
+            {
+                new FlexibleEnumConverterFactory(),
+            },
+        };
+        private sealed class FlexibleEnumConverterFactory : JsonConverterFactory
+        {
+            public override bool CanConvert(Type typeToConvert)
+            {
+                return typeToConvert.IsEnum;
+            }
+
+            public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+            {
+                var converterType = typeof(FlexibleEnumConverter<>).MakeGenericType(typeToConvert);
+                return (JsonConverter)Activator.CreateInstance(converterType)!;
+            }
+        }
+        private sealed class FlexibleEnumConverter<T> : JsonConverter<T> where T : struct, Enum
+        {
+            public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType == JsonTokenType.String)
+                {
+                    var strValue = reader.GetString();
+                    if (int.TryParse(strValue, out int intValue))
+                    {
+                        return (T)Enum.ToObject(typeof(T), intValue);
+                    }
+
+                    if (Enum.TryParse<T>(strValue, ignoreCase: true, out var result))
+                    {
+                        return result;
+                    }
+
+                    throw new JsonException($"Unable to convert \"{strValue}\" to Enum {typeof(T)}.");
+                }
+                else if (reader.TokenType == JsonTokenType.Number)
+                {
+                    var intValue = reader.GetInt32();
+                    return (T)Enum.ToObject(typeof(T), intValue);
+                }
+
+                throw new JsonException($"Unexpected token {reader.TokenType} when parsing enum.");
+            }
+
+            public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+            {
+                writer.WriteNumberValue(Convert.ToInt32(value));
+            }
+        }
+
     }
 }

@@ -7,18 +7,32 @@ namespace Rystem.PlayFramework
     internal sealed class SceneServiceBuilder<T> : ISceneServiceBuilder<T>
         where T : class
     {
-        public List<MethodInfo> Methods { get; } = [];
+        public List<MethodBringer> Methods { get; } = [];
         private static readonly Regex s_regex = new("(?<=Convert\\().*?(?=\\.CreateDelegate\\()");
-        public ISceneServiceBuilder<T> WithMethod(Expression<Func<T, Delegate>> method)
+        public ISceneServiceBuilder<T> WithMethod(Expression<Func<T, Delegate>> method, string? name = null, string? description = null)
         {
             var body = s_regex.Match(method.Body.ToString()).Value;
-            var methods = typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            var currentMethod = methods.FirstOrDefault(x => x.ToSignature() == body);
+            var currentMethod = FindMethodInInterfaces(typeof(T), body);
             if (currentMethod != null)
-                Methods.Add(currentMethod);
+                Methods.Add(new MethodBringer(currentMethod, name, description));
             else
                 throw new ArgumentNullException($"Method {body} not found in {typeof(T).Name}");
             return this;
+        }
+        //search inside the type if exists further interfaces where to find the method in recursive
+        private static MethodInfo? FindMethodInInterfaces(Type type, string body)
+        {
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            var method = methods.FirstOrDefault(x => x.ToSignature() == body);
+            if (method != null)
+                return method;
+            foreach (var @interface in type.GetInterfaces())
+            {
+                method = FindMethodInInterfaces(@interface, body);
+                if (method != null)
+                    return method;
+            }
+            return null;
         }
     }
 }
