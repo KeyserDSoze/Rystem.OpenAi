@@ -149,7 +149,7 @@ namespace Rystem.PlayFramework
                 new FlexibleEnumConverterFactory(),
             },
         };
-        public class FlexibleEnumConverterFactory : JsonConverterFactory
+        private sealed class FlexibleEnumConverterFactory : JsonConverterFactory
         {
             public override bool CanConvert(Type typeToConvert)
             {
@@ -162,7 +162,7 @@ namespace Rystem.PlayFramework
                 return (JsonConverter)Activator.CreateInstance(converterType)!;
             }
         }
-        public class FlexibleEnumConverter<T> : JsonConverter<T> where T : struct, Enum
+        private sealed class FlexibleEnumConverter<T> : JsonConverter<T> where T : struct, Enum
         {
             public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {
