@@ -20,7 +20,7 @@ namespace Rystem.PlayFramework
             _playHandler = _services.GetSingletonService<PlayHandler>()!;
             _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
         }
-        private static readonly Regex s_checkName = new("[^a-zA-Z0-9_-]{1,64}");
+        private static readonly Regex s_checkName = new("[^a-zA-Z0-9_\\-\\.]{1,64}");
         public ISceneBuilder WithName(string name)
         {
             Scene.Name = s_checkName.Replace(name.Replace(' ', '-'), string.Empty);
@@ -103,7 +103,7 @@ namespace Rystem.PlayFramework
                             method.Info.Invoke(service, [.. bringer.Parameters]);
                         if (result is Task task)
                             await task;
-                        if (result is ValueTask valueTask)
+                        else if (result is ValueTask valueTask)
                             await valueTask;
                         if (withoutReturn)
                             return default!;
@@ -169,7 +169,7 @@ namespace Rystem.PlayFramework
                 if (reader.TokenType == JsonTokenType.String)
                 {
                     var strValue = reader.GetString();
-                    if (int.TryParse(strValue, out int intValue))
+                    if (int.TryParse(strValue, out var intValue))
                     {
                         return (T)Enum.ToObject(typeof(T), intValue);
                     }
