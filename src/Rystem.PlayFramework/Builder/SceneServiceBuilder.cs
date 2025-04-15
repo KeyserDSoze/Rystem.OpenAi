@@ -19,13 +19,11 @@ namespace Rystem.PlayFramework
                 throw new ArgumentNullException($"Method {body} not found in {typeof(T).Name}");
             return this;
         }
-        public static string ToSignature(MethodInfo methodInfo)
-            => $"{methodInfo.ReturnParameter?.ToString().Trim() ?? "void"} {methodInfo.Name}({string.Join(", ", methodInfo.GetParameters().Select(x => x.ParameterType.FullName))})";
         //search inside the type if exists further interfaces where to find the method in recursive
         private static MethodInfo? FindMethodInInterfaces(Type type, string body)
         {
             var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-            var method = methods.FirstOrDefault(x => ToSignature(x) == body);
+            var method = methods.FirstOrDefault(x => x.ToSignature() == body);
             if (method != null)
                 return method;
             foreach (var @interface in type.GetInterfaces())
