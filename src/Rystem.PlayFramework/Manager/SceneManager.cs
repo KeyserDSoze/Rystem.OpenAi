@@ -44,7 +44,7 @@ namespace Rystem.PlayFramework
             settings?.Invoke(requestSettings);
             if (requestSettings.Context != null)
                 requestSettings.Context.InputMessage = message;
-            var context = requestSettings.Context ?? new SceneContext { InputMessage = message, Properties = requestSettings.Properties ?? [] };
+            var context = requestSettings.Context ?? new SceneContext { ServiceProvider = _serviceProvider, InputMessage = message, Properties = requestSettings.Properties ?? [] };
             context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
             var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             context.CurrentChatClient = chatClient;
