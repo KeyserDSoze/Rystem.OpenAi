@@ -4,6 +4,7 @@ namespace Rystem.PlayFramework
 {
     public sealed class SceneContext
     {
+        public required IServiceProvider ServiceProvider { get; init; }
         public required string InputMessage { get; set; }
         public string? CurrentSceneName { get; set; }
         public List<AiSceneResponse> Responses { get; } = [];

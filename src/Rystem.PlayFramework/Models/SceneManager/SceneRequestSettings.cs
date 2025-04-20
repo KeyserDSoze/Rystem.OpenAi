@@ -23,10 +23,5 @@
             return this;
         }
         internal SceneContext? Context { get; set; }
-        public SceneRequestSettings InitizializeContext(out SceneContext context)
-        {
-            context = new SceneContext { InputMessage = null!, Properties = Properties ?? [] };
-            return this;
-        }
     }
 }
