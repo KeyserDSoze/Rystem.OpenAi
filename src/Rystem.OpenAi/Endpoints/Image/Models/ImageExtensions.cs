@@ -9,8 +9,17 @@
         private const string WidePortraitSize = "1024x1792";
         private const string HdLabel = "hd";
         private const string StandardLabel = "standard";
+        private const string HighLabel = "high";
+        private const string MediumLabel = "medium";
+        private const string LowLabel = "low";
+        private const string AutoLabel = "auto";
         private const string VividLabel = "vivid";
         private const string NaturalLabel = "natural";
+        private const string JpegLabel = "jpeg";
+        private const string PngLabel = "png";
+        private const string WebpLabel = "webp";
+        private const string TransparentLabel = "transparent";
+        private const string OpaqueLabel = "opaque";
 
         public static string AsString(this ImageSize size)
         {
@@ -28,7 +37,11 @@
             return quality switch
             {
                 ImageQuality.Hd => HdLabel,
-                _ => StandardLabel,
+                ImageQuality.Standard => StandardLabel,
+                ImageQuality.High => HighLabel,
+                ImageQuality.Medium => MediumLabel,
+                ImageQuality.Low => LowLabel,
+                _ => AutoLabel,
             };
         }
         public static string AsString(this ImageStyle style)
@@ -37,6 +50,24 @@
             {
                 ImageStyle.Vivid => VividLabel,
                 _ => NaturalLabel,
+            };
+        }
+        public static string AsString(this ImageOutputFormat format)
+        {
+            return format switch
+            {
+                ImageOutputFormat.Jpeg => JpegLabel,
+                ImageOutputFormat.Png => PngLabel,
+                _ => WebpLabel,
+            };
+        }
+        public static string AsString(this ImageBackgroundFormat format)
+        {
+            return format switch
+            {
+                ImageBackgroundFormat.Transparent => TransparentLabel,
+                ImageBackgroundFormat.Opaque => OpaqueLabel,
+                _ => AutoLabel,
             };
         }
         public static KindOfCost AsCost(this ImageSize size, ImageQuality quality)
