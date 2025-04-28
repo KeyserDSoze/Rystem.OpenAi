@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.OpenAi.Image
@@ -204,5 +203,34 @@ namespace Rystem.OpenAi.Image
             return this;
         }
 
+        public IOpenAiImage WithOutputFormat(ImageOutputFormat format)
+        {
+            Request.OutputFormat = format.AsString();
+            return this;
+        }
+
+        public IOpenAiImage WithOutputCompression(int? value)
+        {
+            Request.OutputCompression = value;
+            return this;
+        }
+
+        public IOpenAiImage WithLowModeration()
+        {
+            Request.Moderation = "low";
+            return this;
+        }
+
+        public IOpenAiImage WithDefaultModeration()
+        {
+            Request.Moderation = null;
+            return this;
+        }
+
+        public IOpenAiImage WithBackground(ImageBackgroundFormat format)
+        {
+            Request.Background = format.AsString();
+            return this;
+        }
     }
 }
