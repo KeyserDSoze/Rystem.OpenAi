@@ -8,19 +8,19 @@ namespace Rystem.PlayFramework
         public required string RequestKey { get; set; }
         [JsonPropertyName("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        [JsonPropertyName("nm")]
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
-        [JsonPropertyName("fn")]
+        [JsonPropertyName("functionName")]
         public string? FunctionName { get; set; }
-        [JsonPropertyName("msg")]
+        [JsonPropertyName("message")]
         public string? Message { get; set; }
         [JsonPropertyName("args")]
-        public string? Arguments { get; set; }
-        [JsonPropertyName("rsp")]
+        public object? Arguments { get; set; }
+        [JsonPropertyName("response")]
         public string? Response { get; set; }
-        [JsonPropertyName("s")]
+        [JsonPropertyName("status")]
         public required AiResponseStatus Status { get; set; }
-        [JsonPropertyName("rt")]
+        [JsonPropertyName("responseTime")]
         public required DateTime ResponseTime { get; set; }
     }
 }

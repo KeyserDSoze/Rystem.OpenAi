@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Rystem.OpenAi.UnitTests.Services;
 using Rystem.PlayFramework.Test.Api;
+using Rystem.PlayFramework.Test.Api.Services;
 using Rystem.Test.XUnit;
 
 namespace Rystem.OpenAi.UnitTests
@@ -38,6 +41,7 @@ namespace Rystem.OpenAi.UnitTests
             {
                 x.BaseAddress = new Uri("http://localhost");
             });
+            services.AddMemoryCache();
             OpenAiServiceLocator.Configuration.AddOpenAi(settings =>
                 {
                     settings.ApiKey = apiKey;
@@ -163,6 +167,84 @@ namespace Rystem.OpenAi.UnitTests
                    x.Request = LogLevel.Information;
                    x.Error = LogLevel.Error;
                });
+            services.AddSingleton<WeatherService>();
+            services.AddSingleton<VacationService>();
+            services
+                .AddPlayFramework(scenes =>
+            {
+                scenes.Configure(settings =>
+                {
+                    settings.OpenAi.Name = "Azure2";
+                })
+                .AddCache(cacheBuilder =>
+                {
+                    cacheBuilder.WithMemory();
+                })
+                .AddMainActor((context) => $"Oggi è {DateTime.UtcNow}.", true)
+                .AddScene(scene =>
+                {
+                    scene
+                        .WithName("Weather")
+                        .WithDescription("Get information about the weather")
+                        .WithHttpClient("apiDomain")
+                        .WithOpenAi("Azure2")
+                        .WithService<WeatherService>(serviceBuilder =>
+                        {
+                            serviceBuilder
+                                .WithMethod(x => x.AddCountryAsync, "Add country", "Used to add country when it does not exist")
+                                .WithMethod(x => x.AddCityAsync, "Add city", "Used to add city when it does not exist")
+                                .WithMethod(x => x.ExistsAsync, "Check if country exists", "Used to check if the city exists")
+                                .WithMethod(x => x.CityExistsAsync, "Check if city exists", "Used to check if the city exists")
+                                .WithMethod(x => x.DeleteCityAsync, "Delete city", "Used to delete the city")
+                                .WithMethod(x => x.DeleteCountryAsync, "Delete country", "Used to delete the country")
+                                .WithMethod(x => x.GetCitiesAsync, "Get cities", "Used to get the cities")
+                                .WithMethod(x => x.GetCountriesAsync, "Get country", "Used to get the country")
+                                .WithMethod(x => x.ReadCityByIdAsync, "Get city by id", "Used to get the city by id")
+                                .WithMethod(x => x.Get, "Get weather", "Get weather for the city");
+                        })
+                            .WithActors(actors =>
+                            {
+                                actors
+                                    .AddActor("Nel caso non esistesse la città richiesta potresti aggiungerla con il numero dei suoi abitanti con la function apposita.")
+                                    .AddActor("Ricordati che va sempre aggiunta anche la nazione, quindi se non c'è la nazione aggiungi anche quella sempre con la function.")
+                                    .AddActor("Non chiamare alcun meteo prima di assicurarti che tutto sia stato popolato correttamente.")
+                                    .AddActor<ActorWithDbRequest>();
+                            });
+                })
+                .AddScene(scene =>
+                {
+                    scene
+                    .WithName("Identity")
+                    .WithDescription("Get information about the user")
+                    .WithOpenAi("openai")
+                    .WithService<IdentityManager>(builder =>
+                    {
+                        builder.WithMethod(x => x.GetNameAsync);
+                    });
+                })
+                .AddScene(scene =>
+                {
+                    scene
+                        .WithName("Chiedi ferie o permessi.")
+                        .WithDescription("Gestisci richieste di ferie o permessi.")
+                        .WithActors(actorBuilder =>
+                        {
+                            actorBuilder
+                                .AddActor("Se non hai capito la richiesta chiedi chiarimenti.")
+                                .AddActor("Controlla se l'email è corretta e se non lo è chiedi di correggerla.")
+                                .AddActor("Controlla se le date sono corrette e se non lo sono chiedi di correggerle.")
+                                .AddActor("Controlla se il numero di giorni è corretto e se non lo è chiedi di correggerlo.")
+                                .AddActor($"Lo UserId è {Guid.NewGuid()}");
+                        })
+                        .WithService<VacationService>(serviceBuilder =>
+                        {
+                            serviceBuilder
+                                .WithMethod(x => x.MakeRequest, "eseguire_richiesta_ferie_permessi", "Metodo che permette la richiesta di ferie o permessi")
+                                .WithMethod(x => x.GetApprovers, "prendi_approvatori_richiesta", "Recupera le email di chi dovrà approvare la richiesta")
+                                .WithMethod(x => x.GetAvailableDates, "prendi_date_festive", "Recupera le date festive per cui non è possibile chiedere ferie o permessi");
+                        });
+                });
+            });
             return services;
         }
         protected override ValueTask ConfigureServerServicesAsync(IServiceCollection services, IConfiguration configuration)

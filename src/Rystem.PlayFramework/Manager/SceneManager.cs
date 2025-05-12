@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -57,6 +58,14 @@ namespace Rystem.PlayFramework
             if (requestSettings.Context != null)
                 requestSettings.Context.InputMessage = message;
             var context = requestSettings.Context ?? new SceneContext { ServiceProvider = _serviceProvider, InputMessage = message, Properties = requestSettings.Properties ?? [], Responses = oldValue ?? [] };
+            context.Responses.Add(new AiSceneResponse
+            {
+                RequestKey = requestSettings.Key!,
+                Name = ScenesBuilder.Request,
+                Message = message,
+                ResponseTime = DateTime.UtcNow,
+                Status = AiResponseStatus.Starting
+            });
             context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
             var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             context.CurrentChatClient = chatClient;
@@ -64,6 +73,10 @@ namespace Rystem.PlayFramework
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
             await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
             await PlayActorsInScene(context, chatClient, mainActors, cancellationToken);
+            if (oldValue != null)
+            {
+                chatClient.AddSystemMessage($"the previous request flow: {oldValue.ToJson()}");
+            }
             chatClient.AddUserMessage(message);
             await foreach (var response in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
             {
@@ -168,24 +181,24 @@ namespace Rystem.PlayFramework
             {
                 foreach (var toolCall in chatResponse!.Choices![0]!.Message!.ToolCalls!)
                 {
-                    var json = toolCall.Function!.Arguments!;
+                    var arguments = toolCall.Function!.Arguments!;
                     var functionName = toolCall.Function!.Name!;
                     var responseAsJson = string.Empty;
                     var function = _functionsHandler[functionName];
                     if (function.HasHttpRequest)
                     {
-                        responseAsJson = await ExecuteHttpClientAsync(clientName, function.HttpRequest!, json, cancellationToken);
+                        responseAsJson = await ExecuteHttpClientAsync(clientName, function.HttpRequest!, arguments, cancellationToken);
                     }
                     else if (function.HasService)
                     {
-                        responseAsJson = await ExecuteServiceAsync(function.Service!, context, json, cancellationToken);
+                        responseAsJson = await ExecuteServiceAsync(function.Service!, context, arguments, cancellationToken);
                     }
                     yield return new AiSceneResponse
                     {
                         RequestKey = sceneRequestSettings.Key!,
                         Name = sceneName,
                         FunctionName = functionName,
-                        Arguments = json.ToJson(),
+                        Arguments = arguments,
                         Response = responseAsJson,
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.FunctionRequest
@@ -221,7 +234,17 @@ namespace Rystem.PlayFramework
                 await input.Value(json, serviceBringer);
             }
             var response = await serviceHandler.Call(_serviceProvider, serviceBringer, sceneContext, cancellationToken);
-            return response.ToJson();
+            if (response == null)
+                return string.Empty;
+            else if (response.IsT0)
+            {
+                if (response.CastT0.IsPrimitive())
+                    return response.CastT0.ToString();
+                else
+                    return response.CastT0.ToJson();
+            }
+            else
+                return response.CastT1.Message;
         }
         private async Task<string?> ExecuteHttpClientAsync(string? clientName, HttpHandler httpHandler, string argumentAsJson, CancellationToken cancellationToken)
         {

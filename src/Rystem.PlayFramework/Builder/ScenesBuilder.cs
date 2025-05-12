@@ -15,7 +15,8 @@ namespace Rystem.PlayFramework
             _settings = new();
             _playHander = _services.GetSingletonService<PlayHandler>()!;
         }
-        public const string MainActor = "MainActor";
+        public const string MainActor = nameof(MainActor);
+        public const string Request = nameof(Request);
         public IScenesBuilder Configure(Action<SceneManagerSettings> settings)
         {
             settings(_settings);
