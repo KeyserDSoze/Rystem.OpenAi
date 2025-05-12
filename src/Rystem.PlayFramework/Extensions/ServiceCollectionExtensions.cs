@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
             if (!streaming)
                 services.AddFactory<ISceneManager, SceneManager>(name, ServiceLifetime.Transient);
             else
-                services.AddFactory<ISceneManager, StreamingSceneManager>(name, ServiceLifetime.Transient);
+                services.AddFactory<ISceneManager, SceneManager>(name, ServiceLifetime.Transient);
+            //services.AddFactory<ISceneManager, StreamingSceneManager>(name, ServiceLifetime.Transient);
             services.AddSingleton<ActorsOpenAiEndpointParser>();
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());

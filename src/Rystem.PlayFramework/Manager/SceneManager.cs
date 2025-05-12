@@ -17,6 +17,7 @@ namespace Rystem.PlayFramework
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly PlayHandler _playHandler;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly ICacheService? _cacheService;
         private readonly SceneManagerSettings? _settings;
 
         public SceneManager(IServiceProvider serviceProvider,
@@ -26,6 +27,7 @@ namespace Rystem.PlayFramework
             IHttpClientFactory httpClientFactory,
             PlayHandler playHandler,
             FunctionsHandler functionsHandler,
+            ICacheService? cacheService = null,
             SceneManagerSettings? settings = null)
         {
             _httpContext = httpContextAccessor?.HttpContext;
@@ -35,6 +37,7 @@ namespace Rystem.PlayFramework
             _httpClientFactory = httpClientFactory;
             _playHandler = playHandler;
             _functionsHandler = functionsHandler;
+            _cacheService = cacheService;
             _settings = settings;
         }
         private const string Starting = nameof(Starting);
@@ -42,9 +45,18 @@ namespace Rystem.PlayFramework
         {
             var requestSettings = new SceneRequestSettings();
             settings?.Invoke(requestSettings);
+            List<AiSceneResponse>? oldValue = null;
+            if (requestSettings.Key == null)
+            {
+                requestSettings.Key = Guid.NewGuid().ToString();
+            }
+            else if (!requestSettings.CacheIsAvoidable && _cacheService != null)
+            {
+                oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
+            }
             if (requestSettings.Context != null)
                 requestSettings.Context.InputMessage = message;
-            var context = requestSettings.Context ?? new SceneContext { ServiceProvider = _serviceProvider, InputMessage = message, Properties = requestSettings.Properties ?? [] };
+            var context = requestSettings.Context ?? new SceneContext { ServiceProvider = _serviceProvider, InputMessage = message, Properties = requestSettings.Properties ?? [], Responses = oldValue ?? [] };
             context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
             var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             context.CurrentChatClient = chatClient;
@@ -57,6 +69,10 @@ namespace Rystem.PlayFramework
             {
                 context.Responses.Add(response);
                 yield return response;
+            }
+            if (!requestSettings.CacheIsAvoidable && _cacheService != null)
+            {
+                await _cacheService.SetAsync(requestSettings.Key, context.Responses, cancellationToken);
             }
         }
         private async IAsyncEnumerable<AiSceneResponse> RequestAsync(SceneContext context, SceneRequestSettings requestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -74,6 +90,7 @@ namespace Rystem.PlayFramework
                 {
                     yield return new AiSceneResponse
                     {
+                        RequestKey = requestSettings.Key!,
                         Name = toolCall.Function!.Name,
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.Starting,
@@ -81,7 +98,7 @@ namespace Rystem.PlayFramework
                     var scene = _sceneFactory.Create(toolCall.Function!.Name);
                     if (scene != null)
                     {
-                        await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, mainActorsThatPlayEveryScene, cancellationToken))
+                        await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                         {
                             context.Responses.Add(sceneResponse);
                             yield return sceneResponse;
@@ -107,6 +124,7 @@ namespace Rystem.PlayFramework
                         {
                             yield return new AiSceneResponse
                             {
+                                RequestKey = requestSettings.Key!,
                                 Status = AiResponseStatus.FinishedOk,
                                 ResponseTime = DateTime.UtcNow,
                             };
@@ -118,13 +136,14 @@ namespace Rystem.PlayFramework
             {
                 yield return new AiSceneResponse
                 {
+                    RequestKey = requestSettings.Key!,
                     Message = response?.Choices?[0]?.Message?.Content,
                     ResponseTime = DateTime.UtcNow,
                     Status = AiResponseStatus.FinishedNoTool
                 };
             }
         }
-        private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IScene scene, string message, SceneContext context, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IScene scene, string message, SceneContext context, SceneRequestSettings sceneRequestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var chatClient = _openAiFactory.Create(scene.OpenAiFactoryName)?.Chat ?? _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             context.CurrentChatClient = chatClient;
@@ -138,12 +157,12 @@ namespace Rystem.PlayFramework
             }
             chatClient.AddUserMessage(message);
             var response = await chatClient.ExecuteAsync(cancellationToken);
-            await foreach (var result in GetResponseAsync(scene.Name, scene.HttpClientName, context, chatClient, response, cancellationToken))
+            await foreach (var result in GetResponseAsync(scene.Name, scene.HttpClientName, context, sceneRequestSettings, chatClient, response, cancellationToken))
             {
                 yield return result;
             }
         }
-        private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, SceneContext context, IOpenAiChat chatClient, ChatResult chatResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, SceneContext context, SceneRequestSettings sceneRequestSettings, IOpenAiChat chatClient, ChatResult chatResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (chatResponse?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
             {
@@ -163,6 +182,7 @@ namespace Rystem.PlayFramework
                     }
                     yield return new AiSceneResponse
                     {
+                        RequestKey = sceneRequestSettings.Key!,
                         Name = sceneName,
                         FunctionName = functionName,
                         Arguments = json.ToJson(),
@@ -176,7 +196,7 @@ namespace Rystem.PlayFramework
             chatResponse = await chatClient.ExecuteAsync(cancellationToken);
             if (chatResponse?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
             {
-                await foreach (var result in GetResponseAsync(sceneName, clientName, context, chatClient, chatResponse, cancellationToken))
+                await foreach (var result in GetResponseAsync(sceneName, clientName, context, sceneRequestSettings, chatClient, chatResponse, cancellationToken))
                 {
                     yield return result;
                 }
@@ -184,6 +204,7 @@ namespace Rystem.PlayFramework
             else
                 yield return new AiSceneResponse
                 {
+                    RequestKey = sceneRequestSettings.Key!,
                     Name = sceneName,
                     Message = chatResponse?.Choices?[0]?.Message?.Content,
                     ResponseTime = DateTime.UtcNow,

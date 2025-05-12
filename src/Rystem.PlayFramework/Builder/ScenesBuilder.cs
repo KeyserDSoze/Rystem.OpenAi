@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rystem.OpenAi;
 
@@ -73,6 +72,13 @@ namespace Rystem.PlayFramework
                 Name = sceneBuilder.Scene.Name,
                 Description = sceneBuilder.Scene.Description,
             });
+            return this;
+        }
+
+        public IScenesBuilder AddCache(Action<ICacheBuilder> cacheBuilder)
+        {
+            var builder = new CacheBuilder(_services);
+            cacheBuilder(builder);
             return this;
         }
     }

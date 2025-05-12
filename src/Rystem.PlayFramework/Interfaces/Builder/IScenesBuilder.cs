@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Rystem.PlayFramework
 {
@@ -11,5 +13,6 @@ namespace Rystem.PlayFramework
         IScenesBuilder AddMainActor(Func<SceneContext, CancellationToken, Task<string>> action, bool playInEveryScene);
         IScenesBuilder AddCustomDirector<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, IDirector;
         IScenesBuilder AddScene(Action<ISceneBuilder> builder);
+        IScenesBuilder AddCache(Action<ICacheBuilder> cacheBuilder);
     }
 }

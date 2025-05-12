@@ -2,7 +2,14 @@
 {
     public sealed class SceneRequestSettings
     {
+        internal string? Key { get; set; }
         internal List<string>? ScenesToAvoid { get; set; }
+        internal bool CacheIsAvoidable { get; set; }
+        public SceneRequestSettings WithKey(string key)
+        {
+            Key = key;
+            return this;
+        }
         public SceneRequestSettings AvoidScene(string name)
         {
             ScenesToAvoid ??= [];
@@ -13,6 +20,11 @@
         {
             ScenesToAvoid ??= [];
             ScenesToAvoid.AddRange(names);
+            return this;
+        }
+        public SceneRequestSettings AvoidCache()
+        {
+            CacheIsAvoidable = true;
             return this;
         }
         internal Dictionary<object, object>? Properties { get; set; }
