@@ -20,7 +20,7 @@ namespace Rystem.PlayFramework
             _playHandler = _services.GetSingletonService<PlayHandler>()!;
             _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
         }
-        private static readonly Regex s_checkName = new("[^a-zA-Z0-9_\\-\\.]{1,64}");
+        private static readonly Regex s_checkName = new("[^a-zA-Z0-9_\\-]{1,64}");
         public ISceneBuilder WithName(string name)
         {
             Scene.Name = s_checkName.Replace(name.Replace(' ', '-'), string.Empty);

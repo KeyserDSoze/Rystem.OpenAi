@@ -3,6 +3,6 @@
     internal sealed class ServiceHandler
     {
         public Dictionary<string, Func<Dictionary<string, string>, ServiceBringer, ValueTask>> Actions { get; } = [];
-        public required Func<IServiceProvider, ServiceBringer, SceneContext, CancellationToken, Task<object?>> Call { get; set; }
+        public required Func<IServiceProvider, ServiceBringer, SceneContext, CancellationToken, Task<AnyOf<object, ActorResponse>?>> Call { get; set; }
     }
 }

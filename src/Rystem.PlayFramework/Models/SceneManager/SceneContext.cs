@@ -7,7 +7,7 @@ namespace Rystem.PlayFramework
         public required IServiceProvider ServiceProvider { get; init; }
         public required string InputMessage { get; set; }
         public string? CurrentSceneName { get; set; }
-        public List<AiSceneResponse> Responses { get; } = [];
+        public List<AiSceneResponse> Responses { get; init; } = [];
         public IOpenAiChat? CurrentChatClient { get; set; }
         public Func<IOpenAiChat>? CreateNewDefaultChatClient { get; set; }
         public required Dictionary<object, object> Properties { get; init; }

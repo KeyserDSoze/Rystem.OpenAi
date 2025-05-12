@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.PlayFramework;
 
@@ -27,17 +28,26 @@ namespace Microsoft.AspNetCore.Builder
                 List<RouteHandlerBuilder> routes =
                 [
                     x.MapPost("api/ai/message",
-                        ([FromQuery(Name = "m")] string message,
+                        ([FromQuery(Name = "k")] string? key,
+                         [FromQuery(Name = "m")] string message,
                         [FromBody] SceneRequestSettingsForApi settings,
                         [FromServices] ISceneManager sceneManager,
-                        CancellationToken cancellationToken) => sceneManager.ExecuteAsync(message, settings => {
-                            settings.Properties = settings.Properties;
-                            settings.ScenesToAvoid = settings.ScenesToAvoid;
+                        CancellationToken cancellationToken) => sceneManager.ExecuteAsync(message, settingBuilder => {
+                            settingBuilder.Properties = settings.Properties;
+                            settingBuilder.ScenesToAvoid = settings.ScenesToAvoid;
+                            if (key != null)
+                                settingBuilder.WithKey(key);
+                            if (settings.AvoidCache)
+                                settingBuilder.AvoidCache();
                         }, cancellationToken)),
                     x.MapGet("api/ai/message",
-                       ([FromQuery(Name = "m")] string message,
+                       ([FromQuery(Name = "k")] string? key,
+                        [FromQuery(Name = "m")] string message,
                        [FromServices] ISceneManager sceneManager,
-                       CancellationToken cancellationToken) => sceneManager.ExecuteAsync(message, null, cancellationToken))
+                       CancellationToken cancellationToken) => sceneManager.ExecuteAsync(message, settingBuilder => {
+                           if (key != null)
+                                settingBuilder.WithKey(key);
+                       }, cancellationToken))
                 ];
                 foreach (var mapped in routes)
                     if (policies.Length > 0)
