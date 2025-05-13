@@ -31,15 +31,16 @@ namespace Rystem.OpenAi
                 };
                 jsonFunction.AddArray(name, arrayFunction);
                 type = type.GetGenericArguments().First();
-                foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+                if (!type.IsPrimitive())
+                    foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                     {
-                        var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
-                        var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                        Add(propertyName, innerParameter.PropertyType, theArrayObject, propertyDescription);
+                        if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+                        {
+                            var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
+                            var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                            Add(propertyName, innerParameter.PropertyType, theArrayObject, propertyDescription);
+                        }
                     }
-                }
             }
             else if (type.IsClass)
             {

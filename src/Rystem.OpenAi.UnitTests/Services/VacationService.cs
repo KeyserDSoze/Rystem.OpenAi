@@ -42,13 +42,12 @@ namespace Rystem.OpenAi.UnitTests.Services
         }
         public Approver GetApprovers(string userId)
         {
-            //create 10 random emails and put them in a list
-            var emails = new List<string>();
-            for (var i = 0; i < 10; i++)
+            var emails = new List<string>
             {
-                var email = $"{Guid.NewGuid()}@gmail.com";
-                emails.Add(email);
-            }
+                "alessandro.rapiti@gmail.com",
+                "francesco.maria@gmail.com",
+                "federico.soluti@gmail.com"
+            };
             return new Approver
             {
                 Emails = emails
