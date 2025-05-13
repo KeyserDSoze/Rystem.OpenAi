@@ -133,7 +133,14 @@ namespace Rystem.PlayFramework
                         parametersFiller.Add(parameterName, (value, bringer) =>
                         {
                             if (parameterType.IsPrimitive())
-                                bringer.Parameters.Add(value[parameterName].Cast(parameterType));
+                            {
+                                if (parameterType == typeof(DateTime))
+                                    bringer.Parameters.Add(DateTime.Parse(value[parameterName]));
+                                else if (parameterType == typeof(DateOnly))
+                                    bringer.Parameters.Add(DateOnly.Parse(value[parameterName]));
+                                else
+                                    bringer.Parameters.Add(value[parameterName].Cast(parameterType));
+                            }
                             else
                                 bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
                             return ValueTask.CompletedTask;

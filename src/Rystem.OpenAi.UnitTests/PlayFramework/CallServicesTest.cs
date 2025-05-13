@@ -36,8 +36,8 @@ namespace Rystem.PlayFramework.Test
             Assert.True(responses.Count > responses2.Count, "The second response should be smaller than the first one.");
         }
         [Theory]
-        [InlineData("Vorrei prendere dal 10 di giugno al 20", "")]
-        public async ValueTask TestVacationAsync(string message, string expectedSubstring)
+        [InlineData("Vorrei prendere dal 10 di giugno al 20", "Si, puoi inviare la richiesta")]
+        public async ValueTask TestVacationAsync(string message, string secondMessage)
         {
             var response = _sceneManager.ExecuteAsync(message, null, TestContext.Current.CancellationToken);
             string? id = null;
@@ -46,15 +46,13 @@ namespace Rystem.PlayFramework.Test
             {
                 id ??= item.RequestKey;
                 Assert.Equal(id, item.RequestKey);
-                Assert.Contains(expectedSubstring, item.RequestKey);
                 responses.Add(item);
             }
-            response = _sceneManager.ExecuteAsync(message, settings => settings.WithKey(id), TestContext.Current.CancellationToken);
+            response = _sceneManager.ExecuteAsync(secondMessage, settings => settings.WithKey(id), TestContext.Current.CancellationToken);
             var responses2 = new List<AiSceneResponse>();
             await foreach (var item in response)
             {
                 Assert.Equal(id, item.RequestKey);
-                Assert.Contains(expectedSubstring, item.RequestKey);
                 responses2.Add(item);
             }
             Assert.True(responses.Count > responses2.Count, "The second response should be smaller than the first one.");

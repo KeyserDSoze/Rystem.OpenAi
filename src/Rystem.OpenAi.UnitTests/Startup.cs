@@ -230,10 +230,7 @@ namespace Rystem.OpenAi.UnitTests
                         .WithActors(actorBuilder =>
                         {
                             actorBuilder
-                                .AddActor("Se non hai capito la richiesta chiedi chiarimenti.")
-                                .AddActor("Controlla se l'email è corretta e se non lo è chiedi di correggerla.")
-                                .AddActor("Controlla se le date sono corrette e se non lo sono chiedi di correggerle.")
-                                .AddActor("Controlla se il numero di giorni è corretto e se non lo è chiedi di correggerlo.")
+                                .AddActor("Se non hai capito la richiesta chiedi chiarimenti. Se le date richieste sono senza anno, usa l'anno attuale. Evita sempre i giorni festivi, non c'è bisogno di richiedere se toglierli o meno, l'utente sa già che non saranno contati.")
                                 .AddActor($"Lo UserId è {Guid.NewGuid()}");
                         })
                         .WithService<VacationService>(serviceBuilder =>
