@@ -43,7 +43,7 @@ namespace Rystem.PlayFramework
                     memoryCacheAlreadyChecked = true;
                     _memoryCache.TryGetValue(id, out value);
                 }
-                if (distributedCacheAlreadyChecked && (value == null && (_cacheSettings.DistributedIsDefault || !firstTime)) && _distributedCache != null)
+                if (!distributedCacheAlreadyChecked && (value == null && (_cacheSettings.DistributedIsDefault || !firstTime)) && _distributedCache != null)
                 {
                     distributedCacheAlreadyChecked = true;
                     await _distributedCache.GetStringAsync(id, cancellationToken).ContinueWith(x =>
