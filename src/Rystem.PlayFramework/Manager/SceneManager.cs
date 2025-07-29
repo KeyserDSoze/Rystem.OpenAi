@@ -85,7 +85,7 @@ namespace Rystem.PlayFramework
             }
             if (!requestSettings.CacheIsAvoidable && _cacheService != null)
             {
-                await _cacheService.SetAsync(requestSettings.Key, context.Responses, cancellationToken);
+                await _cacheService.SetAsync(requestSettings.Key, context.Responses, cancellationToken: cancellationToken);
             }
         }
         private async IAsyncEnumerable<AiSceneResponse> RequestAsync(SceneContext context, SceneRequestSettings requestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)

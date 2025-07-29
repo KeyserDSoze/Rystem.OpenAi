@@ -32,5 +32,11 @@ namespace Rystem.PlayFramework
             _services.TryAddService<ICustomCache>(lifetime);
             return this;
         }
+        
+        public ICacheBuilder WithCustomExpiration(TimeSpan? expiration = null)
+        {
+            _settings.ExpirationDefault = expiration;
+            return this;
+        }
     }
 }
