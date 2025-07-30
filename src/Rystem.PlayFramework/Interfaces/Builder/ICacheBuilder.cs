@@ -7,6 +7,6 @@ namespace Rystem.PlayFramework
         ICacheBuilder WithMemory(bool useAsDefault = true);
         ICacheBuilder WithDistributed(bool useAsDefault = false);
         ICacheBuilder WithCustomCache<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, ICustomCache;
-        ICacheBuilder WithCustomExpiration(TimeSpan? expiration = null);
+        ICacheBuilder WithCustomExpiration(Action<CustomCacheSettings>? customCacheSettings = null);
     }
 }

@@ -6,8 +6,6 @@ namespace Rystem.PlayFramework
 {
     internal sealed class CacheService : ICacheService
     {
-        private const int DefaultExpirationInMinutes = 15;
-        private readonly TimeSpan _defaultExpiration = TimeSpan.FromMinutes(DefaultExpirationInMinutes);
         private readonly CacheSettings _cacheSettings;
         private readonly IMemoryCache? _memoryCache;
         private readonly IDistributedCache? _distributedCache;
@@ -85,27 +83,50 @@ namespace Rystem.PlayFramework
             }
         }
 
-        public async ValueTask<bool> SetAsync(string id, List<AiSceneResponse> aiSceneResponses, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+        public async ValueTask<bool> SetAsync(string id, List<AiSceneResponse> aiSceneResponses, Action<CustomCacheSettings>? customCacheSettings = null, CancellationToken cancellationToken = default)
         {
+            var cacheSettings = new CustomCacheSettings();
+            var hasCustomSettings = customCacheSettings != null;
+            customCacheSettings?.Invoke(cacheSettings);
+            
+            var effectiveExpiration = hasCustomSettings
+                ? cacheSettings.ExpirationDefault
+                : _cacheSettings.ExpirationDefault;
+            
             var check = true;
+            
             if (_customCache != null)
-                check &= await _customCache.SetAsync(id, aiSceneResponses, _cacheSettings.ExpirationDefault ?? _defaultExpiration, cancellationToken);
-
+            {
+                check &= await _customCache.SetAsync(id, aiSceneResponses, customCacheSettings, cancellationToken);
+            }
+        
             if (_memoryCache != null)
             {
-                _memoryCache.Set(id, aiSceneResponses, _cacheSettings.ExpirationDefault ?? _defaultExpiration);
+                if (effectiveExpiration.HasValue)
+                    _memoryCache.Set(id, aiSceneResponses, effectiveExpiration.Value);
+                else
+                    _memoryCache.Set(id, aiSceneResponses);
+                
                 check &= true;
             }
-
+        
             if (_distributedCache != null)
             {
-                var distributedCacheEntryOptions = new DistributedCacheEntryOptions
+                if (effectiveExpiration.HasValue)
                 {
-                    AbsoluteExpirationRelativeToNow = _cacheSettings.ExpirationDefault ?? _defaultExpiration
-                };
-                await _distributedCache.SetStringAsync(id, aiSceneResponses.ToJson(), distributedCacheEntryOptions, cancellationToken);
+                    var distributedCacheEntryOptions = new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = effectiveExpiration
+                    };
+                    
+                    await _distributedCache.SetStringAsync(id, aiSceneResponses.ToJson(), distributedCacheEntryOptions, cancellationToken);
+                }
+                else
+                    await _distributedCache.SetStringAsync(id, aiSceneResponses.ToJson(), cancellationToken);
+                
                 check &= true;
             }
+            
             return check;
         }
     }
