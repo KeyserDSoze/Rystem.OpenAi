@@ -6,13 +6,15 @@ namespace Rystem.PlayFramework
 {
     internal sealed class CacheService : ICacheService
     {
+        private readonly CacheBehavior _cacheBehavior;
         private readonly CacheSettings _cacheSettings;
         private readonly IMemoryCache? _memoryCache;
         private readonly IDistributedCache? _distributedCache;
         private readonly ICustomCache? _customCache;
 
-        public CacheService(CacheSettings cacheSettings, IMemoryCache? memoryCache = null, IDistributedCache? distributedCache = null, ICustomCache? customCache = null)
+        public CacheService(CacheBehavior cacheBehavior, CacheSettings cacheSettings, IMemoryCache? memoryCache = null, IDistributedCache? distributedCache = null, ICustomCache? customCache = null)
         {
+            _cacheBehavior = cacheBehavior;
             _cacheSettings = cacheSettings;
             _memoryCache = memoryCache;
             _distributedCache = distributedCache;
@@ -21,96 +23,92 @@ namespace Rystem.PlayFramework
 
         public async Task<List<AiSceneResponse>> GetAsync(string id, CancellationToken cancellationToken)
         {
-            List<AiSceneResponse>? value = null;
-            var customCacheAlreadyChecked = false;
-            var memoryCacheAlreadyChecked = false;
-            var distributedCacheAlreadyChecked = false;
-            if (value == null)
+            // Custom Cache (se attiva)
+            if (_cacheBehavior.WithCustom && _customCache != null)
             {
-                await CheckAsync(true);
-                await CheckAsync(false);
+                var customValue = await _customCache.GetAsync(id, cancellationToken);
+                if (customValue != null)
+                    return customValue;
             }
 
-            return value ?? [];
-
-            async ValueTask CheckAsync(bool firstTime)
+            if (_cacheBehavior.WithMemory)
             {
-                if (!customCacheAlreadyChecked && _customCache != null)
-                {
-                    customCacheAlreadyChecked = true;
-                    value = await _customCache.GetAsync(id, cancellationToken);
-                    if (value != null) return;
-                }
-            
-                if (ShouldCheckMemoryCache(firstTime))
-                {
-                    memoryCacheAlreadyChecked = true;
-                    if (_memoryCache!.TryGetValue(id, out value) && value != null)
-                        return;
-                }
-            
-                if (ShouldCheckDistributedCache(firstTime))
-                {
-                    distributedCacheAlreadyChecked = true;
-                    value = await GetFromDistributedCacheAsync();
-                }
+                var memoryValue = GetFromMemory(id);
+                if (memoryValue != null)
+                    return memoryValue;
             }
-            
-            bool ShouldCheckMemoryCache(bool firstTime) =>
-                !memoryCacheAlreadyChecked && 
-                value == null && 
-                (_cacheSettings.MemoryIsDefault || !firstTime) && 
-                _memoryCache != null;
-            
-            bool ShouldCheckDistributedCache(bool firstTime) =>
-                !distributedCacheAlreadyChecked && 
-                value == null && 
-                (_cacheSettings.DistributedIsDefault || !firstTime) && 
-                _distributedCache != null;
-            
-            async ValueTask<List<AiSceneResponse>?> GetFromDistributedCacheAsync()
+
+            if (_cacheBehavior.WithDistributed)
             {
-                try
+                var distributedValue = await GetFromDistributed(id, cancellationToken);
+                if (distributedValue != null)
+                    return distributedValue;
+            }
+
+            return [];
+
+            List<AiSceneResponse>? GetFromMemory(string key)
+            {
+                if (_cacheBehavior.WithMemory && _memoryCache != null)
                 {
-                    var cachedData = await _distributedCache!.GetStringAsync(id, cancellationToken);
-                    return string.IsNullOrEmpty(cachedData) ? null : cachedData.FromJson<List<AiSceneResponse>>();
+                    if (_memoryCache.TryGetValue(key, out List<AiSceneResponse>? value) && value != null)
+                        return value;
                 }
-                catch
+                return null;
+            }
+
+            async ValueTask<List<AiSceneResponse>?> GetFromDistributed(string key, CancellationToken token)
+            {
+                if (_cacheBehavior.WithDistributed && _distributedCache != null)
                 {
-                    // Log dell'errore se necessario
-                    return null;
+                    try
+                    {
+                        var cachedData = await _distributedCache.GetStringAsync(key, token);
+                        return string.IsNullOrEmpty(cachedData)
+                            ? null
+                            : cachedData.FromJson<List<AiSceneResponse>>();
+                    }
+                    catch
+                    {
+                        // Probably we need a log here, but for now we just return null.
+                        return null;
+                    }
                 }
+                return null;
             }
         }
 
-        public async ValueTask<bool> SetAsync(string id, List<AiSceneResponse> aiSceneResponses, Action<CustomCacheSettings>? customCacheSettings = null, CancellationToken cancellationToken = default)
+        public async ValueTask<bool> SetAsync(string id, List<AiSceneResponse> aiSceneResponses, Action<CacheSettings>? customCacheSettings = null, CancellationToken cancellationToken = default)
         {
-            var cacheSettings = new CustomCacheSettings();
-            var hasCustomSettings = customCacheSettings != null;
-            customCacheSettings?.Invoke(cacheSettings);
-            
-            var effectiveExpiration = hasCustomSettings
-                ? cacheSettings.ExpirationDefault
-                : _cacheSettings.ExpirationDefault;
-            
-            var check = true;
-            
-            if (_customCache != null)
+            var cacheSettings = _cacheSettings;
+            if (customCacheSettings != null)
             {
-                check &= await _customCache.SetAsync(id, aiSceneResponses, customCacheSettings, cancellationToken);
+                cacheSettings = new CacheSettings();
+                customCacheSettings.Invoke(cacheSettings);
             }
-        
-            if (_memoryCache != null)
+
+            var effectiveExpiration = cacheSettings?.ExpirationDefault;
+            var dataToStore = cacheSettings == null ? aiSceneResponses :
+                [.. aiSceneResponses.Where(x => cacheSettings.RecordedResponses.HasFlag(x.Status))];
+
+            var check = true;
+
+            if (_cacheBehavior.WithCustom && _customCache != null)
+            {
+                check &= await _customCache.SetAsync(id, dataToStore, cacheSettings, cancellationToken);
+            }
+
+            if (_cacheBehavior.WithMemory && _memoryCache != null)
             {
                 if (effectiveExpiration.HasValue)
-                    _memoryCache.Set(id, aiSceneResponses, effectiveExpiration.Value);
+                    _memoryCache.Set(id, dataToStore, effectiveExpiration.Value);
                 else
-                    _memoryCache.Set(id, aiSceneResponses);
-                
+                    _memoryCache.Set(id, dataToStore);
+
                 check &= true;
             }
-        
-            if (_distributedCache != null)
+
+            if (_cacheBehavior.WithDistributed && _distributedCache != null)
             {
                 if (effectiveExpiration.HasValue)
                 {
@@ -118,15 +116,15 @@ namespace Rystem.PlayFramework
                     {
                         AbsoluteExpirationRelativeToNow = effectiveExpiration
                     };
-                    
-                    await _distributedCache.SetStringAsync(id, aiSceneResponses.ToJson(), distributedCacheEntryOptions, cancellationToken);
+
+                    await _distributedCache.SetStringAsync(id, dataToStore.ToJson(), distributedCacheEntryOptions, cancellationToken);
                 }
                 else
-                    await _distributedCache.SetStringAsync(id, aiSceneResponses.ToJson(), cancellationToken);
-                
+                    await _distributedCache.SetStringAsync(id, dataToStore.ToJson(), cancellationToken);
+
                 check &= true;
             }
-            
+
             return check;
         }
     }

@@ -5,25 +5,26 @@ namespace Rystem.PlayFramework
 {
     internal sealed class CacheBuilder : ICacheBuilder
     {
-        private readonly TimeSpan _defaultExpiration = TimeSpan.FromMinutes(15);
-        private readonly CacheSettings _settings = new();
+        private readonly CacheBehavior _behavior = new();
+        private readonly CacheSettings _cacheSettings = new();
         private readonly IServiceCollection _services;
 
         public CacheBuilder(IServiceCollection services)
         {
             _services = services;
-            _services.TryAddSingleton(_settings);
+            _services.TryAddSingleton(_behavior);
+            _services.TryAddSingleton(_cacheSettings);
             _services.TryAddTransient<ICacheService, CacheService>();
         }
-        public ICacheBuilder WithDistributed(bool useAsDefault = false)
+        public ICacheBuilder WithDistributed()
         {
-            _settings.DistributedIsDefault = useAsDefault;
+            _behavior.WithDistributed = true;
             return this;
         }
 
-        public ICacheBuilder WithMemory(bool useAsDefault = true)
+        public ICacheBuilder WithMemory()
         {
-            _settings.MemoryIsDefault = useAsDefault;
+            _behavior.WithMemory = true;
             return this;
         }
 
@@ -31,20 +32,13 @@ namespace Rystem.PlayFramework
             where T : class, ICustomCache
         {
             _services.TryAddService<ICustomCache>(lifetime);
+            _behavior.WithCustom = true;
             return this;
         }
-        
-       public ICacheBuilder WithCustomExpiration(Action<CustomCacheSettings>? customCacheSettings = null)
+
+        public ICacheBuilder WithSettings(Action<CacheSettings> customCacheSettings)
         {
-            if (customCacheSettings == null)
-            {
-                _settings.ExpirationDefault = _defaultExpiration;
-                return this;
-            }
-            
-            var cacheSettings = new CustomCacheSettings();
-            customCacheSettings.Invoke(cacheSettings);
-            _settings.ExpirationDefault = cacheSettings.ExpirationDefault;
+            customCacheSettings.Invoke(_cacheSettings);
             return this;
         }
     }

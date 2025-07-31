@@ -57,14 +57,20 @@ namespace Rystem.PlayFramework
             }
             if (requestSettings.Context != null)
                 requestSettings.Context.InputMessage = message;
-            var context = requestSettings.Context ?? new SceneContext { ServiceProvider = _serviceProvider, InputMessage = message, Properties = requestSettings.Properties ?? [], Responses = oldValue ?? [] };
+            var context = requestSettings.Context ?? new SceneContext
+            {
+                ServiceProvider = _serviceProvider,
+                InputMessage = message,
+                Properties = requestSettings.Properties ?? [],
+                Responses = oldValue?.Select(x => x).ToList() ?? []
+            };
             context.Responses.Add(new AiSceneResponse
             {
                 RequestKey = requestSettings.Key!,
                 Name = ScenesBuilder.Request,
                 Message = message,
                 ResponseTime = DateTime.UtcNow,
-                Status = AiResponseStatus.Starting
+                Status = AiResponseStatus.Request
             });
             context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
             var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
@@ -75,7 +81,38 @@ namespace Rystem.PlayFramework
             await PlayActorsInScene(context, chatClient, mainActors, cancellationToken);
             if (oldValue != null)
             {
-                chatClient.AddSystemMessage($"the previous request flow: {oldValue.ToJson()}");
+                StringBuilder oldRequests = new();
+                oldRequests.AppendLine($"the previous request flow:");
+                oldRequests.AppendLine();
+                var counter = 1;
+                foreach (var oldValueItem in oldValue)
+                {
+                    oldRequests.AppendLine($"{counter}) - type of message: {oldValueItem.Status}");
+                    counter++;
+                    if (oldValueItem.Message != null)
+                    {
+                        oldRequests.AppendLine($"- Message: {oldValueItem.Message}");
+                    }
+                    if (oldValueItem.Name != ScenesBuilder.Request)
+                    {
+                        oldRequests.AppendLine($"- Called scene: {oldValueItem.Name}");
+                    }
+                    if (oldValueItem.FunctionName != null)
+                    {
+                        oldRequests.AppendLine($"- Called function: {oldValueItem.FunctionName}");
+                    }
+                    if (oldValueItem.Arguments != null)
+                    {
+                        oldRequests.AppendLine($"- Arguments for function: {oldValueItem.Arguments.ToJson()}");
+                    }
+                    if (oldValueItem.Response != null)
+                    {
+                        oldRequests.AppendLine($"- Response: {oldValueItem.Response}");
+                    }
+                    oldRequests.AppendLine();
+                    oldRequests.AppendLine();
+                }
+                chatClient.AddSystemMessage(oldRequests.ToString());
             }
             chatClient.AddUserMessage(message);
             await foreach (var response in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
@@ -106,14 +143,13 @@ namespace Rystem.PlayFramework
                         RequestKey = requestSettings.Key!,
                         Name = toolCall.Function!.Name,
                         ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.Starting,
+                        Status = AiResponseStatus.SceneRequest,
                     };
                     var scene = _sceneFactory.Create(toolCall.Function!.Name);
                     if (scene != null)
                     {
                         await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                         {
-                            context.Responses.Add(sceneResponse);
                             yield return sceneResponse;
                         }
                     }
