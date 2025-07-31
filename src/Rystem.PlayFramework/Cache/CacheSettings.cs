@@ -1,9 +1,7 @@
-﻿namespace Rystem.PlayFramework
+﻿namespace Rystem.PlayFramework;
+
+public sealed class CacheSettings
 {
-    internal sealed class CacheSettings
-    {
-        public bool MemoryIsDefault { get; set; }
-        public bool DistributedIsDefault { get; set; }
-        public TimeSpan? ExpirationDefault { get; set; }
-    }
+    public TimeSpan ExpirationDefault { get; set; } = TimeSpan.FromMinutes(15);
+    public AiResponseStatus RecordedResponses { get; set; } = AiResponseStatus.Request | AiResponseStatus.Running;
 }

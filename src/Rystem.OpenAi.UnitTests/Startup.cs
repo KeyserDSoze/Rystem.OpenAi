@@ -178,7 +178,8 @@ namespace Rystem.OpenAi.UnitTests
                 })
                 .AddCache(cacheBuilder =>
                 {
-                    cacheBuilder.WithMemory();
+                    cacheBuilder
+                        .WithMemory();
                 })
                 .AddMainActor((context) => $"Oggi è {DateTime.UtcNow}.", true)
                 .AddScene(scene =>
