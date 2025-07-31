@@ -4,5 +4,6 @@
     {
         public bool MemoryIsDefault { get; set; }
         public bool DistributedIsDefault { get; set; }
+        public TimeSpan? ExpirationDefault { get; set; }
     }
 }
