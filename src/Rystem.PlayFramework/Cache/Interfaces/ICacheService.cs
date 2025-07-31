@@ -1,7 +1,4 @@
 ﻿namespace Rystem.PlayFramework
 {
-    internal interface ICacheService : ICustomCache
-    {
-
-    }
+    internal interface ICacheService : ICustomCache;
 }

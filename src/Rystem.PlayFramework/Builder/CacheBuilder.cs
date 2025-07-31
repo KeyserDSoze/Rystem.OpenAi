@@ -5,6 +5,7 @@ namespace Rystem.PlayFramework
 {
     internal sealed class CacheBuilder : ICacheBuilder
     {
+        private readonly TimeSpan _defaultExpiration = TimeSpan.FromMinutes(15);
         private readonly CacheSettings _settings = new();
         private readonly IServiceCollection _services;
 
@@ -30,6 +31,20 @@ namespace Rystem.PlayFramework
             where T : class, ICustomCache
         {
             _services.TryAddService<ICustomCache>(lifetime);
+            return this;
+        }
+        
+       public ICacheBuilder WithCustomExpiration(Action<CustomCacheSettings>? customCacheSettings = null)
+        {
+            if (customCacheSettings == null)
+            {
+                _settings.ExpirationDefault = _defaultExpiration;
+                return this;
+            }
+            
+            var cacheSettings = new CustomCacheSettings();
+            customCacheSettings.Invoke(cacheSettings);
+            _settings.ExpirationDefault = cacheSettings.ExpirationDefault;
             return this;
         }
     }
