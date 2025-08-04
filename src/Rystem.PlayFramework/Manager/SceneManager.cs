@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;
@@ -41,30 +42,79 @@ namespace Rystem.PlayFramework
             _cacheService = cacheService;
             _settings = settings;
         }
-        private const string Starting = nameof(Starting);
+        private readonly Dictionary<string, string> _cacheValue = [];
+        private async ValueTask<IOpenAiChat> GetChatClientAsync(string startingMessage, SceneRequestSettings requestSettings, CancellationToken cancellationToken)
+        {
+            var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)?.Chat;
+            if (chatClient == null)
+            {
+                throw new InvalidOperationException("OpenAI Chat client is not configured.");
+            }
+            List<AiSceneResponse>? oldValue = null;
+            if (requestSettings.Key != null && !requestSettings.KeyHasStartedAsNull && !requestSettings.CacheIsAvoidable && _cacheService != null)
+            {
+                if (!_cacheValue.ContainsKey(requestSettings.Key))
+                {
+                    oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
+                    StringBuilder oldRequests = new();
+                    oldRequests.AppendLine($"Between triple backtips you can find information that you can use to answer the request.");
+                    oldRequests.AppendLine();
+                    oldRequests.AppendLine("```");
+                    var counter = 1;
+                    foreach (var oldValueItem in oldValue)
+                    {
+                        oldRequests.AppendLine($"{counter}) - type of message: {oldValueItem.Status}");
+                        counter++;
+                        if (oldValueItem.Message != null)
+                        {
+                            oldRequests.AppendLine($"- Message: {oldValueItem.Message}");
+                        }
+                        if (oldValueItem.Name != ScenesBuilder.Request)
+                        {
+                            oldRequests.AppendLine($"- Called scene: {oldValueItem.Name}");
+                        }
+                        if (oldValueItem.FunctionName != null)
+                        {
+                            oldRequests.AppendLine($"- Called function: {oldValueItem.FunctionName}");
+                        }
+                        if (oldValueItem.Arguments != null)
+                        {
+                            oldRequests.AppendLine($"- Arguments for function: {oldValueItem.Arguments.ToJson()}");
+                        }
+                        if (oldValueItem.Response != null)
+                        {
+                            oldRequests.AppendLine($"- Response: {oldValueItem.Response}");
+                        }
+                        oldRequests.AppendLine();
+                        oldRequests.AppendLine();
+                    }
+                    oldRequests.AppendLine("```");
+                    _cacheValue.TryAdd(requestSettings.Key, oldRequests.ToString());
+                }
+                chatClient.AddSystemMessage(_cacheValue[requestSettings.Key]);
+            }
+            if (requestSettings.Context != null)
+                requestSettings.Context.InputMessage = startingMessage;
+            requestSettings.Context ??= new SceneContext
+            {
+                ServiceProvider = _serviceProvider,
+                InputMessage = startingMessage,
+                Properties = requestSettings.Properties ?? [],
+                Responses = oldValue?.Select(x => x).ToList() ?? []
+            };
+            return chatClient;
+        }
         public async IAsyncEnumerable<AiSceneResponse> ExecuteAsync(string message, Action<SceneRequestSettings>? settings = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var requestSettings = new SceneRequestSettings();
             settings?.Invoke(requestSettings);
-            List<AiSceneResponse>? oldValue = null;
             if (requestSettings.Key == null)
             {
                 requestSettings.Key = Guid.NewGuid().ToString();
+                requestSettings.KeyHasStartedAsNull = true;
             }
-            else if (!requestSettings.CacheIsAvoidable && _cacheService != null)
-            {
-                oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
-            }
-            if (requestSettings.Context != null)
-                requestSettings.Context.InputMessage = message;
-            var context = requestSettings.Context ?? new SceneContext
-            {
-                ServiceProvider = _serviceProvider,
-                InputMessage = message,
-                Properties = requestSettings.Properties ?? [],
-                Responses = oldValue?.Select(x => x).ToList() ?? []
-            };
-            context.Responses.Add(new AiSceneResponse
+            var chatClient = await GetChatClientAsync(message, requestSettings, cancellationToken);
+            requestSettings.Context!.Responses.Add(new AiSceneResponse
             {
                 RequestKey = requestSettings.Key!,
                 Name = ScenesBuilder.Request,
@@ -72,62 +122,25 @@ namespace Rystem.PlayFramework
                 ResponseTime = DateTime.UtcNow,
                 Status = AiResponseStatus.Request
             });
-            context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
-            var chatClient = _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
-            context.CurrentChatClient = chatClient;
+            requestSettings.Context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
             var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
-            await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
-            await PlayActorsInScene(context, chatClient, mainActors, cancellationToken);
-            if (oldValue != null)
-            {
-                StringBuilder oldRequests = new();
-                oldRequests.AppendLine($"the previous request flow:");
-                oldRequests.AppendLine();
-                var counter = 1;
-                foreach (var oldValueItem in oldValue)
-                {
-                    oldRequests.AppendLine($"{counter}) - type of message: {oldValueItem.Status}");
-                    counter++;
-                    if (oldValueItem.Message != null)
-                    {
-                        oldRequests.AppendLine($"- Message: {oldValueItem.Message}");
-                    }
-                    if (oldValueItem.Name != ScenesBuilder.Request)
-                    {
-                        oldRequests.AppendLine($"- Called scene: {oldValueItem.Name}");
-                    }
-                    if (oldValueItem.FunctionName != null)
-                    {
-                        oldRequests.AppendLine($"- Called function: {oldValueItem.FunctionName}");
-                    }
-                    if (oldValueItem.Arguments != null)
-                    {
-                        oldRequests.AppendLine($"- Arguments for function: {oldValueItem.Arguments.ToJson()}");
-                    }
-                    if (oldValueItem.Response != null)
-                    {
-                        oldRequests.AppendLine($"- Response: {oldValueItem.Response}");
-                    }
-                    oldRequests.AppendLine();
-                    oldRequests.AppendLine();
-                }
-                chatClient.AddSystemMessage(oldRequests.ToString());
-            }
+            await PlayActorsInScene(requestSettings.Context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
+            await PlayActorsInScene(requestSettings.Context, chatClient, mainActors, cancellationToken);
+
             chatClient.AddUserMessage(message);
-            await foreach (var response in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+            await foreach (var response in RequestAsync(chatClient, requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
             {
-                context.Responses.Add(response);
+                requestSettings.Context.Responses.Add(response);
                 yield return response;
             }
             if (!requestSettings.CacheIsAvoidable && _cacheService != null)
             {
-                await _cacheService.SetAsync(requestSettings.Key, context.Responses, cancellationToken: cancellationToken);
+                await _cacheService.SetAsync(requestSettings.Key, requestSettings.Context.Responses, cancellationToken: cancellationToken);
             }
         }
-        private async IAsyncEnumerable<AiSceneResponse> RequestAsync(SceneContext context, SceneRequestSettings requestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private async IAsyncEnumerable<AiSceneResponse> RequestAsync(IOpenAiChat chatClient, SceneContext context, SceneRequestSettings requestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var chatClient = context.CurrentChatClient!;
             var scenes = _playHandler.ScenesChooser(requestSettings.ScenesToAvoid).ToList();
             foreach (var function in scenes)
             {
@@ -148,7 +161,7 @@ namespace Rystem.PlayFramework
                     var scene = _sceneFactory.Create(toolCall.Function!.Name);
                     if (scene != null)
                     {
-                        await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                        await foreach (var sceneResponse in GetResponseFromSceneAsync(chatClient, scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                         {
                             yield return sceneResponse;
                         }
@@ -163,8 +176,8 @@ namespace Rystem.PlayFramework
                         if (directorResponse.ExecuteAgain)
                         {
                             requestSettings.AvoidScenes(directorResponse.CutScenes ?? []);
-                            context.CurrentChatClient!.ClearTools();
-                            await foreach (var furtherResponse in RequestAsync(context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                            chatClient!.ClearTools();
+                            await foreach (var furtherResponse in RequestAsync(chatClient, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                             {
                                 yield return furtherResponse;
                             }
@@ -192,10 +205,9 @@ namespace Rystem.PlayFramework
                 };
             }
         }
-        private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IScene scene, string message, SceneContext context, SceneRequestSettings sceneRequestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IOpenAiChat chatClient, IScene scene, string message, SceneContext context, SceneRequestSettings sceneRequestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            var chatClient = _openAiFactory.Create(scene.OpenAiFactoryName)?.Chat ?? _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
-            context.CurrentChatClient = chatClient;
+            chatClient.ClearTools();
             context.CurrentSceneName = scene.Name;
             var sceneActors = _serviceProvider.GetKeyedServices<IActor>(scene.Name);
             await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
