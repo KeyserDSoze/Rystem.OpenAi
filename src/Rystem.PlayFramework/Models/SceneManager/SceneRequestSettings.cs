@@ -2,6 +2,7 @@
 {
     public sealed class SceneRequestSettings
     {
+        internal bool KeyHasStartedAsNull { get; set; }
         internal string? Key { get; set; }
         internal List<string>? ScenesToAvoid { get; set; }
         internal bool CacheIsAvoidable { get; set; }

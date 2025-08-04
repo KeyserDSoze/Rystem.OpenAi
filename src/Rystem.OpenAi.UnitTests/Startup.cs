@@ -42,6 +42,7 @@ namespace Rystem.OpenAi.UnitTests
                 x.BaseAddress = new Uri("http://localhost");
             });
             services.AddMemoryCache();
+            services.AddSingleton<IdentityManager>();
             OpenAiServiceLocator.Configuration.AddOpenAi(settings =>
                 {
                     settings.ApiKey = apiKey;
@@ -216,8 +217,8 @@ namespace Rystem.OpenAi.UnitTests
                 {
                     scene
                     .WithName("Identity")
-                    .WithDescription("Get information about the user")
-                    .WithOpenAi("openai")
+                    .WithDescription("Get information about the user. Retrieve name for example with the username.")
+                    .WithOpenAi("Azure2")
                     .WithService<IdentityManager>(builder =>
                     {
                         builder.WithMethod(x => x.GetNameAsync);
@@ -228,6 +229,7 @@ namespace Rystem.OpenAi.UnitTests
                     scene
                         .WithName("Chiedi ferie o permessi.")
                         .WithDescription("Gestisci richieste di ferie o permessi.")
+                        .WithOpenAi("Azure2")
                         .WithActors(actorBuilder =>
                         {
                             actorBuilder
