@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;
@@ -127,7 +126,6 @@ namespace Rystem.PlayFramework
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
             await PlayActorsInScene(requestSettings.Context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
             await PlayActorsInScene(requestSettings.Context, chatClient, mainActors, cancellationToken);
-
             chatClient.AddUserMessage(message);
             await foreach (var response in RequestAsync(chatClient, requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
             {
