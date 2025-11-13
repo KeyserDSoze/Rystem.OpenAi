@@ -12,6 +12,8 @@ namespace Rystem.PlayFramework
         IScenesBuilder AddMainActor(Func<SceneContext, string> action, bool playInEveryScene);
         IScenesBuilder AddMainActor(Func<SceneContext, CancellationToken, Task<string>> action, bool playInEveryScene);
         IScenesBuilder AddCustomDirector<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, IDirector;
+        IScenesBuilder AddCustomPlanner<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, IPlanner;
+        IScenesBuilder AddCustomSummarizer<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, ISummarizer;
         IScenesBuilder AddScene(Action<ISceneBuilder> builder);
         IScenesBuilder AddCache(Action<ICacheBuilder> cacheBuilder);
     }

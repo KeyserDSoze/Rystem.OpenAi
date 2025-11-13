@@ -176,18 +176,27 @@ namespace Rystem.OpenAi.UnitTests
                 scenes.Configure(settings =>
                 {
                     settings.OpenAi.Name = "Azure2";
+                    
+                    // Enable planning for multi-scene orchestration
+                    settings.Planning.Enabled = true;
+                    settings.Planning.MaxScenesInPlan = 5;
+                    
+                    // Enable summarization with lower thresholds for testing
+                    settings.Summarization.Enabled = true;
+                    settings.Summarization.ResponseThreshold = 20; // Lower for testing
+                    settings.Summarization.CharacterThreshold = 3000; // Lower for testing
                 })
                 .AddCache(cacheBuilder =>
                 {
                     cacheBuilder
                         .WithMemory();
                 })
-                .AddMainActor((context) => $"Oggi è {DateTime.UtcNow}.", true)
+                .AddMainActor((context) => $"Oggi è {DateTime.UtcNow:yyyy-MM-dd}. You are a helpful AI assistant.", true)
                 .AddScene(scene =>
                 {
                     scene
                         .WithName("Weather")
-                        .WithDescription("Get information about the weather")
+                        .WithDescription("Get information about the weather and manage cities/countries in the database")
                         .WithHttpClient("apiDomain")
                         .WithOpenAi("Azure2")
                         .WithService<WeatherService>(serviceBuilder =>
@@ -195,21 +204,21 @@ namespace Rystem.OpenAi.UnitTests
                             serviceBuilder
                                 .WithMethod(x => x.AddCountryAsync, "Add country", "Used to add country when it does not exist")
                                 .WithMethod(x => x.AddCityAsync, "Add city", "Used to add city when it does not exist")
-                                .WithMethod(x => x.ExistsAsync, "Check if country exists", "Used to check if the city exists")
+                                .WithMethod(x => x.ExistsAsync, "Check if country exists", "Used to check if the country exists")
                                 .WithMethod(x => x.CityExistsAsync, "Check if city exists", "Used to check if the city exists")
                                 .WithMethod(x => x.DeleteCityAsync, "Delete city", "Used to delete the city")
                                 .WithMethod(x => x.DeleteCountryAsync, "Delete country", "Used to delete the country")
                                 .WithMethod(x => x.GetCitiesAsync, "Get cities", "Used to get the cities")
                                 .WithMethod(x => x.GetCountriesAsync, "Get country", "Used to get the country")
                                 .WithMethod(x => x.ReadCityByIdAsync, "Get city by id", "Used to get the city by id")
-                                .WithMethod(x => x.Get, "Get weather", "Get weather for the city");
+                                .WithMethod(x => x.Get, "Get weather", "Get weather forecast for a specific city");
                         })
                             .WithActors(actors =>
                             {
                                 actors
-                                    .AddActor("Nel caso non esistesse la città richiesta potresti aggiungerla con il numero dei suoi abitanti con la function apposita.")
-                                    .AddActor("Ricordati che va sempre aggiunta anche la nazione, quindi se non c'è la nazione aggiungi anche quella sempre con la function.")
-                                    .AddActor("Non chiamare alcun meteo prima di assicurarti che tutto sia stato popolato correttamente.")
+                                    .AddActor("If the requested city doesn't exist, add it with population data using the appropriate function.")
+                                    .AddActor("Remember to always add the country first if it doesn't exist, using the appropriate function.")
+                                    .AddActor("Don't call weather forecast until you're sure everything is properly populated.")
                                     .AddActor<ActorWithDbRequest>();
                             });
                 })
@@ -217,31 +226,32 @@ namespace Rystem.OpenAi.UnitTests
                 {
                     scene
                     .WithName("Identity")
-                    .WithDescription("Get information about the user. Retrieve name for example with the username.")
+                    .WithDescription("Get information about the user. Retrieve user details like name based on username.")
                     .WithOpenAi("Azure2")
                     .WithService<IdentityManager>(builder =>
                     {
-                        builder.WithMethod(x => x.GetNameAsync);
+                        builder.WithMethod(x => x.GetNameAsync, "get_user_name", "Get the full name of a user by their username");
                     });
                 })
                 .AddScene(scene =>
                 {
                     scene
                         .WithName("Chiedi ferie o permessi.")
-                        .WithDescription("Gestisci richieste di ferie o permessi.")
+                        .WithDescription("Manage vacation and leave requests. Submit requests, check approvers, and verify available dates.")
                         .WithOpenAi("Azure2")
                         .WithActors(actorBuilder =>
                         {
                             actorBuilder
-                                .AddActor("Se non hai capito la richiesta chiedi chiarimenti. Se le date richieste sono senza anno, usa l'anno attuale. Evita sempre i giorni festivi, non c'è bisogno di richiedere se toglierli o meno, l'utente sa già che non saranno contati.")
-                                .AddActor($"Lo UserId è {Guid.NewGuid()}");
+                                .AddActor("If the request is unclear, ask for clarification. If dates don't include a year, use the current year.")
+                                .AddActor("Always exclude holidays - users know these won't be counted, no need to ask.")
+                                .AddActor($"The UserId is {Guid.NewGuid()}");
                         })
                         .WithService<VacationService>(serviceBuilder =>
                         {
                             serviceBuilder
-                                .WithMethod(x => x.MakeRequest, "eseguire_richiesta_ferie_permessi", "Metodo che permette la richiesta di ferie o permessi")
-                                .WithMethod(x => x.GetApprovers, "prendi_approvatori_richiesta", "Recupera le email di chi dovrà approvare la richiesta")
-                                .WithMethod(x => x.GetAvailableDates, "prendi_date_festive", "Recupera le date festive per cui non è possibile chiedere ferie o permessi");
+                                .WithMethod(x => x.MakeRequest, "eseguire_richiesta_ferie_permessi", "Submit a vacation or leave request")
+                                .WithMethod(x => x.GetApprovers, "prendi_approvatori_richiesta", "Get the list of email addresses who need to approve the request")
+                                .WithMethod(x => x.GetAvailableDates, "prendi_date_festive", "Get the list of holiday dates when vacation cannot be requested");
                         });
                 });
             });
