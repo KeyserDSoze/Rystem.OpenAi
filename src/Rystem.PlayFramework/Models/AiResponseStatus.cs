@@ -12,5 +12,7 @@
         FinishedNoTool = 64,
         FinishedWarning = 128,
         FinishedError = 256,
+        Planning = 512,
+        Summarizing = 1024,
     }
 }

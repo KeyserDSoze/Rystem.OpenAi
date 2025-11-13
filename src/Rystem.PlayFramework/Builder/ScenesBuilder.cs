@@ -63,6 +63,20 @@ namespace Rystem.PlayFramework
             _services.AddService<IDirector, T>(lifetime);
             return this;
         }
+        public IScenesBuilder AddCustomPlanner<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            where T : class, IPlanner
+        {
+            _services.RemoveAll<IPlanner>();
+            _services.AddService<IPlanner, T>(lifetime);
+            return this;
+        }
+        public IScenesBuilder AddCustomSummarizer<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            where T : class, ISummarizer
+        {
+            _services.RemoveAll<ISummarizer>();
+            _services.AddService<ISummarizer, T>(lifetime);
+            return this;
+        }
         public IScenesBuilder AddScene(Action<ISceneBuilder> builder)
         {
             var sceneBuilder = new SceneBuilder(_services);

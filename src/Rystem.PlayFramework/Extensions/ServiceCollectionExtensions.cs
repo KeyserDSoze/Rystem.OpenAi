@@ -19,6 +19,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ActorsOpenAiEndpointParser>();
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());
+
+            // Register deterministic planner and summarizer
+            services.AddSingleton<IPlanner, DeterministicPlanner>();
+            services.AddSingleton<ISummarizer, DefaultSummarizer>();
+
             var sceneBuilder = new ScenesBuilder(services);
             sceneBuilder.AddCustomDirector<MainDirector>();
             builder(sceneBuilder);

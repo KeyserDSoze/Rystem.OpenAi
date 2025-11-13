@@ -14,9 +14,28 @@ namespace Rystem.OpenAi
             var description = forceDescription ?? type.GetCustomAttribute<DescriptionAttribute>()?.Description ?? parameterName;
             if (type.IsPrimitive())
             {
+                // Handle different primitive types explicitly for correct JSON Schema
+                string typeName;
+                if (type == typeof(bool) || type == typeof(bool?))
+                {
+                    typeName = "boolean";
+                }
+                else if (type.IsInteger())  // int, long, short, uint, etc.
+                {
+                    typeName = "integer";
+                }
+                else if (type.IsNumber())  // float, double, decimal
+                {
+                    typeName = "number";
+                }
+                else
+                {
+                    typeName = "string";  // char, string, DateTime, etc.
+                }
+
                 jsonFunction.AddPrimitive(name, new FunctionToolPrimitiveProperty
                 {
-                    Type = type.IsNumeric() ? "number" : "string",
+                    Type = typeName,
                     Description = description ?? "parameter"
                 });
             }

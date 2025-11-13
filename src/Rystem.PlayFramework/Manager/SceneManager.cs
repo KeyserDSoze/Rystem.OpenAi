@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;
@@ -21,6 +20,8 @@ namespace Rystem.PlayFramework
         private readonly FunctionsHandler _functionsHandler;
         private readonly ICacheService? _cacheService;
         private readonly SceneManagerSettings? _settings;
+        private readonly IPlanner? _planner;
+        private readonly ISummarizer? _summarizer;
 
         public SceneManager(IServiceProvider serviceProvider,
             IHttpContextAccessor httpContextAccessor,
@@ -30,7 +31,9 @@ namespace Rystem.PlayFramework
             PlayHandler playHandler,
             FunctionsHandler functionsHandler,
             ICacheService? cacheService = null,
-            SceneManagerSettings? settings = null)
+            SceneManagerSettings? settings = null,
+            IPlanner? planner = null,
+            ISummarizer? summarizer = null)
         {
             _httpContext = httpContextAccessor?.HttpContext;
             _serviceProvider = serviceProvider;
@@ -41,6 +44,8 @@ namespace Rystem.PlayFramework
             _functionsHandler = functionsHandler;
             _cacheService = cacheService;
             _settings = settings;
+            _planner = planner;
+            _summarizer = summarizer;
         }
         private readonly Dictionary<string, string> _cacheValue = [];
         private async ValueTask<IOpenAiChat> GetChatClientAsync(string startingMessage, SceneRequestSettings requestSettings, CancellationToken cancellationToken)
@@ -56,40 +61,57 @@ namespace Rystem.PlayFramework
                 if (!_cacheValue.ContainsKey(requestSettings.Key))
                 {
                     oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
-                    StringBuilder oldRequests = new();
-                    oldRequests.AppendLine($"Between triple backtips you can find information that you can use to answer the request.");
-                    oldRequests.AppendLine();
-                    oldRequests.AppendLine("```");
-                    var counter = 1;
-                    foreach (var oldValueItem in oldValue)
+
+                    // Check if we need to summarize
+                    if (_summarizer != null && oldValue != null && _summarizer.ShouldSummarize(oldValue))
                     {
-                        oldRequests.AppendLine($"{counter}) - type of message: {oldValueItem.Status}");
-                        counter++;
-                        if (oldValueItem.Message != null)
+                        var summary = await _summarizer.SummarizeAsync(oldValue, cancellationToken);
+                        _cacheValue.TryAdd(requestSettings.Key, summary);
+
+                        // Store the summary for the context
+                        if (requestSettings.Context != null)
                         {
-                            oldRequests.AppendLine($"- Message: {oldValueItem.Message}");
+                            requestSettings.Context.ConversationSummary = summary;
                         }
-                        if (oldValueItem.Name != ScenesBuilder.Request)
-                        {
-                            oldRequests.AppendLine($"- Called scene: {oldValueItem.Name}");
-                        }
-                        if (oldValueItem.FunctionName != null)
-                        {
-                            oldRequests.AppendLine($"- Called function: {oldValueItem.FunctionName}");
-                        }
-                        if (oldValueItem.Arguments != null)
-                        {
-                            oldRequests.AppendLine($"- Arguments for function: {oldValueItem.Arguments.ToJson()}");
-                        }
-                        if (oldValueItem.Response != null)
-                        {
-                            oldRequests.AppendLine($"- Response: {oldValueItem.Response}");
-                        }
-                        oldRequests.AppendLine();
-                        oldRequests.AppendLine();
                     }
-                    oldRequests.AppendLine("```");
-                    _cacheValue.TryAdd(requestSettings.Key, oldRequests.ToString());
+                    else
+                    {
+                        // Build the old context as before
+                        StringBuilder oldRequests = new();
+                        oldRequests.AppendLine($"Between triple backtips you can find information that you can use to answer the request.");
+                        oldRequests.AppendLine();
+                        oldRequests.AppendLine("```");
+                        var counter = 1;
+                        foreach (var oldValueItem in oldValue)
+                        {
+                            oldRequests.AppendLine($"{counter}) - type of message: {oldValueItem.Status}");
+                            counter++;
+                            if (oldValueItem.Message != null)
+                            {
+                                oldRequests.AppendLine($"- Message: {oldValueItem.Message}");
+                            }
+                            if (oldValueItem.Name != ScenesBuilder.Request)
+                            {
+                                oldRequests.AppendLine($"- Called scene: {oldValueItem.Name}");
+                            }
+                            if (oldValueItem.FunctionName != null)
+                            {
+                                oldRequests.AppendLine($"- Called function: {oldValueItem.FunctionName}");
+                            }
+                            if (oldValueItem.Arguments != null)
+                            {
+                                oldRequests.AppendLine($"- Arguments for function: {oldValueItem.Arguments.ToJson()}");
+                            }
+                            if (oldValueItem.Response != null)
+                            {
+                                oldRequests.AppendLine($"- Response: {oldValueItem.Response}");
+                            }
+                            oldRequests.AppendLine();
+                            oldRequests.AppendLine();
+                        }
+                        oldRequests.AppendLine("```");
+                        _cacheValue.TryAdd(requestSettings.Key, oldRequests.ToString());
+                    }
                 }
                 chatClient.AddSystemMessage(_cacheValue[requestSettings.Key]);
             }
@@ -128,12 +150,59 @@ namespace Rystem.PlayFramework
             await PlayActorsInScene(requestSettings.Context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
             await PlayActorsInScene(requestSettings.Context, chatClient, mainActors, cancellationToken);
 
-            chatClient.AddUserMessage(message);
-            await foreach (var response in RequestAsync(chatClient, requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+            // Create execution plan if planning is enabled
+            if (_settings?.Planning.Enabled == true && _planner != null)
             {
-                requestSettings.Context.Responses.Add(response);
-                yield return response;
+                yield return new AiSceneResponse
+                {
+                    RequestKey = requestSettings.Key!,
+                    Message = "Creating execution plan...",
+                    ResponseTime = DateTime.UtcNow,
+                    Status = AiResponseStatus.Planning
+                };
+
+                var plan = await _planner.CreatePlanAsync(requestSettings.Context, requestSettings, cancellationToken);
+                requestSettings.Context.ExecutionPlan = plan;
+
+                if (plan.IsValid && plan.Steps.Any())
+                {
+                    yield return new AiSceneResponse
+                    {
+                        RequestKey = requestSettings.Key!,
+                        Message = $"Plan created with {plan.Steps.Count} steps: {plan.Reasoning}",
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.Planning
+                    };
+
+                    // Execute plan-based orchestration
+                    await foreach (var response in ExecutePlanAsync(chatClient, requestSettings.Context, requestSettings, message, mainActorsThatPlayEveryScene, cancellationToken))
+                    {
+                        requestSettings.Context.Responses.Add(response);
+                        yield return response;
+                    }
+                }
+                else
+                {
+                    // Fallback to original behavior
+                    chatClient.AddUserMessage(message);
+                    await foreach (var response in RequestAsync(chatClient, requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                    {
+                        requestSettings.Context.Responses.Add(response);
+                        yield return response;
+                    }
+                }
             }
+            else
+            {
+                // Original behavior without planning
+                chatClient.AddUserMessage(message);
+                await foreach (var response in RequestAsync(chatClient, requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                {
+                    requestSettings.Context.Responses.Add(response);
+                    yield return response;
+                }
+            }
+
             if (!requestSettings.CacheIsAvoidable && _cacheService != null)
             {
                 await _cacheService.SetAsync(requestSettings.Key, requestSettings.Context.Responses, cancellationToken: cancellationToken);
@@ -231,6 +300,22 @@ namespace Rystem.PlayFramework
                 {
                     var arguments = toolCall.Function!.Arguments!;
                     var functionName = toolCall.Function!.Name!;
+
+                    // Check if this tool was already executed in this scene
+                    if (context.HasExecutedTool(sceneName, functionName))
+                    {
+                        yield return new AiSceneResponse
+                        {
+                            RequestKey = sceneRequestSettings.Key!,
+                            Name = sceneName,
+                            FunctionName = functionName,
+                            Message = "Tool already executed, skipping",
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.Running
+                        };
+                        continue;
+                    }
+
                     var responseAsJson = string.Empty;
                     var function = _functionsHandler[functionName];
                     if (function.HasHttpRequest)
@@ -241,6 +326,10 @@ namespace Rystem.PlayFramework
                     {
                         responseAsJson = await ExecuteServiceAsync(function.Service!, context, arguments, cancellationToken);
                     }
+
+                    // Mark tool as executed
+                    context.MarkToolExecuted(sceneName, functionName);
+
                     yield return new AiSceneResponse
                     {
                         RequestKey = sceneRequestSettings.Key!,
@@ -352,6 +441,238 @@ namespace Rystem.PlayFramework
                         chatClient.AddSystemMessage(systemMessage.Message);
                 }
             }
+        }
+        private async IAsyncEnumerable<AiSceneResponse> ExecutePlanAsync(IOpenAiChat chatClient, SceneContext context, SceneRequestSettings requestSettings, string message, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            if (context.ExecutionPlan == null || !context.ExecutionPlan.Steps.Any())
+            {
+                yield break;
+            }
+
+            // NO - don't add user message here, will be added in each scene
+            // chatClient.AddUserMessage(message);
+
+            // Execute each step in the plan
+            foreach (var step in context.ExecutionPlan.Steps.OrderBy(s => s.Order))
+            {
+                if (step.IsCompleted)
+                    continue;
+
+                // Skip if scene was already executed
+                if (context.HasExecutedScene(step.SceneName))
+                {
+                    yield return new AiSceneResponse
+                    {
+                        RequestKey = requestSettings.Key!,
+                        Name = step.SceneName,
+                        Message = $"Step {step.Order} skipped - scene already executed",
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.SceneRequest
+                    };
+                    step.IsCompleted = true;
+                    continue;
+                }
+
+                yield return new AiSceneResponse
+                {
+                    RequestKey = requestSettings.Key!,
+                    Name = step.SceneName,
+                    Message = $"Executing step {step.Order}: {step.Purpose}",
+                    ResponseTime = DateTime.UtcNow,
+                    Status = AiResponseStatus.SceneRequest
+                };
+
+                var scene = _sceneFactory.Create(step.SceneName);
+                if (scene != null)
+                {
+                    await foreach (var sceneResponse in GetResponseFromSceneAsync(chatClient, scene, message, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                    {
+                        yield return sceneResponse;
+                    }
+                    step.IsCompleted = true;
+                }
+            }
+
+            // After executing all planned steps, check if we should continue
+            if (_planner is DeterministicPlanner deterministicPlanner)
+            {
+                yield return new AiSceneResponse
+                {
+                    RequestKey = requestSettings.Key!,
+                    Message = "Checking if more execution is needed...",
+                    ResponseTime = DateTime.UtcNow,
+                    Status = AiResponseStatus.Planning
+                };
+
+                var continuationCheck = await deterministicPlanner.ShouldContinueExecutionAsync(context, requestSettings, cancellationToken);
+
+                if (continuationCheck.ShouldContinue && !continuationCheck.CanAnswerNow)
+                {
+                    yield return new AiSceneResponse
+                    {
+                        RequestKey = requestSettings.Key!,
+                        Message = $"Continuing execution: {continuationCheck.Reasoning}",
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.Planning
+                    };
+
+                    // Create a new plan for missing information
+                    var newPlan = await _planner.CreatePlanAsync(context, requestSettings, cancellationToken);
+                    if (newPlan.IsValid && newPlan.Steps.Any())
+                    {
+                        context.ExecutionPlan = newPlan;
+                        await foreach (var response in ExecutePlanAsync(chatClient, context, requestSettings, message, mainActorsThatPlayEveryScene, cancellationToken))
+                        {
+                            yield return response;
+                        }
+                    }
+                    else
+                    {
+                        // No new plan but should continue - generate final response
+                        await foreach (var response in GenerateFinalResponseAsync(chatClient, context, requestSettings, message, cancellationToken))
+                        {
+                            yield return response;
+                        }
+                    }
+                }
+                else
+                {
+                    // Can answer now - generate final response based on gathered information
+                    yield return new AiSceneResponse
+                    {
+                        RequestKey = requestSettings.Key!,
+                        Message = $"Generating final response: {continuationCheck.Reasoning}",
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.Planning
+                    };
+
+                    await foreach (var response in GenerateFinalResponseAsync(chatClient, context, requestSettings, message, cancellationToken))
+                    {
+                        yield return response;
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to director if not using deterministic planner
+                var director = _serviceProvider.GetService<IDirector>();
+                if (director != null)
+                {
+                    var directorResponse = await director.DirectAsync(context, requestSettings, cancellationToken);
+                    if (directorResponse.ExecuteAgain)
+                    {
+                        chatClient.ClearTools();
+                        requestSettings.AvoidScenes(directorResponse.CutScenes ?? []);
+
+                        var scenes = _playHandler.ScenesChooser(requestSettings.ScenesToAvoid).ToList();
+                        foreach (var function in scenes)
+                        {
+                            function.Invoke(chatClient);
+                        }
+
+                        var response = await chatClient.ExecuteAsync(cancellationToken);
+                        if (response?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
+                        {
+                            foreach (var toolCall in response.Choices[0].Message!.ToolCalls!)
+                            {
+                                yield return new AiSceneResponse
+                                {
+                                    RequestKey = requestSettings.Key!,
+                                    Name = toolCall.Function!.Name,
+                                    ResponseTime = DateTime.UtcNow,
+                                    Status = AiResponseStatus.SceneRequest,
+                                };
+                                var scene = _sceneFactory.Create(toolCall.Function!.Name);
+                                if (scene != null)
+                                {
+                                    await foreach (var sceneResponse in GetResponseFromSceneAsync(chatClient, scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                                    {
+                                        yield return sceneResponse;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                yield return new AiSceneResponse
+                {
+                    RequestKey = requestSettings.Key!,
+                    Status = AiResponseStatus.FinishedOk,
+                    Message = "Plan execution completed",
+                    ResponseTime = DateTime.UtcNow,
+                };
+            }
+        }
+
+        /// <summary>
+        /// Generate final response to user based on all gathered information
+        /// </summary>
+        private async IAsyncEnumerable<AiSceneResponse> GenerateFinalResponseAsync(
+            IOpenAiChat chatClient,
+            SceneContext context,
+            SceneRequestSettings requestSettings,
+            string originalMessage,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            // Create a fresh chat client for final response
+            var finalChatClient = context.CreateNewDefaultChatClient!();
+
+            // Add main actors
+            var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
+            await PlayActorsInScene(context, finalChatClient, mainActorsThatPlayEveryScene, cancellationToken);
+
+            // Build context from all executed scenes and tools
+            var executionSummary = new StringBuilder();
+            executionSummary.AppendLine("You have executed the following steps to gather information:");
+            executionSummary.AppendLine();
+
+            foreach (var executedScene in context.ExecutedScenes)
+            {
+                executionSummary.AppendLine($"Scene: {executedScene.Key}");
+                if (executedScene.Value.Any())
+                {
+                    executionSummary.AppendLine($"  Tools used: {string.Join(", ", executedScene.Value)}");
+                }
+
+                // Get responses from this scene
+                var sceneResponses = context.Responses
+                    .Where(r => r.Name == executedScene.Key)
+                    .ToList();
+
+                foreach (var response in sceneResponses)
+                {
+                    if (response.FunctionName != null && response.Response != null)
+                    {
+                        executionSummary.AppendLine($"  - {response.FunctionName}: {response.Response}");
+                    }
+                    if (response.Message != null && response.Status == AiResponseStatus.Running)
+                    {
+                        executionSummary.AppendLine($"  - Result: {response.Message}");
+                    }
+                }
+                executionSummary.AppendLine();
+            }
+
+            finalChatClient.AddSystemMessage($@"You have completed gathering information for the user's request.
+
+{executionSummary}
+
+Now, provide a complete and coherent answer to the user's original question using ALL the information gathered above.
+Be concise but complete. Do not mention the tools or scenes you used - just answer the question naturally.");
+
+            finalChatClient.AddUserMessage(originalMessage);
+
+            var finalResponse = await finalChatClient.ExecuteAsync(cancellationToken);
+            var finalMessage = finalResponse?.Choices?[0]?.Message?.Content;
+
+            yield return new AiSceneResponse
+            {
+                RequestKey = requestSettings.Key!,
+                Message = finalMessage,
+                ResponseTime = DateTime.UtcNow,
+                Status = AiResponseStatus.FinishedOk
+            };
         }
     }
 }
