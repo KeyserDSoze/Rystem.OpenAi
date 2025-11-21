@@ -286,6 +286,56 @@ namespace Rystem.PlayFramework.Test
             Assert.Equal(questions.Length, uniqueKeys);
         }
 
+        /// <summary>
+        /// Test cost tracking across conversation
+        /// </summary>
+        [Fact]
+        public async Task CostTrackingTest()
+        {
+            var conversationKey = Guid.NewGuid().ToString();
+            var userQuestion = "Che tempo fa a Milano?";
+
+            var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
+
+            // Verify some responses have costs
+            var responsesWithCost = responses.Where(r => r.Cost.HasValue).ToList();
+            Assert.NotEmpty(responsesWithCost);
+
+            // Verify total cost is present in last response
+            var lastResponse = responses.Last();
+            Assert.NotNull(lastResponse.TotalCost);
+            Assert.True(lastResponse.TotalCost > 0, "Total cost should be greater than 0");
+
+            // Verify total cost equals sum of individual costs
+            var sumOfCosts = responses.Where(r => r.Cost.HasValue).Sum(r => r.Cost!.Value);
+            Assert.Equal(sumOfCosts, lastResponse.TotalCost.Value);
+        }
+
+        /// <summary>
+        /// Test cost accumulation across multiple turns
+        /// </summary>
+        [Fact]
+        public async Task MultiTurnCostAccumulationTest()
+        {
+            var conversationKey = Guid.NewGuid().ToString();
+
+            // Turn 1
+            var turn1Question = "Il mio username è keysersoze";
+            var responses1 = await ExecuteTurnAsync(turn1Question, conversationKey);
+            var turn1Cost = responses1.Last().TotalCost ?? 0;
+
+            Assert.True(turn1Cost > 0, "Turn 1 should have cost");
+
+            // Turn 2
+            var turn2Question = "Qual è il mio nome completo?";
+            var responses2 = await ExecuteTurnAsync(turn2Question, conversationKey);
+            var turn2Cost = responses2.Last().TotalCost ?? 0;
+
+            // Turn 2 should have higher total cost (accumulated)
+            Assert.True(turn2Cost > turn1Cost, 
+                $"Turn 2 cost ({turn2Cost}) should be greater than Turn 1 cost ({turn1Cost})");
+        }
+
         private async Task<List<AiSceneResponse>> ExecuteTurnAsync(string message, string conversationKey)
         {
             var responses = new List<AiSceneResponse>();

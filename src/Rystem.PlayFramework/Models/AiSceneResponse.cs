@@ -22,5 +22,15 @@ namespace Rystem.PlayFramework
         public required AiResponseStatus Status { get; set; }
         [JsonPropertyName("responseTime")]
         public required DateTime ResponseTime { get; set; }
+        /// <summary>
+        /// Cost of this specific OpenAI request (if applicable)
+        /// </summary>
+        [JsonPropertyName("cost")]
+        public decimal? Cost { get; set; }
+        /// <summary>
+        /// Total accumulated cost for the entire conversation
+        /// </summary>
+        [JsonPropertyName("totalCost")]
+        public decimal? TotalCost { get; set; }
     }
 }

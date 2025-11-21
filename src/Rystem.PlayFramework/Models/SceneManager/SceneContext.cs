@@ -34,6 +34,11 @@ namespace Rystem.PlayFramework
         public HashSet<string> ExecutedTools { get; } = new();
 
         /// <summary>
+        /// Total accumulated cost for all OpenAI requests in this conversation
+        /// </summary>
+        public decimal TotalCost { get; set; }
+
+        /// <summary>
         /// Check if a scene has already been executed in this request.
         /// </summary>
         public bool HasExecutedScene(string sceneName) => ExecutedScenes.ContainsKey(sceneName);
@@ -58,6 +63,16 @@ namespace Rystem.PlayFramework
             ExecutedScenes[sceneName].Add(toolName);
             ExecutedTools.Add($"{sceneName}.{toolName}");
         }
+
+        /// <summary>
+        /// Add cost to the total and return the new total
+        /// </summary>
+        public decimal AddCost(decimal cost)
+        {
+            TotalCost += cost;
+            return TotalCost;
+        }
+
         public T GetProperty<T>(object key)
         {
             if (Properties.TryGetValue(key, out var propertyValue))

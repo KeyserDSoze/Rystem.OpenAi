@@ -94,6 +94,10 @@ namespace Rystem.OpenAi.UnitTests
                     {
                         chatClient.ForceModel("gpt-4");
                     };
+                    settings.PriceBuilder.AddModel("gpt-4",
+                        new OpenAiCost { UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.Input, Units = 0.0000015m },
+                         new OpenAiCost { UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.Output, Units = 0.0000025m },
+                          new OpenAiCost { UnitOfMeasure = UnitOfMeasure.Tokens, Kind = KindOfCost.CachedInput, Units = 0.0000005m });
                 }, "Azure2");
             services
                .AddOpenAi(settings =>
@@ -176,11 +180,9 @@ namespace Rystem.OpenAi.UnitTests
                 scenes.Configure(settings =>
                 {
                     settings.OpenAi.Name = "Azure2";
-                    
                     // Enable planning for multi-scene orchestration
                     settings.Planning.Enabled = true;
                     settings.Planning.MaxScenesInPlan = 5;
-                    
                     // Enable summarization with lower thresholds for testing
                     settings.Summarization.Enabled = true;
                     settings.Summarization.ResponseThreshold = 20; // Lower for testing
