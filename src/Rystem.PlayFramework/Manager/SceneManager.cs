@@ -65,6 +65,27 @@ namespace Rystem.PlayFramework
                     // Check if we need to summarize
                     if (_summarizer != null && oldValue != null && _summarizer.ShouldSummarize(oldValue))
                     {
+                        // Return a response indicating summarization is happening
+                        // This will be yielded before the actual execution starts
+                        requestSettings.Context ??= new SceneContext
+                        {
+                            ServiceProvider = _serviceProvider,
+                            InputMessage = startingMessage,
+                            Properties = requestSettings.Properties ?? [],
+                            Responses = []
+                        };
+                        
+                        requestSettings.Context.Responses.Add(new AiSceneResponse
+                        {
+                            RequestKey = requestSettings.Key,
+                            Name = "Summarization",
+                            Message = "Summarizing previous conversation history...",
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.Summarizing,
+                            Cost = null,
+                            TotalCost = 0
+                        });
+                        
                         var summary = await _summarizer.SummarizeAsync(oldValue, cancellationToken);
                         _cacheValue.TryAdd(requestSettings.Key, summary);
 
@@ -135,6 +156,30 @@ namespace Rystem.PlayFramework
                 requestSettings.Key = Guid.NewGuid().ToString();
                 requestSettings.KeyHasStartedAsNull = true;
             }
+            
+            // Check if summarization will happen and yield status before GetChatClientAsync
+            if (requestSettings.Key != null && !requestSettings.KeyHasStartedAsNull && 
+                !requestSettings.CacheIsAvoidable && _cacheService != null && _summarizer != null)
+            {
+                if (!_cacheValue.ContainsKey(requestSettings.Key))
+                {
+                    var oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
+                    if (oldValue != null && _summarizer.ShouldSummarize(oldValue))
+                    {
+                        yield return new AiSceneResponse
+                        {
+                            RequestKey = requestSettings.Key!,
+                            Name = "Summarization",
+                            Message = $"Summarizing {oldValue.Count} previous responses...",
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.Summarizing,
+                            Cost = null,
+                            TotalCost = 0
+                        };
+                    }
+                }
+            }
+            
             var chatClient = await GetChatClientAsync(message, requestSettings, cancellationToken);
             requestSettings.Context!.Responses.Add(new AiSceneResponse
             {
@@ -336,9 +381,9 @@ namespace Rystem.PlayFramework
                             RequestKey = sceneRequestSettings.Key!,
                             Name = sceneName,
                             FunctionName = functionName,
-                            Message = "Tool already executed, skipping",
+                            Message = $"Tool '{functionName}' already executed in scene '{sceneName}', skipping duplicate execution",
                             ResponseTime = DateTime.UtcNow,
-                            Status = AiResponseStatus.Running,
+                            Status = AiResponseStatus.ToolSkipped,
                             Cost = null, // No new cost for skipped tools
                             TotalCost = context.TotalCost
                         };
@@ -407,25 +452,43 @@ namespace Rystem.PlayFramework
         }
         private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, SceneContext sceneContext, string argumentAsJson, CancellationToken cancellationToken)
         {
-            var json = ParseJson(argumentAsJson);
-            sceneContext.Jsons.Add(json);
-            var serviceBringer = new ServiceBringer() { Parameters = [] };
-            foreach (var input in serviceHandler.Actions)
+            try
             {
-                await input.Value(json, serviceBringer);
-            }
-            var response = await serviceHandler.Call(_serviceProvider, serviceBringer, sceneContext, cancellationToken);
-            if (response == null)
-                return string.Empty;
-            else if (response.IsT0)
-            {
-                if (response.CastT0.IsPrimitive())
-                    return response.CastT0.ToString();
+                var json = ParseJson(argumentAsJson);
+                sceneContext.Jsons.Add(json);
+                var serviceBringer = new ServiceBringer() { Parameters = [] };
+                foreach (var input in serviceHandler.Actions)
+                {
+                    await input.Value(json, serviceBringer);
+                }
+                var response = await serviceHandler.Call(_serviceProvider, serviceBringer, sceneContext, cancellationToken);
+                if (response == null)
+                    return string.Empty;
+                else if (response.IsT0)
+                {
+                    if (response.CastT0.IsPrimitive())
+                        return response.CastT0.ToString();
+                    else
+                        return response.CastT0.ToJson();
+                }
                 else
-                    return response.CastT0.ToJson();
+                    return response.CastT1.Message;
             }
-            else
-                return response.CastT1.Message;
+            catch (JsonException ex)
+            {
+                // Return error message that LLM can understand and correct
+                return $"{{\"error\": \"JSON deserialization failed: {ex.Message}. Please check the parameter types and values. Arguments received: {argumentAsJson}\"}}";
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Failed to deserialize"))
+            {
+                // Return error from SceneBuilder parameter deserialization
+                return $"{{\"error\": \"{ex.Message}\"}}";
+            }
+            catch (Exception ex)
+            {
+                // Catch any other unexpected error
+                return $"{{\"error\": \"Service execution failed: {ex.Message}\"}}";
+            }
         }
         private async Task<string?> ExecuteHttpClientAsync(string? clientName, HttpHandler httpHandler, string argumentAsJson, CancellationToken cancellationToken)
         {
@@ -509,9 +572,9 @@ namespace Rystem.PlayFramework
                     {
                         RequestKey = requestSettings.Key!,
                         Name = step.SceneName,
-                        Message = $"Step {step.Order} skipped - scene already executed",
+                        Message = $"Scene '{step.SceneName}' already executed, skipping step {step.Order}",
                         ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.SceneRequest,
+                        Status = AiResponseStatus.ToolSkipped,  // Use ToolSkipped for consistency
                         Cost = null,
                         TotalCost = context.TotalCost
                     };

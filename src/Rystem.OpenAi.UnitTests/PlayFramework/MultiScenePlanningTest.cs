@@ -154,6 +154,26 @@ namespace Rystem.PlayFramework.Test
 
             var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
 
+            // DEBUG: Print all responses to understand what's happening
+            var output = new System.Text.StringBuilder();
+            output.AppendLine("=== ALL RESPONSES ===");
+            foreach (var r in responses)
+            {
+                output.AppendLine($"[{r.Status}] {r.Name ?? "N/A"}");
+                if (r.Message != null)
+                    output.AppendLine($"  Message: {r.Message}");
+                if (r.FunctionName != null)
+                    output.AppendLine($"  Function: {r.FunctionName}");
+                if (r.Arguments != null)
+                    output.AppendLine($"  Arguments: {r.Arguments}");
+                if (r.Response != null)
+                    output.AppendLine($"  Response: {r.Response}");
+                output.AppendLine();
+            }
+            output.AppendLine("=== END RESPONSES ===");
+            // Write to test output
+            Console.WriteLine(output.ToString());
+
             // Check planning occurred
             var planningResponses = responses.Where(r => r.Status == AiResponseStatus.Planning).ToList();
             Assert.NotEmpty(planningResponses);
@@ -166,7 +186,7 @@ namespace Rystem.PlayFramework.Test
                 .ToList();
 
             Assert.True(scenesUsed.Count >= 2,
-                $"Expected at least 2 scenes for complex request, got {scenesUsed.Count}");
+                $"Expected at least 2 scenes for complex request, got {scenesUsed.Count}. Scenes: {string.Join(", ", scenesUsed)}");
 
             // Validate using LLM
             var validation = await ResponseValidator.ValidateResponseAsync(
@@ -199,19 +219,30 @@ namespace Rystem.PlayFramework.Test
 
             var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
 
-            // Get all tool calls
+            // Get all tool calls (excluding skipped ones)
             var toolCalls = responses
-                .Where(r => r.FunctionName != null)
+                .Where(r => r.FunctionName != null && r.Status != AiResponseStatus.ToolSkipped)
                 .Select(r => $"{r.Name}.{r.FunctionName}")
                 .ToList();
 
-            // Check for duplicates
+            // Check for duplicates in executed tools
             var duplicates = toolCalls.GroupBy(x => x)
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
             Assert.Empty(duplicates);
+
+            // Verify that skipped tools are properly marked
+            var skippedTools = responses.Where(r => r.Status == AiResponseStatus.ToolSkipped).ToList();
+            
+            // If there are skipped tools, verify they have proper information
+            foreach (var skipped in skippedTools)
+            {
+                Assert.NotNull(skipped.FunctionName);
+                Assert.NotNull(skipped.Message);
+                Assert.Contains("skipping", skipped.Message, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         /// <summary>

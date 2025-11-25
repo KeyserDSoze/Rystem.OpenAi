@@ -132,17 +132,39 @@ namespace Rystem.PlayFramework
                     if (!parametersFiller.ContainsKey(parameterName))
                         parametersFiller.Add(parameterName, (value, bringer) =>
                         {
-                            if (parameterType.IsPrimitive())
+                            try
                             {
-                                if (parameterType == typeof(DateTime))
-                                    bringer.Parameters.Add(DateTime.Parse(value[parameterName]));
-                                else if (parameterType == typeof(DateOnly))
-                                    bringer.Parameters.Add(DateOnly.Parse(value[parameterName]));
+                                // Special handling for DateOnly and TimeOnly - use JsonSerializer with converters
+                                if (parameterType == typeof(DateOnly) || parameterType == typeof(DateOnly?) ||
+                                    parameterType == typeof(TimeOnly) || parameterType == typeof(TimeOnly?))
+                                {
+                                    bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
+                                }
+                                else if (parameterType.IsPrimitive())
+                                {
+                                    if (parameterType == typeof(DateTime))
+                                        bringer.Parameters.Add(DateTime.Parse(value[parameterName]));
+                                    else
+                                        bringer.Parameters.Add(value[parameterName].Cast(parameterType));
+                                }
                                 else
-                                    bringer.Parameters.Add(value[parameterName].Cast(parameterType));
+                                    bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
                             }
-                            else
-                                bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
+                            catch (JsonException ex)
+                            {
+                                // If JSON deserialization fails, throw a meaningful exception
+                                throw new InvalidOperationException(
+                                    $"Failed to deserialize parameter '{parameterName}' of type '{parameterType.Name}'. " +
+                                    $"Value: '{value[parameterName]}'. " +
+                                    $"Error: {ex.Message}", ex);
+                            }
+                            catch (FormatException ex)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Invalid format for parameter '{parameterName}' of type '{parameterType.Name}'. " +
+                                    $"Value: '{value[parameterName]}'. " +
+                                    $"Error: {ex.Message}", ex);
+                            }
                             return ValueTask.CompletedTask;
                         });
                 }
@@ -154,6 +176,10 @@ namespace Rystem.PlayFramework
             Converters =
             {
                 new FlexibleEnumConverterFactory(),
+                new Converters.LenientDateOnlyConverter(),
+                new Converters.LenientNullableDateOnlyConverter(),
+                new Converters.LenientTimeOnlyConverter(),
+                new Converters.LenientNullableTimeOnlyConverter(),
             },
         };
         private sealed class FlexibleEnumConverterFactory : JsonConverterFactory

@@ -14,5 +14,9 @@
         FinishedError = 256,
         Planning = 512,
         Summarizing = 1024,
+        /// <summary>
+        /// Indicates that a tool/function was skipped because it was already executed in the current scene
+        /// </summary>
+        ToolSkipped = 2048,
     }
 }
