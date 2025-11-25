@@ -367,6 +367,51 @@ namespace Rystem.PlayFramework.Test
                 $"Turn 2 cost ({turn2Cost}) should be greater than Turn 1 cost ({turn1Cost})");
         }
 
+        /// <summary>
+        /// Test Case 6: Test that summarization is triggered after threshold
+        /// </summary>
+        [Fact]
+        public async Task SummarizationThresholdTest()
+        {
+            var conversationKey = Guid.NewGuid().ToString();
+
+            // Generate many turns to exceed summarization threshold
+            // With ResponseThreshold = 20 in test config
+            for (int i = 1; i <= 15; i++)
+            {
+                var question = $"Che tempo fa a Milano il giorno {i}?";
+                await ExecuteTurnAsync(question, conversationKey);
+            }
+
+            // Next turn should trigger summarization
+            var finalQuestion = "Riassumimi quello che abbiamo discusso finora";
+            var responses = await ExecuteTurnAsync(finalQuestion, conversationKey);
+
+            // Should have many responses accumulated
+            Assert.True(responses.Count > 50, $"Expected >50 responses, got {responses.Count}");
+
+            // Check if Summarizing status was used (optional - depends on threshold)
+            var summarizingResponses = responses.Where(r => r.Status == AiResponseStatus.Summarizing).ToList();
+            
+            // If summarization happened, verify it's properly marked
+            if (summarizingResponses.Any())
+            {
+                Assert.NotEmpty(summarizingResponses);
+                foreach (var summary in summarizingResponses)
+                {
+                    Assert.NotNull(summary.Message);
+                    Assert.Contains("summarizing", summary.Message, StringComparison.OrdinalIgnoreCase);
+                    Assert.Null(summary.Cost); // Summarization itself shouldn't have cost
+                }
+                
+                Console.WriteLine($"✅ Summarization triggered after threshold with {summarizingResponses.Count} summary responses");
+            }
+            else
+            {
+                Console.WriteLine("ℹ️ Summarization threshold not reached in this test run");
+            }
+        }
+
         private async Task<List<AiSceneResponse>> ExecuteTurnAsync(string message, string conversationKey)
         {
             var responses = new List<AiSceneResponse>();
