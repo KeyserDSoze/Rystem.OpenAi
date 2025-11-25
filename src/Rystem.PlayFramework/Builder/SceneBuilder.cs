@@ -135,10 +135,19 @@ namespace Rystem.PlayFramework
                             try
                             {
                                 // Special handling for DateOnly and TimeOnly - use JsonSerializer with converters
-                                if (parameterType == typeof(DateOnly) || parameterType == typeof(DateOnly?) ||
-                                    parameterType == typeof(TimeOnly) || parameterType == typeof(TimeOnly?))
+                                if (parameterType == typeof(DateOnly) || parameterType == typeof(DateOnly?))
                                 {
-                                    bringer.Parameters.Add(JsonSerializer.Deserialize(value[parameterName], parameterType, s_options)!);
+                                    if (DateOnly.TryParse(value[parameterName], out var dateOnlyValue))
+                                        bringer.Parameters.Add(dateOnlyValue);
+                                    else
+                                        throw new FormatException($"Value '{value[parameterName]}' is not a valid DateOnly format.");
+                                }
+                                else if (parameterType == typeof(TimeOnly) || parameterType == typeof(TimeOnly?))
+                                {
+                                    if (TimeOnly.TryParse(value[parameterName], out var timeOnlyValue))
+                                        bringer.Parameters.Add(timeOnlyValue);
+                                    else
+                                        throw new FormatException($"Value '{value[parameterName]}' is not a valid TimeOnly format.");
                                 }
                                 else if (parameterType.IsPrimitive())
                                 {
