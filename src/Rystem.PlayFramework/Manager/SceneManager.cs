@@ -268,7 +268,7 @@ namespace Rystem.PlayFramework
             {
                 foreach (var toolCall in response.Choices[0].Message!.ToolCalls!)
                 {
-                    yield return new AiSceneResponse
+                    var sceneResponse = new AiSceneResponse
                     {
                         RequestKey = requestSettings.Key!,
                         Name = toolCall.Function!.Name,
@@ -277,12 +277,17 @@ namespace Rystem.PlayFramework
                         Cost = initialCost > 0 ? initialCost : null,
                         TotalCost = context.TotalCost
                     };
+                    if (response.Usage != null)
+                    {
+                        PopulateTokenCounts(sceneResponse, response.Usage);
+                    }
+                    yield return sceneResponse;
                     var scene = _sceneFactory.Create(toolCall.Function!.Name);
                     if (scene != null)
                     {
-                        await foreach (var sceneResponse in GetResponseFromSceneAsync(chatClient, scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
+                        await foreach (var sceneResponse2 in GetResponseFromSceneAsync(chatClient, scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                         {
-                            yield return sceneResponse;
+                            yield return sceneResponse2;
                         }
                     }
                 }
@@ -318,7 +323,7 @@ namespace Rystem.PlayFramework
             }
             else
             {
-                yield return new AiSceneResponse
+                var finishedResponse = new AiSceneResponse
                 {
                     RequestKey = requestSettings.Key!,
                     Message = response?.Choices?[0]?.Message?.Content,
@@ -327,6 +332,11 @@ namespace Rystem.PlayFramework
                     Cost = initialCost > 0 ? initialCost : null,
                     TotalCost = context.TotalCost
                 };
+                if (response?.Usage != null)
+                {
+                    PopulateTokenCounts(finishedResponse, response.Usage);
+                }
+                yield return finishedResponse;
             }
         }
         private async IAsyncEnumerable<AiSceneResponse> GetResponseFromSceneAsync(IOpenAiChat chatClient, IScene scene, string message, SceneContext context, SceneRequestSettings sceneRequestSettings, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -367,7 +377,7 @@ namespace Rystem.PlayFramework
                     // Check if this tool was already executed in this scene
                     if (context.HasExecutedTool(sceneName, functionName, arguments))
                     {
-                        yield return new AiSceneResponse
+                        var skippedResponse = new AiSceneResponse
                         {
                             RequestKey = sceneRequestSettings.Key!,
                             Name = sceneName,
@@ -378,6 +388,11 @@ namespace Rystem.PlayFramework
                             Cost = null, // No new cost for skipped tools
                             TotalCost = context.TotalCost
                         };
+                        if (chatResponse.Usage != null)
+                        {
+                            PopulateTokenCounts(skippedResponse, chatResponse.Usage);
+                        }
+                        yield return skippedResponse;
                         continue;
                     }
 
@@ -395,7 +410,7 @@ namespace Rystem.PlayFramework
                     // Mark tool as executed
                     context.MarkToolExecuted(sceneName, functionName, arguments);
 
-                    yield return new AiSceneResponse
+                    var toolResponse = new AiSceneResponse
                     {
                         RequestKey = sceneRequestSettings.Key!,
                         Name = sceneName,
@@ -407,6 +422,11 @@ namespace Rystem.PlayFramework
                         Cost = lastRequestCost > 0 ? lastRequestCost : null, // Cost from the last chat request
                         TotalCost = context.TotalCost
                     };
+                    if (chatResponse.Usage != null)
+                    {
+                        PopulateTokenCounts(toolResponse, chatResponse.Usage);
+                    }
+                    yield return toolResponse;
                     chatClient.AddSystemMessage($"Response for function {functionName}: {responseAsJson}");
                 }
             }
@@ -429,7 +449,7 @@ namespace Rystem.PlayFramework
             }
             else
             {
-                yield return new AiSceneResponse
+                var runningResponse = new AiSceneResponse
                 {
                     RequestKey = sceneRequestSettings.Key!,
                     Name = sceneName,
@@ -439,6 +459,11 @@ namespace Rystem.PlayFramework
                     Cost = nextRequestCost > 0 ? nextRequestCost : null,
                     TotalCost = context.TotalCost
                 };
+                if (chatResponse?.Usage != null)
+                {
+                    PopulateTokenCounts(runningResponse, chatResponse.Usage);
+                }
+                yield return runningResponse;
             }
         }
         private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, SceneContext sceneContext, string argumentAsJson, CancellationToken cancellationToken)
@@ -540,6 +565,43 @@ namespace Rystem.PlayFramework
                 }
             }
         }
+
+        /// <summary>
+        /// Helper to populate token counts in AiSceneResponse from ChatUsage
+        /// </summary>
+        private static void PopulateTokenCounts(AiSceneResponse response, ChatUsage usage)
+        {
+            response.InputTokens = usage.PromptTokens;
+            response.CachedInputTokens = usage.PromptTokensDetails?.CachedTokens ?? 0;
+            response.OutputTokens = usage.CompletionTokens;
+            response.TotalTokens = usage.TotalTokens;
+        }
+
+        /// <summary>
+        /// Helper to calculate aggregated token statistics from all responses
+        /// </summary>
+        private static (int InputTokens, int CachedInputTokens, int OutputTokens, int TotalTokens)
+            CalculateAggregatedTokens(List<AiSceneResponse> responses)
+        {
+            int totalInput = 0;
+            int totalCached = 0;
+            int totalOutput = 0;
+            int totalTokens = 0;
+
+            foreach (var response in responses)
+            {
+                if (response.InputTokens.HasValue)
+                    totalInput += response.InputTokens.Value;
+                if (response.CachedInputTokens.HasValue)
+                    totalCached += response.CachedInputTokens.Value;
+                if (response.OutputTokens.HasValue)
+                    totalOutput += response.OutputTokens.Value;
+                if (response.TotalTokens.HasValue)
+                    totalTokens += response.TotalTokens.Value;
+            }
+
+            return (totalInput, totalCached, totalOutput, totalTokens);
+        }
         private async IAsyncEnumerable<AiSceneResponse> ExecutePlanAsync(IOpenAiChat chatClient, SceneContext context, SceneRequestSettings requestSettings, string message, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (context.ExecutionPlan == null || !context.ExecutionPlan.Steps.Any())
@@ -572,7 +634,7 @@ namespace Rystem.PlayFramework
                 {
                     await foreach (var sceneResponse in GetResponseFromSceneAsync(chatClient, scene, message, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                     {
-                        // Don't add here - already added by GetResponseFromSceneAsync via GetResponseAsync
+                        // Don't add here - already added by GetResponseFromSceneAsync
                         yield return sceneResponse;
                     }
                     step.IsCompleted = true;
@@ -633,7 +695,7 @@ namespace Rystem.PlayFramework
                     yield return YieldAndTrack(context, new AiSceneResponse
                     {
                         RequestKey = requestSettings.Key!,
-                        Message = $"Generating final response: {continuationCheck.Reasoning}",
+                        Message = continuationCheck.Reasoning,
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.Planning,
                         Cost = null,
@@ -702,12 +764,17 @@ namespace Rystem.PlayFramework
                     }
                 }
 
+                var (inputTokens, cachedTokens, outputTokens, totalTokens) = CalculateAggregatedTokens(context.Responses);
+                var tokenSummary = $"Tokens: {inputTokens} input + {cachedTokens} cached (10% cost) + {outputTokens} output = {totalTokens} total";
+
                 yield return YieldAndTrack(context, new AiSceneResponse
                 {
                     RequestKey = requestSettings.Key!,
                     Status = AiResponseStatus.FinishedOk,
-                    Message = $"Plan execution completed. Total cost: {context.TotalCost:F6}",
                     ResponseTime = DateTime.UtcNow,
+                    Message = context.TotalCost > 0 ?
+                        $"Completed. Total cost: ${context.TotalCost:F6}. {tokenSummary}" :
+                        $"Completed. {tokenSummary}",
                     Cost = null,
                     TotalCost = context.TotalCost
                 });
@@ -783,7 +850,7 @@ Be concise but complete. Do not mention the tools or scenes you used - just answ
 
             var finalMessage = finalResponse?.Choices?[0]?.Message?.Content;
 
-            yield return YieldAndTrack(context, new AiSceneResponse
+            var finalSceneResponse = new AiSceneResponse
             {
                 RequestKey = requestSettings.Key!,
                 Message = finalMessage,
@@ -791,7 +858,12 @@ Be concise but complete. Do not mention the tools or scenes you used - just answ
                 Status = AiResponseStatus.FinishedOk,
                 Cost = finalCost > 0 ? finalCost : null,
                 TotalCost = context.TotalCost
-            });
+            };
+            if (finalResponse?.Usage != null)
+            {
+                PopulateTokenCounts(finalSceneResponse, finalResponse.Usage);
+            }
+            yield return YieldAndTrack(context, finalSceneResponse);
         }
     }
 }
