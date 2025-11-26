@@ -59,5 +59,11 @@ namespace Rystem.PlayFramework
         /// </summary>
         [JsonPropertyName("totalTokens")]
         public int? TotalTokens { get; set; }
+
+        /// <summary>
+        /// Name of the model used for this response
+        /// </summary>
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
     }
 }

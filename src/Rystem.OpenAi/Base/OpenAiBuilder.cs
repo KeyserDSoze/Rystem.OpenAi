@@ -67,5 +67,6 @@ namespace Rystem.OpenAi
             var outputPrice = DefaultServices.Price.CalculatePrice(Request.Model!, [.. Usages]);
             return outputPrice;
         }
+        public string? ModelName => Request.Model;
     }
 }
