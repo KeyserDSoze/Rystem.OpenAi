@@ -92,10 +92,6 @@ namespace Rystem.PlayFramework
         [Description("The user's original request")]
         public required string UserRequest { get; init; }
 
-        [JsonPropertyName("executed_scenes")]
-        [Description("List of scenes that have been executed")]
-        public List<ExecutedSceneInfo>? ExecutedScenes { get; init; }
-
         [JsonPropertyName("available_scenes")]
         [Description("List of scene names still available")]
         public List<string>? AvailableScenes { get; init; }

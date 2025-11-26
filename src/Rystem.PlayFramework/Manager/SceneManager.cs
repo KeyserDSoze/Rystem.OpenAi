@@ -157,7 +157,6 @@ namespace Rystem.PlayFramework
                     {
                         // Need to initialize context early to track summarization
                         var chatClientTemp = await GetChatClientAsync(message, requestSettings, cancellationToken);
-                        
                         yield return YieldAndTrack(requestSettings.Context!, new AiSceneResponse
                         {
                             RequestKey = requestSettings.Key!,
@@ -362,11 +361,11 @@ namespace Rystem.PlayFramework
             {
                 foreach (var toolCall in chatResponse!.Choices![0]!.Message!.ToolCalls!)
                 {
-                    var arguments = toolCall.Function!.Arguments!;
                     var functionName = toolCall.Function!.Name!;
+                    var arguments = toolCall.Function!.Arguments!;
 
                     // Check if this tool was already executed in this scene
-                    if (context.HasExecutedTool(sceneName, functionName))
+                    if (context.HasExecutedTool(sceneName, functionName, arguments))
                     {
                         yield return new AiSceneResponse
                         {
@@ -394,7 +393,7 @@ namespace Rystem.PlayFramework
                     }
 
                     // Mark tool as executed
-                    context.MarkToolExecuted(sceneName, functionName);
+                    context.MarkToolExecuted(sceneName, functionName, arguments);
 
                     yield return new AiSceneResponse
                     {
@@ -557,24 +556,6 @@ namespace Rystem.PlayFramework
                 if (step.IsCompleted)
                     continue;
 
-                // Skip if scene was already executed
-                if (context.HasExecutedScene(step.SceneName))
-                {
-                    // These ARE added to context.Responses by GetResponseFromSceneAsync
-                    yield return YieldAndTrack(context, new AiSceneResponse
-                    {
-                        RequestKey = requestSettings.Key!,
-                        Name = step.SceneName,
-                        Message = $"Scene '{step.SceneName}' already executed, skipping step {step.Order}",
-                        ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.ToolSkipped,
-                        Cost = null,
-                        TotalCost = context.TotalCost
-                    });
-                    step.IsCompleted = true;
-                    continue;
-                }
-
                 yield return YieldAndTrack(context, new AiSceneResponse
                 {
                     RequestKey = requestSettings.Key!,
@@ -706,7 +687,7 @@ namespace Rystem.PlayFramework
                                     Cost = directorCost > 0 ? directorCost : null,
                                     TotalCost = context.TotalCost
                                 });
-                                
+
                                 var scene = _sceneFactory.Create(toolCall.Function!.Name);
                                 if (scene != null)
                                 {
@@ -760,7 +741,7 @@ namespace Rystem.PlayFramework
                 executionSummary.AppendLine($"Scene: {executedScene.Key}");
                 if (executedScene.Value.Any())
                 {
-                    executionSummary.AppendLine($"  Tools used: {string.Join(", ", executedScene.Value)}");
+                    executionSummary.AppendLine($"  Tools used: {string.Join(", ", executedScene.Value.Select(x => $"{x.ToolName} with arguments: {x.Arguments}"))}");
                 }
 
                 // Get responses from this scene
