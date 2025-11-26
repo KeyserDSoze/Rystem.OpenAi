@@ -161,17 +161,7 @@ You MUST call the CreateExecutionPlan function to respond.");
             }
 
             var chatClient = context.CreateNewDefaultChatClient();
-            var availableScenes = _playHandler.GetScenes(requestSettings.ScenesToAvoid)
-                .Where(s => !context.HasExecutedScene(s))
-                .ToList();
-
-            // Build executed scenes info
-            var executedScenes = context.ExecutedScenes.Select(kvp => new ExecutedSceneInfo
-            {
-                SceneName = kvp.Key,
-                ToolsCalled = kvp.Value.ToList(),
-                ResultSummary = GetSceneResultSummary(context, kvp.Key)
-            }).ToList();
+            var availableScenes = _playHandler.GetScenes(requestSettings.ScenesToAvoid).ToList();
 
             // Create continuation check tool automatically from type
             var continuationTool = CreateContinuationCheckTool();
@@ -188,7 +178,6 @@ You MUST call the CheckContinuation function to respond.");
             var request = new ContinuationCheckRequest
             {
                 UserRequest = context.InputMessage,
-                ExecutedScenes = executedScenes,
                 AvailableScenes = availableScenes
             };
 
@@ -227,17 +216,6 @@ You MUST call the CheckContinuation function to respond.");
                     Reasoning = errorMessage
                 };
             }
-        }
-
-        private static string? GetSceneResultSummary(SceneContext context, string sceneName)
-        {
-            var sceneResponses = context.Responses
-                .Where(r => r.Name == sceneName && r.Status == AiResponseStatus.Running)
-                .Select(r => r.Message)
-                .Where(m => !string.IsNullOrEmpty(m))
-                .ToList();
-
-            return sceneResponses.Any() ? string.Join("; ", sceneResponses) : null;
         }
 
         private static FunctionTool CreatePlanningTool()

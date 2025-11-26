@@ -97,12 +97,12 @@ namespace Rystem.PlayFramework.Test
             var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
 
             // Check vacation scene was used (flexible match)
-            var vacationSceneUsed = responses.Any(r => 
-                r.Name != null && 
-                (r.Name.Contains("ferie", StringComparison.OrdinalIgnoreCase) || 
+            var vacationSceneUsed = responses.Any(r =>
+                r.Name != null &&
+                (r.Name.Contains("ferie", StringComparison.OrdinalIgnoreCase) ||
                  r.Name.Contains("permessi", StringComparison.OrdinalIgnoreCase)));
-            
-            Assert.True(vacationSceneUsed, 
+
+            Assert.True(vacationSceneUsed,
                 $"Expected vacation scene to be used. Scenes used: {string.Join(", ", responses.Where(r => r.Name != null).Select(r => r.Name).Distinct())}");
 
             // Validate using LLM with 65% threshold (vacation requests might have confirmation flows)
@@ -244,7 +244,7 @@ namespace Rystem.PlayFramework.Test
 
             // Verify that skipped tools are properly marked
             var skippedTools = responses.Where(r => r.Status == AiResponseStatus.ToolSkipped).ToList();
-            
+
             // If there are skipped tools, verify they have proper information
             foreach (var skipped in skippedTools)
             {
@@ -324,7 +324,6 @@ namespace Rystem.PlayFramework.Test
                 Assert.True(result.Validation.IsValid,
                     $"Question '{result.Question}' failed validation with score {result.Validation.Score}/100. " +
                     $"Reasoning: {result.Validation.Reasoning}");
-                
                 Console.WriteLine($"✅ '{result.Question}' Score: {result.Validation.Score}/100");
             }
 
@@ -379,7 +378,7 @@ namespace Rystem.PlayFramework.Test
             var turn2Cost = responses2.Last().TotalCost ?? 0;
 
             // Turn 2 should have higher total cost (accumulated)
-            Assert.True(turn2Cost > turn1Cost, 
+            Assert.True(turn2Cost > turn1Cost,
                 $"Turn 2 cost ({turn2Cost}) should be greater than Turn 1 cost ({turn1Cost})");
         }
 
@@ -408,7 +407,7 @@ namespace Rystem.PlayFramework.Test
 
             // Check if Summarizing status was used (optional - depends on threshold)
             var summarizingResponses = responses.Where(r => r.Status == AiResponseStatus.Summarizing).ToList();
-            
+
             // If summarization happened, verify it's properly marked
             if (summarizingResponses.Any())
             {
@@ -419,7 +418,7 @@ namespace Rystem.PlayFramework.Test
                     Assert.Contains("summarizing", summary.Message, StringComparison.OrdinalIgnoreCase);
                     Assert.Null(summary.Cost); // Summarization itself shouldn't have cost
                 }
-                
+
                 Console.WriteLine($"✅ Summarization triggered after threshold with {summarizingResponses.Count} summary responses");
             }
             else

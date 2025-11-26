@@ -2,6 +2,11 @@
 
 namespace Rystem.PlayFramework
 {
+    public sealed class SceneRequestContext
+    {
+        public string? ToolName { get; init; }
+        public string? Arguments { get; init; }
+    }
     public sealed class SceneContext
     {
         public required IServiceProvider ServiceProvider { get; init; }
@@ -26,12 +31,12 @@ namespace Rystem.PlayFramework
         /// Track which scenes have been executed in this request to avoid re-execution.
         /// Key: SceneName, Value: List of tools called in that scene
         /// </summary>
-        public Dictionary<string, HashSet<string>> ExecutedScenes { get; } = new();
+        public Dictionary<string, HashSet<SceneRequestContext>> ExecutedScenes { get; } = [];
 
         /// <summary>
         /// Track which tools have been executed across all scenes to avoid duplicates.
         /// </summary>
-        public HashSet<string> ExecutedTools { get; } = new();
+        public HashSet<string> ExecutedTools { get; } = [];
 
         /// <summary>
         /// Total accumulated cost for all OpenAI requests in this conversation
@@ -46,24 +51,21 @@ namespace Rystem.PlayFramework
         /// <summary>
         /// Check if a specific tool has already been called in a scene.
         /// </summary>
-        public bool HasExecutedTool(string sceneName, string toolName)
-        {
-            return ExecutedScenes.TryGetValue(sceneName, out var tools) && tools.Contains(toolName);
-        }
+        public bool HasExecutedTool(string sceneName, string toolName, string? arguments) 
+            => ExecutedTools.TryGetValue($"{sceneName}.{toolName}.{arguments}", out var _);
 
         /// <summary>
         /// Mark a tool as executed for a scene.
         /// </summary>
-        public void MarkToolExecuted(string sceneName, string toolName)
+        public void MarkToolExecuted(string sceneName, string toolName, string? arguments)
         {
             if (!ExecutedScenes.ContainsKey(sceneName))
             {
-                ExecutedScenes[sceneName] = new HashSet<string>();
+                ExecutedScenes[sceneName] = [];
             }
-            ExecutedScenes[sceneName].Add(toolName);
-            ExecutedTools.Add($"{sceneName}.{toolName}");
+            ExecutedScenes[sceneName].Add(new SceneRequestContext { ToolName = toolName, Arguments = arguments });
+            ExecutedTools.Add($"{sceneName}.{toolName}.{arguments}");
         }
-
         /// <summary>
         /// Add cost to the total and return the new total
         /// </summary>

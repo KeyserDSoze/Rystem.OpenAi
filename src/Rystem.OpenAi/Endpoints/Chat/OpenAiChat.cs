@@ -31,7 +31,7 @@ namespace Rystem.OpenAi.Chat
         {
             Usages.AddRange([
                 new OpenAiCost { Units = usage.PromptTokens, Kind = KindOfCost.Input, UnitOfMeasure = UnitOfMeasure.Tokens },
-                new OpenAiCost { Units = usage.CompletionTokensDetails?.AcceptedPredictionTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
+                new OpenAiCost { Units = usage.PromptTokensDetails?.CachedTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
                 new OpenAiCost { Units = usage.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens }]);
         }
         public async ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)

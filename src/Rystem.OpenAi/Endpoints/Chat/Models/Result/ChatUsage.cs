@@ -13,6 +13,9 @@ namespace Rystem.OpenAi.Chat
         [JsonPropertyName("total_tokens")]
         public int TotalTokens { get; set; }
 
+        [JsonPropertyName("prompt_tokens_details")]
+        public PromptTokensDetails? PromptTokensDetails { get; set; }
+
         [JsonPropertyName("completion_tokens_details")]
         public CompletionTokensDetails? CompletionTokensDetails { get; set; }
     }
