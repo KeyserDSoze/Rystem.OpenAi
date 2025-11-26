@@ -35,7 +35,7 @@ namespace Rystem.PlayFramework
             IPlanner? planner = null,
             ISummarizer? summarizer = null)
         {
-            _httpContext = httpContextAccessor?.HttpContext;
+            _httpContext = httpContextAccessor.HttpContext;
             _serviceProvider = serviceProvider;
             _openAiFactory = openAiFactory;
             _sceneFactory = sceneFactory;
@@ -56,14 +56,14 @@ namespace Rystem.PlayFramework
                 throw new InvalidOperationException("OpenAI Chat client is not configured.");
             }
             List<AiSceneResponse>? oldValue = null;
-            if (requestSettings.Key != null && !requestSettings.KeyHasStartedAsNull && !requestSettings.CacheIsAvoidable && _cacheService != null)
+            if (requestSettings is { Key: not null, KeyHasStartedAsNull: false, CacheIsAvoidable: false } && _cacheService != null)
             {
                 if (!_cacheValue.ContainsKey(requestSettings.Key))
                 {
                     oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
 
                     // Check if we need to summarize
-                    if (_summarizer != null && oldValue != null && _summarizer.ShouldSummarize(oldValue))
+                    if (_summarizer != null && _summarizer.ShouldSummarize(oldValue))
                     {
                         var summary = await _summarizer.SummarizeAsync(oldValue, cancellationToken);
                         _cacheValue.TryAdd(requestSettings.Key, summary);
@@ -147,16 +147,13 @@ namespace Rystem.PlayFramework
             }
 
             // Check if summarization will happen and yield status before GetChatClientAsync
-            if (requestSettings.Key != null && !requestSettings.KeyHasStartedAsNull &&
-                !requestSettings.CacheIsAvoidable && _cacheService != null && _summarizer != null)
+            if (requestSettings is { Key: not null, KeyHasStartedAsNull: false, CacheIsAvoidable: false } && _cacheService != null && _summarizer != null)
             {
                 if (!_cacheValue.ContainsKey(requestSettings.Key))
                 {
                     var oldValue = await _cacheService.GetAsync(requestSettings.Key, cancellationToken);
-                    if (oldValue != null && _summarizer.ShouldSummarize(oldValue))
+                    if (_summarizer.ShouldSummarize(oldValue))
                     {
-                        // Need to initialize context early to track summarization
-                        var chatClientTemp = await GetChatClientAsync(message, requestSettings, cancellationToken);
                         yield return YieldAndTrack(requestSettings.Context!, new AiSceneResponse
                         {
                             RequestKey = requestSettings.Key!,
@@ -180,9 +177,10 @@ namespace Rystem.PlayFramework
                 ResponseTime = DateTime.UtcNow,
                 Status = AiResponseStatus.Request,
                 Cost = null,
-                TotalCost = 0 // Initialize total cost
+                TotalCost = 0, // Initialize total cost
+                Model = chatClient.ModelName
             });
-            requestSettings.Context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat!;
+            requestSettings.Context.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
             await PlayActorsInScene(requestSettings.Context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
@@ -264,7 +262,7 @@ namespace Rystem.PlayFramework
             {
                 context.AddCost(initialCost);
             }
-            if (response?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
+            if (response.Choices?[0].Message?.ToolCalls?.Count > 0)
             {
                 foreach (var toolCall in response.Choices[0].Message!.ToolCalls!)
                 {
@@ -275,7 +273,8 @@ namespace Rystem.PlayFramework
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.SceneRequest,
                         Cost = initialCost > 0 ? initialCost : null,
-                        TotalCost = context.TotalCost
+                        TotalCost = context.TotalCost,
+                        Model = chatClient.ModelName
                     };
                     if (response.Usage != null)
                     {
@@ -300,7 +299,7 @@ namespace Rystem.PlayFramework
                         if (directorResponse.ExecuteAgain)
                         {
                             requestSettings.AvoidScenes(directorResponse.CutScenes ?? []);
-                            chatClient!.ClearTools();
+                            chatClient.ClearTools();
                             await foreach (var furtherResponse in RequestAsync(chatClient, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
                             {
                                 yield return furtherResponse;
@@ -315,7 +314,8 @@ namespace Rystem.PlayFramework
                                 ResponseTime = DateTime.UtcNow,
                                 Message = context.TotalCost > 0 ? $"Completed. Total cost: {context.TotalCost:F6}" : null,
                                 Cost = null,
-                                TotalCost = context.TotalCost
+                                TotalCost = context.TotalCost,
+                                Model = chatClient.ModelName
                             };
                         }
                     }
@@ -326,13 +326,14 @@ namespace Rystem.PlayFramework
                 var finishedResponse = new AiSceneResponse
                 {
                     RequestKey = requestSettings.Key!,
-                    Message = response?.Choices?[0]?.Message?.Content,
+                    Message = response.Choices?[0].Message?.Content,
                     ResponseTime = DateTime.UtcNow,
                     Status = AiResponseStatus.FinishedNoTool,
                     Cost = initialCost > 0 ? initialCost : null,
-                    TotalCost = context.TotalCost
+                    TotalCost = context.TotalCost,
+                    Model = chatClient.ModelName
                 };
-                if (response?.Usage != null)
+                if (response.Usage != null)
                 {
                     PopulateTokenCounts(finishedResponse, response.Usage);
                 }
@@ -367,9 +368,9 @@ namespace Rystem.PlayFramework
         }
         private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, SceneContext context, SceneRequestSettings sceneRequestSettings, IOpenAiChat chatClient, ChatResult chatResponse, decimal lastRequestCost, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (chatResponse?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
+            if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
             {
-                foreach (var toolCall in chatResponse!.Choices![0]!.Message!.ToolCalls!)
+                foreach (var toolCall in chatResponse.Choices![0].Message!.ToolCalls!)
                 {
                     var functionName = toolCall.Function!.Name!;
                     var arguments = toolCall.Function!.Arguments!;
@@ -386,7 +387,8 @@ namespace Rystem.PlayFramework
                             ResponseTime = DateTime.UtcNow,
                             Status = AiResponseStatus.ToolSkipped,
                             Cost = null, // No new cost for skipped tools
-                            TotalCost = context.TotalCost
+                            TotalCost = context.TotalCost,
+                            Model = chatClient.ModelName
                         };
                         if (chatResponse.Usage != null)
                         {
@@ -420,7 +422,8 @@ namespace Rystem.PlayFramework
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.FunctionRequest,
                         Cost = lastRequestCost > 0 ? lastRequestCost : null, // Cost from the last chat request
-                        TotalCost = context.TotalCost
+                        TotalCost = context.TotalCost,
+                        Model = chatClient.ModelName
                     };
                     if (chatResponse.Usage != null)
                     {
@@ -440,7 +443,7 @@ namespace Rystem.PlayFramework
                 context.AddCost(nextRequestCost);
             }
 
-            if (chatResponse?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
+            if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
             {
                 await foreach (var result in GetResponseAsync(sceneName, clientName, context, sceneRequestSettings, chatClient, chatResponse, nextRequestCost, cancellationToken))
                 {
@@ -453,13 +456,14 @@ namespace Rystem.PlayFramework
                 {
                     RequestKey = sceneRequestSettings.Key!,
                     Name = sceneName,
-                    Message = chatResponse?.Choices?[0]?.Message?.Content,
+                    Message = chatResponse.Choices?[0].Message?.Content,
                     ResponseTime = DateTime.UtcNow,
                     Status = AiResponseStatus.Running,
                     Cost = nextRequestCost > 0 ? nextRequestCost : null,
-                    TotalCost = context.TotalCost
+                    TotalCost = context.TotalCost,
+                    Model = chatClient.ModelName
                 };
-                if (chatResponse?.Usage != null)
+                if (chatResponse.Usage != null)
                 {
                     PopulateTokenCounts(runningResponse, chatResponse.Usage);
                 }
@@ -472,7 +476,7 @@ namespace Rystem.PlayFramework
             {
                 var json = ParseJson(argumentAsJson);
                 sceneContext.Jsons.Add(json);
-                var serviceBringer = new ServiceBringer() { Parameters = [] };
+                var serviceBringer = new ServiceBringer { Parameters = [] };
                 foreach (var input in serviceHandler.Actions)
                 {
                     await input.Value(json, serviceBringer);
@@ -480,15 +484,12 @@ namespace Rystem.PlayFramework
                 var response = await serviceHandler.Call(_serviceProvider, serviceBringer, sceneContext, cancellationToken);
                 if (response == null)
                     return string.Empty;
-                else if (response.IsT0)
+                if (response.IsT0)
                 {
-                    if (response.CastT0.IsPrimitive())
-                        return response.CastT0.ToString();
-                    else
-                        return response.CastT0.ToJson();
+                    return response.CastT0.IsPrimitive() ? response.CastT0.ToString() : response.CastT0.ToJson();
                 }
-                else
-                    return response.CastT1.Message;
+
+                return response.CastT1.Message;
             }
             catch (JsonException ex)
             {
@@ -521,9 +522,9 @@ namespace Rystem.PlayFramework
                 Content = httpBringer.BodyAsJson != null ? new StringContent(httpBringer.BodyAsJson, Encoding.UTF8, "application/json") : null,
                 Headers = { { "Accept", "application/json" } },
                 RequestUri = new Uri($"{httpClient.BaseAddress}{httpBringer.RewrittenUri ?? httpHandler.Uri}{(httpBringer.Query != null ? (httpHandler.Uri.Contains('?') ? $"&{httpBringer.Query}" : $"?{httpBringer.Query}") : string.Empty)}"),
-                Method = new HttpMethod(httpBringer.Method!.ToString()!)
+                Method = new HttpMethod(httpBringer.Method!)
             };
-            var authorization = _httpContext?.Request?.Headers?.Authorization.ToString();
+            var authorization = _httpContext?.Request.Headers.Authorization.ToString();
             if (authorization != null)
             {
                 var bearer = authorization.Split(' ');
@@ -537,20 +538,19 @@ namespace Rystem.PlayFramework
         private static Dictionary<string, string> ParseJson(string json)
         {
             var result = new Dictionary<string, string>();
-            using (var document = JsonDocument.Parse(json))
+            using var document = JsonDocument.Parse(json);
+            foreach (var element in document.RootElement.EnumerateObject())
             {
-                foreach (var element in document.RootElement.EnumerateObject())
+                if (element.Value.ValueKind == JsonValueKind.Object || element.Value.ValueKind == JsonValueKind.Array)
                 {
-                    if (element.Value.ValueKind == JsonValueKind.Object || element.Value.ValueKind == JsonValueKind.Array)
-                    {
-                        result.Add(element.Name, element.Value.GetRawText());
-                    }
-                    else
-                    {
-                        result.Add(element.Name, element.Value.ToString());
-                    }
+                    result.Add(element.Name, element.Value.GetRawText());
+                }
+                else
+                {
+                    result.Add(element.Name, element.Value.ToString());
                 }
             }
+
             return result;
         }
         private static async ValueTask PlayActorsInScene(SceneContext context, IOpenAiChat chatClient, IEnumerable<IPlayableActor>? actors, CancellationToken cancellationToken)
@@ -583,10 +583,10 @@ namespace Rystem.PlayFramework
         private static (int InputTokens, int CachedInputTokens, int OutputTokens, int TotalTokens)
             CalculateAggregatedTokens(List<AiSceneResponse> responses)
         {
-            int totalInput = 0;
-            int totalCached = 0;
-            int totalOutput = 0;
-            int totalTokens = 0;
+            var totalInput = 0;
+            var totalCached = 0;
+            var totalOutput = 0;
+            var totalTokens = 0;
 
             foreach (var response in responses)
             {
@@ -656,7 +656,7 @@ namespace Rystem.PlayFramework
 
                 var continuationCheck = await deterministicPlanner.ShouldContinueExecutionAsync(context, requestSettings, cancellationToken);
 
-                if (continuationCheck.ShouldContinue && !continuationCheck.CanAnswerNow)
+                if (continuationCheck is { ShouldContinue: true, CanAnswerNow: false })
                 {
                     yield return YieldAndTrack(context, new AiSceneResponse
                     {
@@ -736,7 +736,7 @@ namespace Rystem.PlayFramework
                             context.AddCost(directorCost);
                         }
 
-                        if (response?.Choices?[0]?.Message?.ToolCalls?.Count > 0)
+                        if (response.Choices?[0].Message?.ToolCalls?.Count > 0)
                         {
                             foreach (var toolCall in response.Choices[0].Message!.ToolCalls!)
                             {
@@ -747,7 +747,8 @@ namespace Rystem.PlayFramework
                                     ResponseTime = DateTime.UtcNow,
                                     Status = AiResponseStatus.SceneRequest,
                                     Cost = directorCost > 0 ? directorCost : null,
-                                    TotalCost = context.TotalCost
+                                    TotalCost = context.TotalCost,
+                                    Model = chatClient.ModelName
                                 });
 
                                 var scene = _sceneFactory.Create(toolCall.Function!.Name);
@@ -776,7 +777,8 @@ namespace Rystem.PlayFramework
                         $"Completed. Total cost: ${context.TotalCost:F6}. {tokenSummary}" :
                         $"Completed. {tokenSummary}",
                     Cost = null,
-                    TotalCost = context.TotalCost
+                    TotalCost = context.TotalCost,
+                    Model = chatClient.ModelName
                 });
             }
         }
@@ -818,11 +820,11 @@ namespace Rystem.PlayFramework
 
                 foreach (var response in sceneResponses)
                 {
-                    if (response.FunctionName != null && response.Response != null)
+                    if (response is { FunctionName: not null, Response: not null })
                     {
                         executionSummary.AppendLine($"  - {response.FunctionName}: {response.Response}");
                     }
-                    if (response.Message != null && response.Status == AiResponseStatus.Running)
+                    if (response is { Message: not null, Status: AiResponseStatus.Running })
                     {
                         executionSummary.AppendLine($"  - Result: {response.Message}");
                     }
@@ -848,7 +850,7 @@ Be concise but complete. Do not mention the tools or scenes you used - just answ
                 context.AddCost(finalCost);
             }
 
-            var finalMessage = finalResponse?.Choices?[0]?.Message?.Content;
+            var finalMessage = finalResponse.Choices?[0].Message?.Content;
 
             var finalSceneResponse = new AiSceneResponse
             {
@@ -857,9 +859,10 @@ Be concise but complete. Do not mention the tools or scenes you used - just answ
                 ResponseTime = DateTime.UtcNow,
                 Status = AiResponseStatus.FinishedOk,
                 Cost = finalCost > 0 ? finalCost : null,
-                TotalCost = context.TotalCost
+                TotalCost = context.TotalCost,
+                Model = finalChatClient.ModelName
             };
-            if (finalResponse?.Usage != null)
+            if (finalResponse.Usage != null)
             {
                 PopulateTokenCounts(finalSceneResponse, finalResponse.Usage);
             }
