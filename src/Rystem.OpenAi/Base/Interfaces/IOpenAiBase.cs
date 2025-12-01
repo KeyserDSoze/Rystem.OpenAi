@@ -31,5 +31,9 @@
         /// </summary>
         /// <returns></returns>
         decimal CalculateCost();
+        /// <summary>
+        /// Name of the model used for this request.
+        /// </summary>
+        string? ModelName { get; }
     }
 }
