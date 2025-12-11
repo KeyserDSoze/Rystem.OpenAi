@@ -149,6 +149,10 @@ namespace Rystem.PlayFramework
                                     else
                                         throw new FormatException($"Value '{value[parameterName]}' is not a valid TimeOnly format.");
                                 }
+                                else if (parameterType.IsEnum)
+                                {
+                                    bringer.Parameters.Add(Enum.Parse(parameterType, value[parameterName], true).Cast(parameterType));
+                                }
                                 else if (parameterType.IsPrimitive())
                                 {
                                     if (parameterType == typeof(DateTime))

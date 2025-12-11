@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+
 
 namespace Rystem.OpenAi
 {
@@ -12,7 +14,15 @@ namespace Rystem.OpenAi
         {
             var name = type.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? parameterName ?? type.Name;
             var description = forceDescription ?? type.GetCustomAttribute<DescriptionAttribute>()?.Description ?? parameterName;
-            if (type.IsPrimitive())
+            if (IsEnum(type))
+            {
+                var enumValues = GetEnumValues(type);
+                jsonFunction.AddEnum(name, new FunctionToolEnumProperty
+                {
+                    Enums = enumValues
+                });
+            }
+            else if (type.IsPrimitive())
             {
                 // Handle different primitive types explicitly for correct JSON Schema
                 string typeName;
@@ -76,5 +86,18 @@ namespace Rystem.OpenAi
                 }
             }
         }
+
+        private static bool IsEnum(Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            return underlyingType.IsEnum;
+        }
+
+        private static List<string> GetEnumValues(Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            return [.. Enum.GetNames(underlyingType)];
+        }
     }
 }
+

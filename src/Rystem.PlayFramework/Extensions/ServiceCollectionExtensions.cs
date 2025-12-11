@@ -6,6 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddPlayFramework(this IServiceCollection services,
             Action<IScenesBuilder> builder,
+            Action<IServiceBuilder>? serviceBuilder = null,
             string? name = null,
             bool streaming = false)
         {
@@ -20,9 +21,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());
 
-            // Register deterministic planner and summarizer
-            services.AddSingleton<IPlanner, DeterministicPlanner>();
-            services.AddSingleton<ISummarizer, DefaultSummarizer>();
+            // Register deterministic planner, summarizer and response parser
+            var serviceBuilderInstance = new ServiceBuilder(services);
+            serviceBuilder?.Invoke(serviceBuilderInstance);
+            serviceBuilderInstance.AddDefaultsIfNeeded();
 
             var sceneBuilder = new ScenesBuilder(services);
             sceneBuilder.AddCustomDirector<MainDirector>();
