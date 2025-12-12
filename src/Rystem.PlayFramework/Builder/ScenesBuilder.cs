@@ -9,11 +9,14 @@ namespace Rystem.PlayFramework
         private readonly IServiceCollection _services;
         private readonly SceneManagerSettings _settings;
         private readonly PlayHandler _playHander;
+        private readonly FunctionsHandler _functionsHandler;
+
         public ScenesBuilder(IServiceCollection services)
         {
             _services = services;
             _settings = new();
             _playHander = _services.GetSingletonService<PlayHandler>()!;
+            _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
         }
         public const string MainActor = nameof(MainActor);
         public const string Request = nameof(Request);
@@ -87,6 +90,13 @@ namespace Rystem.PlayFramework
                 Name = sceneBuilder.Scene.Name,
                 Description = sceneBuilder.Scene.Description,
             });
+            return this;
+        }
+
+        public IScenesBuilder AddCommonService<T>(Action<ISceneServiceBuilder<T>>? builder = null)
+           where T : class
+        {
+            SceneBuilder.AddService(builder, _functionsHandler, null, null);
             return this;
         }
 

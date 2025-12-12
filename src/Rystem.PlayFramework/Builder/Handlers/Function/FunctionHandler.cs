@@ -5,6 +5,7 @@ namespace Rystem.PlayFramework
     internal sealed class FunctionHandler
     {
         public List<string> Scenes { get; } = [];
+        public bool ForEveryScene { get; set; }
         public HttpHandler? HttpRequest { get; set; }
         public ServiceHandler? Service { get; set; }
         public bool HasHttpRequest => HttpRequest != null;

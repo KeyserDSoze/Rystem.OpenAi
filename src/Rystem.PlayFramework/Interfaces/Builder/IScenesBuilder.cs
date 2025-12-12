@@ -16,5 +16,6 @@ namespace Rystem.PlayFramework
         IScenesBuilder AddCustomSummarizer<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton) where T : class, ISummarizer;
         IScenesBuilder AddScene(Action<ISceneBuilder> builder);
         IScenesBuilder AddCache(Action<ICacheBuilder> cacheBuilder);
+        IScenesBuilder AddCommonService<T>(Action<ISceneServiceBuilder<T>>? builder = null) where T : class;
     }
 }

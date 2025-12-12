@@ -76,7 +76,7 @@ namespace Rystem.PlayFramework
                     prompt.AppendLine($"Description: {scene.Description}");
                     // Include available tools for this scene
                     var tools = _functionsHandler.FunctionsChooser(scene.Name).ToList();
-                    if (tools.Any())
+                    if (tools.Count != 0)
                     {
                         prompt.AppendLine("Available tools:");
                         var functionNames = _functionsHandler.GetFunctionNames(scene.Name);
