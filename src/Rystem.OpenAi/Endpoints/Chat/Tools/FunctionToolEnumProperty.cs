@@ -14,3 +14,4 @@ namespace Rystem.OpenAi
         public List<string>? Enums { get; set; }
     }
 }
+

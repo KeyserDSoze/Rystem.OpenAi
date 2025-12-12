@@ -14,10 +14,10 @@ namespace Rystem.PlayFramework
             }
         }
         public IEnumerable<Action<IOpenAiChat>> FunctionsChooser(string sceneName)
-            => Functions.Where(x => x.Value.Chooser != null && x.Value.Scenes.Contains(sceneName)).Select(x => x.Value.Chooser!);
+            => Functions.Where(x => x.Value.Chooser != null && (x.Value.ForEveryScene || x.Value.Scenes.Contains(sceneName))).Select(x => x.Value.Chooser!);
 
         public IEnumerable<string> GetFunctionNames(string sceneName)
-            => Functions.Where(x => x.Value.Scenes.Contains(sceneName)).Select(x => x.Key);
+            => Functions.Where(x => x.Value.ForEveryScene || x.Value.Scenes.Contains(sceneName)).Select(x => x.Key);
 
         private Dictionary<string, FunctionHandler> Functions { get; } = [];
     }

@@ -18,6 +18,7 @@ namespace Rystem.PlayFramework
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly PlayHandler _playHandler;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly IResponseParser _responseParser;
         private readonly ICacheService? _cacheService;
         private readonly SceneManagerSettings? _settings;
         private readonly IPlanner? _planner;
@@ -30,6 +31,7 @@ namespace Rystem.PlayFramework
             IHttpClientFactory httpClientFactory,
             PlayHandler playHandler,
             FunctionsHandler functionsHandler,
+            IResponseParser responseParser,
             ICacheService? cacheService = null,
             SceneManagerSettings? settings = null,
             IPlanner? planner = null,
@@ -42,6 +44,7 @@ namespace Rystem.PlayFramework
             _httpClientFactory = httpClientFactory;
             _playHandler = playHandler;
             _functionsHandler = functionsHandler;
+            _responseParser = responseParser;
             _cacheService = cacheService;
             _settings = settings;
             _planner = planner;
@@ -486,7 +489,7 @@ namespace Rystem.PlayFramework
                     return string.Empty;
                 if (response.IsT0)
                 {
-                    return response.CastT0.IsPrimitive() ? response.CastT0.ToString() : response.CastT0.ToJson();
+                    return _responseParser.ParseResponse(response.CastT0);
                 }
 
                 return response.CastT1.Message;

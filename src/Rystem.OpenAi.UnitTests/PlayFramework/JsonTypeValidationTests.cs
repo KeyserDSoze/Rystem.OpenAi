@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Rystem.OpenAi;
 using Rystem.PlayFramework;
 using Xunit;
 
@@ -21,10 +20,8 @@ namespace Rystem.OpenAi.UnitTests.PlayFramework
         {
             // Arrange: Create a service collection with mock services
             var services = new ServiceCollection();
-            
             // Add a mock service that will receive the JSON
             services.AddScoped<IMockLeaveService, MockLeaveService>();
-            
             // Configure OpenAI and PlayFramework
             services.AddOpenAi(settings =>
             {
@@ -35,7 +32,6 @@ namespace Rystem.OpenAi.UnitTests.PlayFramework
             services.AddPlayFramework(builder =>
             {
                 builder.AddMainActor("Test actor", true);
-                
                 builder.AddScene(sceneBuilder =>
                 {
                     sceneBuilder

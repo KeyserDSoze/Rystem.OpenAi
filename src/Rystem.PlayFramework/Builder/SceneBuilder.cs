@@ -60,6 +60,13 @@ namespace Rystem.PlayFramework
         public ISceneBuilder WithService<T>(Action<ISceneServiceBuilder<T>>? builder = null)
             where T : class
         {
+            AddService(builder, _functionsHandler, Scene.Name, _playHandler);
+            return this;
+        }
+
+        internal static void AddService<T>(Action<ISceneServiceBuilder<T>>? builder, FunctionsHandler functionsHandler, string? sceneName, PlayHandler? playHandler)
+            where T : class
+        {
             var methods = new List<MethodBringer>();
             var currentType = typeof(T);
             if (builder == null)
@@ -76,7 +83,8 @@ namespace Rystem.PlayFramework
             foreach (var method in methods)
             {
                 var functionName = method.Name ?? s_regex.Replace($"{serviceName}_{currentType.Name}_{method.Info.Name}", string.Empty);
-                _playHandler[Scene.Name].Functions.Add(functionName);
+                if (playHandler is not null && sceneName is not null)
+                    playHandler[sceneName].Functions.Add(functionName);
                 var description = method.Description ?? (method.Info.GetCustomAttributes(true).FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute)) as DescriptionAttribute)?.Description ?? functionName;
                 var jsonFunctionObject = new FunctionToolMainProperty();
                 var jsonFunction = new FunctionTool
@@ -85,8 +93,11 @@ namespace Rystem.PlayFramework
                     Description = description,
                     Parameters = jsonFunctionObject
                 };
-                var function = _functionsHandler[functionName];
-                function.Scenes.Add(Scene.Name);
+                var function = functionsHandler[functionName];
+                if (sceneName is not null)
+                    function.Scenes.Add(sceneName);
+                else
+                    function.ForEveryScene = true;
                 function.Chooser = x => x.AddFunctionTool(jsonFunction);
                 var withoutReturn = method.Info.ReturnType == typeof(void) || method.Info.ReturnType == typeof(Task) || method.Info.ReturnType == typeof(ValueTask);
                 var isGenericAsync = method.Info.ReturnType.IsGenericType &&
@@ -149,6 +160,10 @@ namespace Rystem.PlayFramework
                                     else
                                         throw new FormatException($"Value '{value[parameterName]}' is not a valid TimeOnly format.");
                                 }
+                                else if (parameterType.IsEnum)
+                                {
+                                    bringer.Parameters.Add(Enum.Parse(parameterType, value[parameterName], true).Cast(parameterType));
+                                }
                                 else if (parameterType.IsPrimitive())
                                 {
                                     if (parameterType == typeof(DateTime))
@@ -178,8 +193,8 @@ namespace Rystem.PlayFramework
                         });
                 }
             }
-            return this;
         }
+
         private static readonly JsonSerializerOptions s_options = new()
         {
             Converters =
