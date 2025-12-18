@@ -210,7 +210,7 @@ namespace Rystem.PlayFramework
                     yield return YieldAndTrack(requestSettings.Context, new AiSceneResponse
                     {
                         RequestKey = requestSettings.Key!,
-                        Message = $"Plan created with {plan.Steps.Count} steps: {plan.Reasoning}",
+                        Message = plan.ToJson(),
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.Planning,
                         Cost = null,

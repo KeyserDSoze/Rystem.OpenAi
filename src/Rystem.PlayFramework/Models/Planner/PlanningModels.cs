@@ -95,6 +95,32 @@ namespace Rystem.PlayFramework
         [JsonPropertyName("available_scenes")]
         [Description("List of scene names still available")]
         public List<string>? AvailableScenes { get; init; }
+
+        [JsonPropertyName("executed_scenes")]
+        [Description("Summary of scenes already executed and what was done in each")]
+        public List<ExecutedSceneSummary>? ExecutedScenes { get; init; }
+
+        [JsonPropertyName("gathered_information")]
+        [Description("Summary of all information gathered so far from tool executions")]
+        public string? GatheredInformation { get; init; }
+    }
+
+    /// <summary>
+    /// Summary of an executed scene
+    /// </summary>
+    public sealed class ExecutedSceneSummary
+    {
+        [JsonPropertyName("scene_name")]
+        [Description("Name of the executed scene")]
+        public required string SceneName { get; init; }
+
+        [JsonPropertyName("tools_executed")]
+        [Description("List of tools that were executed in this scene")]
+        public List<string>? ToolsExecuted { get; init; }
+
+        [JsonPropertyName("tool_results_summary")]
+        [Description("Summary of the results from executed tools")]
+        public string? ToolResultsSummary { get; init; }
     }
 
     /// <summary>
