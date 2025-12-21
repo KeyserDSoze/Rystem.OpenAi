@@ -188,7 +188,7 @@ You MUST call the CheckContinuation function to respond.");
             {
                 UserRequest = context.InputMessage,
                 AvailableScenes = availableScenes,
-                ExecutedScenes = executedScenesSummary,
+                ExecutedScenes = executedScenesSummary.Count > 0 ? executedScenesSummary : null,
                 GatheredInformation = gatheredInformation
             };
 
@@ -273,7 +273,7 @@ You MUST call the CheckContinuation function to respond.");
                 });
             }
 
-            return summary.Any() ? summary : null;
+            return summary;
         }
 
         /// <summary>
