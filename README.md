@@ -70,6 +70,7 @@ Install-Package Rystem.OpenAi
     - [Usage examples](#usage-examples) 
     - [Function chaining](#function-chaining)
     - [PlayFramework with MCP (Model Context Protocol)](#playframework-with-mcp-model-context-protocol)
+    - [Expose PlayFramework as MCP Server](#expose-playframework-as-mcp-server)
   - [Images](#images)
     - [Create Image](#create-image)
     - [Create Image Edit](#create-image-edit)
@@ -680,6 +681,46 @@ Supports multiple communication methods:
 ```
 
 For detailed documentation, see the [PlayFramework README](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.PlayFramework/README.md#mcp-server-integration)
+
+#### Expose PlayFramework as MCP Server
+
+PlayFramework can also **expose itself as an MCP server**, allowing external clients (like Claude Desktop) to consume your AI assistant:
+
+```csharp
+services.AddPlayFramework(builder =>
+{
+    // Expose this PlayFramework as an MCP server
+    builder.ExposeAsMcpServer(config =>
+    {
+        config.Description = "AI Assistant for customer support";
+        config.EnableResources = true;  // Auto-generate scene documentation
+        config.AuthorizationPolicy = "ApiKeyPolicy";  // Optional
+    });
+
+    builder.AddScene(scene =>
+    {
+        scene.WithName("CustomerSupport")
+             .WithDescription("Handles customer inquiries");
+    });
+}, name: "MyAssistant");
+
+// In Program.cs - map MCP endpoints
+app.MapPlayFrameworkMcpEndpoints("/mcp");
+// Creates: POST /mcp/MyAssistant
+```
+
+Use with Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "my-assistant": {
+      "url": "http://localhost:5000/mcp/MyAssistant"
+    }
+  }
+}
+```
+
+For detailed documentation, see [Expose as MCP Server](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/docs/EXPOSE_AS_MCP_SERVER.md)
 
 ## Images
 [📖 Back to summary](#documentation)\

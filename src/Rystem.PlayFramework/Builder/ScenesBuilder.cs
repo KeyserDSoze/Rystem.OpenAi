@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Rystem.OpenAi;
+using Rystem.PlayFramework.Mcp.Server;
 
 namespace Rystem.PlayFramework
 {
@@ -11,6 +12,7 @@ namespace Rystem.PlayFramework
         private readonly PlayHandler _playHander;
         private readonly FunctionsHandler _functionsHandler;
         private readonly Dictionary<string, McpServerConfiguration> _mcpServers = [];
+        private ExposeAsMcpServerConfig? _exposeConfig;
 
         public ScenesBuilder(IServiceCollection services)
         {
@@ -157,5 +159,14 @@ namespace Rystem.PlayFramework
                 }
             }
         }
+
+        public IScenesBuilder ExposeAsMcpServer(Action<ExposeAsMcpServerConfig>? configure = null)
+        {
+            _exposeConfig = new ExposeAsMcpServerConfig();
+            configure?.Invoke(_exposeConfig);
+            return this;
+        }
+
+        internal ExposeAsMcpServerConfig? GetExposeConfig() => _exposeConfig;
     }
 }

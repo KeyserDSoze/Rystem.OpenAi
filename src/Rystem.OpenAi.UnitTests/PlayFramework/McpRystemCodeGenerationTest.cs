@@ -165,9 +165,9 @@ Provide a validation report with a score (1-10) and any issues found.";
             // Assert - Validation should contain positive indicators
             Assert.NotEmpty(validationReport);
             Assert.Contains("Repository", validationReport, StringComparison.OrdinalIgnoreCase);
-            
+
             // Check for positive validation indicators
-            var hasPositiveIndicators = 
+            var hasPositiveIndicators =
                 validationReport.Contains("correct", StringComparison.OrdinalIgnoreCase) ||
                 validationReport.Contains("good", StringComparison.OrdinalIgnoreCase) ||
                 validationReport.Contains("proper", StringComparison.OrdinalIgnoreCase) ||
@@ -314,9 +314,9 @@ Provide a comprehensive explanation with code example if helpful.";
             Assert.NotEmpty(fullResponse);
             Assert.Contains("Repository", fullResponse, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Pattern", fullResponse, StringComparison.OrdinalIgnoreCase);
-            
+
             // Verify it discusses best practices
-            var hasQualityContent = 
+            var hasQualityContent =
                 fullResponse.Contains("benefit", StringComparison.OrdinalIgnoreCase) ||
                 fullResponse.Contains("advantage", StringComparison.OrdinalIgnoreCase) ||
                 fullResponse.Contains("testable", StringComparison.OrdinalIgnoreCase) ||
