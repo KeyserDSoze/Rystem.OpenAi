@@ -193,6 +193,12 @@ namespace Rystem.OpenAi.UnitTests
                     cacheBuilder
                         .WithMemory();
                 })
+                // Register Rystem MCP server
+                .AddMcpServer("rystemMcp", mcp =>
+                {
+                    mcp.WithHttpServer("https://rystem.cloud/mcp");
+                    mcp.WithTimeout(TimeSpan.FromSeconds(30));
+                })
                 .AddMainActor((context) => $"Oggi è {DateTime.UtcNow:yyyy-MM-dd}. You are a helpful AI assistant.", true)
                 .AddScene(scene =>
                 {
@@ -254,6 +260,27 @@ namespace Rystem.OpenAi.UnitTests
                                 .WithMethod(x => x.MakeRequest, "eseguire_richiesta_ferie_permessi", "Submit a vacation or leave request")
                                 .WithMethod(x => x.GetApprovers, "prendi_approvatori_richiesta", "Get the list of email addresses who need to approve the request")
                                 .WithMethod(x => x.GetAvailableDates, "prendi_date_festive", "Get the list of holiday dates when vacation cannot be requested");
+                        });
+                })
+                .AddScene(scene =>
+                {
+                    scene
+                        .WithName("CodeGeneration")
+                        .WithDescription("Generate C# code using Rystem framework patterns and best practices with MCP tools")
+                        .WithOpenAi("Azure2")
+                        // Use Rystem MCP server with all documentation tools
+                        .UseMcpServer("rystemMcp", filterBuilder =>
+                        {
+                            filterBuilder.OnlyTools();
+                        })
+                        .WithActors(actorBuilder =>
+                        {
+                            actorBuilder
+                                .AddActor("You are a C# code generation expert specializing in Rystem framework patterns.")
+                                .AddActor("Always follow Repository Pattern principles and SOLID design patterns.")
+                                .AddActor("Generate production-ready code with proper error handling, async/await patterns, and XML documentation.")
+                                .AddActor("Use the Rystem framework documentation tools available via MCP to inform your code generation.")
+                                .AddActor("When generating code, consult the Rystem docs using the available tools to ensure best practices.");
                         });
                 });
             });
