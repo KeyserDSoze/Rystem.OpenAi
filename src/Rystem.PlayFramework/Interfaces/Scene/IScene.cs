@@ -6,5 +6,7 @@
         string? HttpClientName { get; set; }
         string Name { get; set; }
         string Description { get; set; }
+        string? McpServerName { get; set; }
+        McpSceneFilter? McpSceneFilter { get; set; }
     }
 }

@@ -267,6 +267,415 @@ The JSON response will contain the following fields:
 
 This structured response allows clients to interpret and use the output of the AI or multi-agent system in a consistent manner.
 
+## MCP Server Integration
+
+PlayFramework now supports integration with **Model Context Protocol (MCP)** servers, enabling your scenes to access tools, resources, and prompts exposed by MCP servers. This allows for seamless integration with external services and capabilities.
+
+### What is MCP?
+
+The Model Context Protocol (MCP) is a standardized protocol for exposing capabilities to AI models. MCP servers can expose:
+- **Tools**: Functions that the AI can call to perform actions
+- **Resources**: Static or dynamic data that the AI can access and read
+- **Prompts**: Pre-configured prompts or templates that provide context to the AI
+
+### Setting Up an MCP Server
+
+MCP servers can be registered globally during application startup and then selectively used by individual scenes.
+
+#### 1. Register an MCP Server
+
+In your service configuration, use the `AddMcpServer` method to register an MCP server:
+
+```csharp
+services.AddPlayFramework(scenes =>
+{
+    scenes.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    })
+    .AddMcpServer("myMcpServer", mcp =>
+    {
+        // Configure HTTP-based MCP server
+        mcp.WithHttpServer("http://localhost:3000");
+        // Optionally set custom timeout (default is 30 seconds)
+        mcp.WithTimeout(TimeSpan.FromSeconds(60));
+    })
+    .AddScene(scene =>
+    {
+        // Configure scene to use MCP server tools
+        scene.UseMcpServer("myMcpServer");
+    });
+});
+```
+
+#### 2. Configuring MCP Elements in a Scene
+
+Each scene can independently decide which MCP elements to use via the `UseMcpServer()` method:
+
+```csharp
+.AddScene(scene =>
+{
+    scene
+        .WithName("DataProcessing")
+        .WithDescription("Process data using MCP tools")
+        .WithOpenAi("playframework")
+        // Use all MCP elements (tools, resources, prompts)
+        .UseMcpServer("myMcpServer")
+        // Or configure with filters
+        .UseMcpServer("myMcpServer", filterBuilder =>
+        {
+            filterBuilder.WithTools(toolConfig =>
+            {
+                toolConfig.Whitelist("get_data", "process_*");
+            });
+        });
+})
+```
+
+### Filtering MCP Elements
+
+You can fine-tune which MCP elements are available in each scene using fluent builder methods:
+
+#### Using All Elements
+
+```csharp
+// Enable tools, resources, and prompts
+.UseMcpServer("myMcpServer")
+```
+
+#### Using Only Specific Element Types
+
+```csharp
+// Use only tools, disable resources and prompts
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyTools();
+})
+
+// Use only resources, disable tools and prompts
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyResources();
+})
+
+// Use only prompts, disable tools and resources
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyPrompts();
+})
+```
+
+#### Filtering by Name
+
+Each element type supports filtering by name patterns:
+
+```csharp
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.WithTools(toolConfig =>
+    {
+        // Whitelist specific tools
+        toolConfig.Whitelist("get_user", "get_profile");
+        
+        // Or use patterns
+        toolConfig.Whitelist("get_*", "list_*");
+        
+        // Or match by regex
+        toolConfig.Regex("^(get|list)_.*");
+        
+        // Or use startsWith
+        toolConfig.StartsWith("process_");
+        
+        // Or use a custom predicate
+        toolConfig.Predicate(toolName => !toolName.StartsWith("admin_"));
+        
+        // Or exclude specific tools
+        toolConfig.Exclude("dangerous_operation");
+    });
+})
+```
+
+The same filtering options are available for resources and prompts:
+
+```csharp
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder
+        .WithTools(toolConfig => toolConfig.Whitelist("get_*"))
+        .WithResources(resourceConfig => resourceConfig.Whitelist("data_*"))
+        .WithPrompts(promptConfig => promptConfig.Exclude("internal_*"));
+})
+```
+
+### Complete Example: Multi-Service Scene with MCP
+
+```csharp
+services.AddPlayFramework(scenes =>
+{
+    scenes.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    })
+    // Register MCP server
+    .AddMcpServer("dataServer", mcp =>
+    {
+        mcp.WithHttpServer("http://localhost:3000");
+    })
+    // Add HTTP client for API calls
+    .AddHttpClient("apiDomain", x =>
+    {
+        x.BaseAddress = new Uri("https://api.example.com/");
+    })
+    // Create a scene that uses both MCP tools and HTTP APIs
+    .AddScene(scene =>
+    {
+        scene
+            .WithName("DataProcessing")
+            .WithDescription("Process and retrieve data using MCP and HTTP APIs")
+            .WithOpenAi("playframework")
+            .WithHttpClient("apiDomain")
+            // Use MCP tools with filtering
+            .UseMcpServer("dataServer", filterBuilder =>
+            {
+                filterBuilder.WithTools(toolConfig =>
+                {
+                    toolConfig.Whitelist("get_*", "process_*");
+                });
+            })
+            // Register additional service methods
+            .WithService<DataManager>(builder =>
+            {
+                builder.WithMethod(x => x.GetDataAsync);
+            });
+    });
+});
+```
+
+### MCP Server Types
+
+PlayFramework supports different MCP server communication methods:
+
+#### HTTP Server
+
+Connect to an MCP server via HTTP:
+
+```csharp
+.AddMcpServer("httpMcp", mcp =>
+{
+    mcp.WithHttpServer("http://localhost:3000");
+})
+```
+
+#### Stdio Command
+
+Connect to an MCP server via stdio (useful for local executables):
+
+```csharp
+.AddMcpServer("localMcp", mcp =>
+{
+    mcp.WithCommand("node", "path/to/mcp/server.js");
+    mcp.WithTimeout(TimeSpan.FromSeconds(30));
+})
+```
+
+### How MCP Elements Are Injected
+
+- **Tools**: Available as callable functions that the AI can invoke to perform actions
+- **Resources**: Injected as system messages with their content
+- **Prompts**: Injected as system messages providing context and guidance
+
+The AI automatically learns what tools, resources, and prompts are available and uses them appropriately to solve the given task.
+
+## Exposing PlayFramework as an MCP Server
+
+In addition to consuming MCP servers, PlayFramework can also **expose itself as an MCP server**, allowing external MCP clients (like Claude Desktop, other AI agents, or custom applications) to consume your PlayFramework as a tool.
+
+### Why Expose as MCP Server?
+
+- **Interoperability**: Allow any MCP-compatible client to use your PlayFramework
+- **Claude Desktop Integration**: Users can add your PlayFramework directly to Claude Desktop
+- **Multi-Agent Scenarios**: Other AI agents can call your PlayFramework as a tool
+- **Standardized API**: Uses the standard MCP JSON-RPC protocol
+
+### Configuration
+
+#### 1. Enable MCP Server Exposure
+
+When configuring your PlayFramework, use `ExposeAsMcpServer()`:
+
+```csharp
+services.AddPlayFramework(builder =>
+{
+    // Expose this PlayFramework as an MCP server
+    builder.ExposeAsMcpServer(config =>
+    {
+        config.Description = "AI Assistant for customer support and order management";
+        config.Prompt = "You are a helpful assistant...";  // Optional
+        config.EnableResources = true;  // Default: true - generates scene documentation
+        config.AuthorizationPolicy = "ApiKeyPolicy";  // Optional - null = public access
+    });
+
+    // Add your scenes as usual
+    builder.AddScene(scene =>
+    {
+        scene.WithName("CustomerSupport")
+             .WithDescription("Handles customer inquiries and complaints");
+    });
+
+    builder.AddScene(scene =>
+    {
+        scene.WithName("OrderManagement")
+             .WithDescription("Manages orders, returns, and shipping");
+    });
+}, name: "MyAssistant");
+```
+
+#### 2. Map MCP Endpoints
+
+In your `Program.cs`, map the MCP endpoints:
+
+```csharp
+var app = builder.Build();
+
+// Map MCP endpoints for all exposed PlayFrameworks
+app.MapPlayFrameworkMcpEndpoints("/mcp");
+
+app.Run();
+```
+
+This creates a JSON-RPC endpoint at:
+- `POST /mcp/MyAssistant`
+
+### Authorization
+
+Authorization is configured at the PlayFramework level using standard .NET authorization policies:
+
+```csharp
+// Configure authorization policy
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ApiKeyPolicy", policy =>
+        policy.RequireAssertion(ctx =>
+        {
+            var httpContext = ctx.Resource as HttpContext;
+            return httpContext?.Request.Headers["X-Api-Key"] == "your-secret-key";
+        }));
+});
+
+// Apply to PlayFramework
+builder.ExposeAsMcpServer(config =>
+{
+    config.AuthorizationPolicy = "ApiKeyPolicy";
+});
+```
+
+If `AuthorizationPolicy` is null or not set, the endpoint allows anonymous access.
+
+### Supported MCP Methods
+
+The exposed MCP server supports all standard MCP methods:
+
+| Method | Description |
+|--------|-------------|
+| `tools/list` | Returns the PlayFramework as a single tool |
+| `tools/call` | Executes the PlayFramework with the provided message |
+| `resources/list` | Returns documentation for each scene |
+| `resources/read` | Returns the markdown documentation content |
+| `prompts/list` | Returns configured prompts (if set) |
+| `prompts/get` | Returns the prompt content |
+
+### Example: Using with Claude Desktop
+
+Add to your Claude Desktop configuration (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "my-assistant": {
+      "url": "http://localhost:5000/mcp/MyAssistant"
+    }
+  }
+}
+```
+
+### Example JSON-RPC Request/Response
+
+#### Request (tools/call)
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "MyAssistant",
+    "arguments": {
+      "message": "What's the status of order #12345?"
+    }
+  }
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Order #12345 is currently being shipped and will arrive by Friday."
+      }
+    ],
+    "isError": false
+  }
+}
+```
+
+### Complete Example: Full MCP Integration
+
+Here's an example that both consumes an external MCP server AND exposes the PlayFramework as an MCP server:
+
+```csharp
+services.AddPlayFramework(builder =>
+{
+    // Configure settings
+    builder.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    });
+
+    // Consume external MCP server
+    builder.AddMcpServer("externalTools", mcp =>
+    {
+        mcp.WithHttpServer("http://external-mcp-server:3000");
+    });
+
+    // Expose THIS PlayFramework as an MCP server
+    builder.ExposeAsMcpServer(config =>
+    {
+        config.Description = "Multi-scene AI assistant with data processing";
+        config.EnableResources = true;
+    });
+
+    // Scene that uses external MCP tools
+    builder.AddScene(scene =>
+    {
+        scene.WithName("DataProcessing")
+             .WithDescription("Processes data using external tools")
+             .UseMcpServer("externalTools", filter =>
+             {
+                 filter.WithTools(t => t.Whitelist("process_*", "transform_*"));
+             });
+    });
+
+}, name: "DataAssistant");
+
+// In Program.cs
+app.MapPlayFrameworkMcpEndpoints("/mcp");
+// Now accessible at: POST /mcp/DataAssistant
+```
+
 ## Example of a weather scene
 
 ```json

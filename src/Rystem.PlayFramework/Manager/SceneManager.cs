@@ -210,7 +210,7 @@ namespace Rystem.PlayFramework
                     yield return YieldAndTrack(requestSettings.Context, new AiSceneResponse
                     {
                         RequestKey = requestSettings.Key!,
-                        Message = $"Plan created with {plan.Steps.Count} steps: {plan.Reasoning}",
+                        Message = plan.ToJson(),
                         ResponseTime = DateTime.UtcNow,
                         Status = AiResponseStatus.Planning,
                         Cost = null,
@@ -350,10 +350,73 @@ namespace Rystem.PlayFramework
             var sceneActors = _serviceProvider.GetKeyedServices<IActor>(scene.Name);
             await PlayActorsInScene(context, chatClient, mainActorsThatPlayEveryScene, cancellationToken);
             await PlayActorsInScene(context, chatClient, sceneActors, cancellationToken);
+
+            // Add regular functions
             foreach (var function in _functionsHandler.FunctionsChooser(scene.Name))
             {
                 function.Invoke(chatClient);
             }
+
+            // Add MCP elements if scene uses MCP server
+            if (!string.IsNullOrEmpty(scene.McpServerName))
+            {
+                var mcpRegistry = _serviceProvider.GetRequiredService<McpRegistry>();
+                var client = mcpRegistry.GetClient(scene.McpServerName);
+
+                if (client != null)
+                {
+                    var filter = scene.McpSceneFilter ?? new McpSceneFilter();
+
+                    // TOOLS
+                    if (filter.ToolsEnabled)
+                    {
+                        var tools = await client.ListToolsAsync(cancellationToken);
+                        foreach (var tool in tools.Where(t => filter.MatchesTool(t.Name)))
+                        {
+                            chatClient.AddFunctionTool(tool);
+
+                            // Register McpToolCall for later execution
+                            var functionKey = $"{scene.McpServerName}_{tool.Name}";
+                            _functionsHandler[functionKey].McpToolCall = new McpToolCall
+                            {
+                                ServerName = scene.McpServerName,
+                                ToolName = tool.Name,
+                                Client = client
+                            };
+                        }
+                    }
+
+                    // RESOURCES - inject as system messages
+                    if (filter.ResourcesEnabled)
+                    {
+                        var resources = await client.ListResourcesAsync(cancellationToken);
+                        foreach (var resource in resources.Where(r => filter.MatchesResource(r.Uri)))
+                        {
+                            var content = await client.ReadResourceAsync(resource.Uri, cancellationToken);
+                            if (!string.IsNullOrEmpty(content.Content))
+                            {
+                                chatClient.AddSystemMessage($"📄 {resource.Name}:\n{content.Content}");
+                            }
+                        }
+                    }
+
+                    // PROMPTS - inject as system messages
+                    if (filter.PromptsEnabled)
+                    {
+                        var prompts = await client.ListPromptsAsync(cancellationToken);
+                        foreach (var prompt in prompts.Where(p => filter.MatchesPrompt(p.Name)))
+                        {
+                            var content = await client.GetPromptAsync(prompt.Name, null, cancellationToken);
+                            var promptText = string.Join("\n", content.Content.Select(c => c.Text ?? c.ResourceUri ?? ""));
+                            if (!string.IsNullOrEmpty(promptText))
+                            {
+                                chatClient.AddSystemMessage(promptText);
+                            }
+                        }
+                    }
+                }
+            }
+
             chatClient.AddUserMessage(message);
             var response = await chatClient.ExecuteAsync(cancellationToken);
 
@@ -403,7 +466,11 @@ namespace Rystem.PlayFramework
 
                     var responseAsJson = string.Empty;
                     var function = _functionsHandler[functionName];
-                    if (function.HasHttpRequest)
+                    if (function.HasMcpToolCall)
+                    {
+                        responseAsJson = await ExecuteMcpToolAsync(function.McpToolCall!, arguments, cancellationToken);
+                    }
+                    else if (function.HasHttpRequest)
                     {
                         responseAsJson = await ExecuteHttpClientAsync(clientName, function.HttpRequest!, arguments, cancellationToken);
                     }
@@ -510,6 +577,20 @@ namespace Rystem.PlayFramework
                 return $"{{\"error\": \"Service execution failed: {ex.Message}\"}}";
             }
         }
+
+        private async Task<string?> ExecuteMcpToolAsync(McpToolCall mcpCall, string argumentsJson, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var executor = _serviceProvider.GetRequiredService<IMcpExecutor>();
+                return await executor.ExecuteToolAsync(mcpCall, argumentsJson, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return $"{{\"error\": \"MCP tool execution failed: {ex.Message}\"}}";
+            }
+        }
+
         private async Task<string?> ExecuteHttpClientAsync(string? clientName, HttpHandler httpHandler, string argumentAsJson, CancellationToken cancellationToken)
         {
             var json = ParseJson(argumentAsJson);

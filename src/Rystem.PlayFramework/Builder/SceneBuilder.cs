@@ -56,6 +56,29 @@ namespace Rystem.PlayFramework
             builder(builderInstance);
             return this;
         }
+
+        public ISceneBuilder UseMcpServer(string serverName, Action<IMcpServerToolFilterBuilder>? filterBuilder = null)
+        {
+            if (string.IsNullOrWhiteSpace(serverName))
+                throw new ArgumentException("Server name cannot be empty", nameof(serverName));
+
+            Scene.McpServerName = serverName;
+
+            if (filterBuilder != null)
+            {
+                var builder = new McpServerToolFilterBuilder();
+                filterBuilder(builder);
+                Scene.McpSceneFilter = builder.Build();
+            }
+            else
+            {
+                // Default: all enabled
+                Scene.McpSceneFilter = new McpSceneFilter();
+            }
+
+            return this;
+        }
+
         private static readonly Regex s_regex = new Regex("^[a-zA-Z_][a-zA-Z0-9_]*$");
         public ISceneBuilder WithService<T>(Action<ISceneServiceBuilder<T>>? builder = null)
             where T : class

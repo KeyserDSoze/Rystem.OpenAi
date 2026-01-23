@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Rystem.OpenAi;
 using Rystem.OpenAi.Chat;
@@ -163,22 +164,32 @@ You MUST call the CreateExecutionPlan function to respond.");
             var chatClient = context.CreateNewDefaultChatClient();
             var availableScenes = _playHandler.GetScenes(requestSettings.ScenesToAvoid).ToList();
 
+            // Build summary of executed scenes and gathered information
+            var executedScenesSummary = BuildExecutedScenesSummary(context);
+            var gatheredInformation = BuildGatheredInformationSummary(context);
+
             // Create continuation check tool automatically from type
             var continuationTool = CreateContinuationCheckTool();
             chatClient.AddFunctionTool(continuationTool);
 
             chatClient.AddSystemMessage(@"You are checking if more execution is needed or if you can answer the user now.
-Analyze what has been executed and decide:
-1. Can you answer the user's request with the information gathered? Set can_answer_now=true
-2. Do you need to call more scenes/tools? Set should_continue=true
-3. If continuing, explain what information is missing
+Analyze what has ALREADY been executed and decide:
+1. Can you answer the user's request with the information ALREADY gathered? Set can_answer_now=true
+2. Do you need to call more scenes/tools to get missing information? Set should_continue=true
+3. If continuing, explain what specific information is still missing
+
+IMPORTANT: Look at the executed_scenes and gathered_information carefully. 
+If you already have the information needed to answer, set can_answer_now=true.
+Do NOT say should_continue=true if you already have sufficient data.
 
 You MUST call the CheckContinuation function to respond.");
 
             var request = new ContinuationCheckRequest
             {
                 UserRequest = context.InputMessage,
-                AvailableScenes = availableScenes
+                AvailableScenes = availableScenes,
+                ExecutedScenes = executedScenesSummary.Count > 0 ? executedScenesSummary : null,
+                GatheredInformation = gatheredInformation
             };
 
             chatClient.AddUserMessage($"Check if execution should continue:\n{JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}");
@@ -216,6 +227,84 @@ You MUST call the CheckContinuation function to respond.");
                     Reasoning = errorMessage
                 };
             }
+        }
+
+        /// <summary>
+        /// Build a summary of executed scenes and their tool results
+        /// </summary>
+        private List<ExecutedSceneSummary> BuildExecutedScenesSummary(SceneContext context)
+        {
+            var summary = new List<ExecutedSceneSummary>();
+
+            foreach (var executedScene in context.ExecutedScenes)
+            {
+                var sceneName = executedScene.Key;
+                var toolsUsed = executedScene.Value;
+
+                // Collect tool results for this scene
+                var toolResults = new StringBuilder();
+                var toolNames = new List<string>();
+
+                var sceneResponses = context.Responses
+                    .Where(r => r.Name == sceneName)
+                    .ToList();
+
+                foreach (var response in sceneResponses)
+                {
+                    if (response.FunctionName != null)
+                    {
+                        toolNames.Add(response.FunctionName);
+                        if (response.Response != null)
+                        {
+                            toolResults.AppendLine($"- {response.FunctionName}: {response.Response}");
+                        }
+                    }
+                    else if (response.Status == AiResponseStatus.Running && response.Message != null)
+                    {
+                        toolResults.AppendLine($"- Scene result: {response.Message}");
+                    }
+                }
+
+                summary.Add(new ExecutedSceneSummary
+                {
+                    SceneName = sceneName,
+                    ToolsExecuted = toolNames.Any() ? toolNames : null,
+                    ToolResultsSummary = toolResults.Length > 0 ? toolResults.ToString().Trim() : null
+                });
+            }
+
+            return summary;
+        }
+
+        /// <summary>
+        /// Build a summary of all gathered information from responses
+        /// </summary>
+        private string? BuildGatheredInformationSummary(SceneContext context)
+        {
+            var info = new StringBuilder();
+            info.AppendLine("Information gathered so far:");
+            info.AppendLine();
+
+            // Get all function responses and scene results
+            var hasInfo = false;
+
+            foreach (var response in context.Responses)
+            {
+                // Include function results
+                if (response.FunctionName != null && response.Response != null)
+                {
+                    info.AppendLine($"From {response.FunctionName}: {response.Response}");
+                    hasInfo = true;
+                }
+                // Include scene completion messages
+                else if (response.Status == AiResponseStatus.Running && response.Message != null)
+                {
+                    info.AppendLine($"- {response.Message}");
+                    hasInfo = true;
+                }
+            }
+
+            return hasInfo ? info.ToString().Trim() : null;
         }
 
         private static FunctionTool CreatePlanningTool()

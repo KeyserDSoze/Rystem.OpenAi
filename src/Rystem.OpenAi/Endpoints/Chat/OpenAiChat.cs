@@ -34,7 +34,7 @@ namespace Rystem.OpenAi.Chat
                 new OpenAiCost { Units = usage.PromptTokensDetails?.CachedTokens ?? 0, Kind = KindOfCost.CachedInput, UnitOfMeasure = UnitOfMeasure.Tokens },
                 new OpenAiCost { Units = usage.CompletionTokens, Kind = KindOfCost.Output, UnitOfMeasure = UnitOfMeasure.Tokens }]);
         }
-        public async ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<ChatResult?> ExecuteAsync(CancellationToken cancellationToken = default)
         {
             Request.Stream = false;
             Request.StreamOptions = null;
@@ -46,7 +46,7 @@ namespace Rystem.OpenAi.Chat
                     DefaultServices.Configuration,
                     LoggerFactory.Create(),
                     cancellationToken);
-            if (response.Usage != null)
+            if (response?.Usage != null)
                 AddUsages(response.Usage);
             return response;
         }

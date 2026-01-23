@@ -1,8 +1,8 @@
 ﻿# Unofficial Fluent C#/.NET SDK for accessing the OpenAI API (Easy swap among OpenAi and Azure OpenAi)
 
-## Last update with Cost and Tokens calculation
+## Last update with Cost, Tokens calculation, and MCP Integration
 
-A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API.
+A simple C# .NET wrapper library to use with [OpenAI](https://openai.com/)'s API. Now with **Model Context Protocol (MCP) support** through PlayFramework for advanced multi-agent scenarios.
 
 [![MIT License](https://img.shields.io/github/license/dotnet/aspnetcore?color=%230b0&style=flat-square)](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/LICENSE.txt)
 [![Discord](https://img.shields.io/discord/732297728826277939?style=flat-square&label=Discord&logo=discord&logoColor=white&color=7289DA)](https://discord.gg/wUh2fppr)
@@ -69,6 +69,8 @@ Install-Package Rystem.OpenAi
   - [Chat](#chat)
     - [Usage examples](#usage-examples) 
     - [Function chaining](#function-chaining)
+    - [PlayFramework with MCP (Model Context Protocol)](#playframework-with-mcp-model-context-protocol)
+    - [Expose PlayFramework as MCP Server](#expose-playframework-as-mcp-server)
   - [Images](#images)
     - [Create Image](#create-image)
     - [Create Image Edit](#create-image-edit)
@@ -602,6 +604,123 @@ After the configuration you can use this function framework in this way:
 
 ## Function chaining
 You may find the PlayFramework [here](https://github.com/KeyserDSoze/Rystem.OpenAi/tree/master/src/Rystem.PlayFramework)
+
+### PlayFramework with MCP (Model Context Protocol)
+
+PlayFramework now supports **Model Context Protocol (MCP)** server integration! MCP enables seamless access to external tools, resources, and prompts through a standardized protocol.
+
+#### Quick Start with MCP
+
+Register and use an MCP server in your PlayFramework scenes:
+
+```csharp
+services.AddPlayFramework(scenes =>
+{
+    scenes.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    })
+    // Register MCP server globally
+    .AddMcpServer("myMcpServer", mcp =>
+    {
+        mcp.WithHttpServer("http://localhost:3000");
+    })
+    // Use MCP in your scenes
+    .AddScene(scene =>
+    {
+        scene
+            .WithName("DataProcessing")
+            .WithDescription("Process data with MCP tools")
+            .WithOpenAi("playframework")
+            // Use all MCP elements (tools, resources, prompts)
+            .UseMcpServer("myMcpServer");
+    });
+});
+```
+
+#### Filtering MCP Elements
+
+Control which MCP elements are available in each scene:
+
+```csharp
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    // Use only tools, disable resources and prompts
+    filterBuilder.OnlyTools(toolConfig =>
+    {
+        toolConfig.Whitelist("get_*", "process_*");
+    });
+})
+```
+
+#### Supported Filter Patterns
+
+- **Whitelist**: Include specific elements by name
+- **Regex**: Match using regular expressions
+- **StartsWith**: Filter by name prefix
+- **Predicate**: Custom filtering logic
+- **Exclude**: Explicitly exclude elements
+
+#### MCP Server Communication
+
+Supports multiple communication methods:
+
+```csharp
+// HTTP server
+.AddMcpServer("httpMcp", mcp =>
+{
+    mcp.WithHttpServer("http://localhost:3000");
+})
+
+// Local stdio command
+.AddMcpServer("localMcp", mcp =>
+{
+    mcp.WithCommand("node", "path/to/server.js");
+    mcp.WithTimeout(TimeSpan.FromSeconds(30));
+})
+```
+
+For detailed documentation, see the [PlayFramework README](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/src/Rystem.PlayFramework/README.md#mcp-server-integration)
+
+#### Expose PlayFramework as MCP Server
+
+PlayFramework can also **expose itself as an MCP server**, allowing external clients (like Claude Desktop) to consume your AI assistant:
+
+```csharp
+services.AddPlayFramework(builder =>
+{
+    // Expose this PlayFramework as an MCP server
+    builder.ExposeAsMcpServer(config =>
+    {
+        config.Description = "AI Assistant for customer support";
+        config.EnableResources = true;  // Auto-generate scene documentation
+        config.AuthorizationPolicy = "ApiKeyPolicy";  // Optional
+    });
+
+    builder.AddScene(scene =>
+    {
+        scene.WithName("CustomerSupport")
+             .WithDescription("Handles customer inquiries");
+    });
+}, name: "MyAssistant");
+
+// In Program.cs - map MCP endpoints
+app.MapPlayFrameworkMcpEndpoints("/mcp");
+// Creates: POST /mcp/MyAssistant
+```
+
+Use with Claude Desktop (`claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "my-assistant": {
+      "url": "http://localhost:5000/mcp/MyAssistant"
+    }
+  }
+}
+```
+
+For detailed documentation, see [Expose as MCP Server](https://github.com/KeyserDSoze/Rystem.OpenAi/blob/master/docs/EXPOSE_AS_MCP_SERVER.md)
 
 ## Images
 [📖 Back to summary](#documentation)\

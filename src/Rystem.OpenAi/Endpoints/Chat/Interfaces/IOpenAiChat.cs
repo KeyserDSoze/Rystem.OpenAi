@@ -11,7 +11,7 @@ namespace Rystem.OpenAi.Chat
         /// Execute operation.
         /// </summary>
         /// <returns>ChatResult</returns>
-        ValueTask<ChatResult> ExecuteAsync(CancellationToken cancellationToken = default);
+        ValueTask<ChatResult?> ExecuteAsync(CancellationToken cancellationToken = default);
         /// <summary>
         /// Specifies where the results should stream and be returned at one time.
         /// </summary>

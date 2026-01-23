@@ -65,4 +65,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="PlayFramework\Models\" />
+  </ItemGroup>
+
 </Project>

@@ -24,6 +24,59 @@ namespace Rystem.OpenAi
             }
             else if (type.IsPrimitive())
             {
+                jsonFunction.AddPrimitive(name, GetPrimitiveProperty(type, description));
+            }
+            else if (type.IsEnumerable())
+            {
+                type = type.GetGenericArguments().First();
+                if (!type.IsPrimitive())
+                {
+                    var theArrayObject = new FunctionToolNonPrimitiveProperty();
+                    var arrayFunction = new FunctionToolArrayProperty
+                    {
+                        Description = description,
+                        Type = "array",
+                        Items = theArrayObject
+                    };
+                    jsonFunction.AddArray(name, arrayFunction);
+                    foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                    {
+                        if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+                        {
+                            var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
+                            var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                            Add(propertyName, innerParameter.PropertyType, theArrayObject, propertyDescription);
+                        }
+                    }
+                }
+                else
+                {
+                    var arrayFunction = new FunctionToolArrayProperty
+                    {
+                        Description = description,
+                        Type = "array",
+                        Items = GetPrimitiveProperty(type, description)
+                    };
+                    jsonFunction.AddArray(name, arrayFunction);
+                }
+            }
+            else if (type.IsClass)
+            {
+                var innerFunction = new FunctionToolNonPrimitiveProperty();
+                jsonFunction.AddObject(name, innerFunction);
+                foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+                    {
+                        var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
+                        var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
+                        Add(propertyName, innerParameter.PropertyType, innerFunction, propertyDescription);
+                    }
+                }
+            }
+
+            static FunctionToolPrimitiveProperty GetPrimitiveProperty(Type type, string? description)
+            {
                 // Handle different primitive types explicitly for correct JSON Schema
                 string typeName;
                 if (type == typeof(bool) || type == typeof(bool?))
@@ -42,48 +95,11 @@ namespace Rystem.OpenAi
                 {
                     typeName = "string";  // char, string, DateTime, etc.
                 }
-
-                jsonFunction.AddPrimitive(name, new FunctionToolPrimitiveProperty
+                return new FunctionToolPrimitiveProperty
                 {
                     Type = typeName,
                     Description = description ?? "parameter"
-                });
-            }
-            else if (type.IsEnumerable())
-            {
-                var theArrayObject = new FunctionToolNonPrimitiveProperty();
-                var arrayFunction = new FunctionToolArrayProperty
-                {
-                    Description = description,
-                    Type = "array",
-                    Items = theArrayObject
                 };
-                jsonFunction.AddArray(name, arrayFunction);
-                type = type.GetGenericArguments().First();
-                if (!type.IsPrimitive())
-                    foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                    {
-                        if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
-                        {
-                            var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
-                            var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                            Add(propertyName, innerParameter.PropertyType, theArrayObject, propertyDescription);
-                        }
-                    }
-            }
-            else if (type.IsClass)
-            {
-                var innerFunction = new FunctionToolNonPrimitiveProperty();
-                jsonFunction.AddObject(name, innerFunction);
-                foreach (var innerParameter in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (innerParameter.GetCustomAttribute<JsonIgnoreAttribute>() is null)
-                    {
-                        var propertyName = innerParameter.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? innerParameter.Name;
-                        var propertyDescription = innerParameter.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                        Add(propertyName, innerParameter.PropertyType, innerFunction, propertyDescription);
-                    }
-                }
             }
         }
 
