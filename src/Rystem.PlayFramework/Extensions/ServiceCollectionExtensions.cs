@@ -1,4 +1,5 @@
 ﻿using Rystem.PlayFramework;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -21,6 +22,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());
 
+            // Register MCP services
+            services.AddSingleton<McpRegistry>();
+            services.AddSingleton<McpClientFactory>();
+            services.AddScoped<IMcpExecutor, McpToolExecutor>();
+
             // Register deterministic planner, summarizer and response parser
             var serviceBuilderInstance = new ServiceBuilder(services);
             serviceBuilder?.Invoke(serviceBuilderInstance);
@@ -29,6 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var sceneBuilder = new ScenesBuilder(services);
             sceneBuilder.AddCustomDirector<MainDirector>();
             builder(sceneBuilder);
+
             return services;
         }
     }

@@ -267,6 +267,225 @@ The JSON response will contain the following fields:
 
 This structured response allows clients to interpret and use the output of the AI or multi-agent system in a consistent manner.
 
+## MCP Server Integration
+
+PlayFramework now supports integration with **Model Context Protocol (MCP)** servers, enabling your scenes to access tools, resources, and prompts exposed by MCP servers. This allows for seamless integration with external services and capabilities.
+
+### What is MCP?
+
+The Model Context Protocol (MCP) is a standardized protocol for exposing capabilities to AI models. MCP servers can expose:
+- **Tools**: Functions that the AI can call to perform actions
+- **Resources**: Static or dynamic data that the AI can access and read
+- **Prompts**: Pre-configured prompts or templates that provide context to the AI
+
+### Setting Up an MCP Server
+
+MCP servers can be registered globally during application startup and then selectively used by individual scenes.
+
+#### 1. Register an MCP Server
+
+In your service configuration, use the `AddMcpServer` method to register an MCP server:
+
+```csharp
+services.AddPlayFramework(scenes =>
+{
+    scenes.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    })
+    .AddMcpServer("myMcpServer", mcp =>
+    {
+        // Configure HTTP-based MCP server
+        mcp.WithHttpServer("http://localhost:3000");
+        // Optionally set custom timeout (default is 30 seconds)
+        mcp.WithTimeout(TimeSpan.FromSeconds(60));
+    })
+    .AddScene(scene =>
+    {
+        // Configure scene to use MCP server tools
+        scene.UseMcpServer("myMcpServer");
+    });
+});
+```
+
+#### 2. Configuring MCP Elements in a Scene
+
+Each scene can independently decide which MCP elements to use via the `UseMcpServer()` method:
+
+```csharp
+.AddScene(scene =>
+{
+    scene
+        .WithName("DataProcessing")
+        .WithDescription("Process data using MCP tools")
+        .WithOpenAi("playframework")
+        // Use all MCP elements (tools, resources, prompts)
+        .UseMcpServer("myMcpServer")
+        // Or configure with filters
+        .UseMcpServer("myMcpServer", filterBuilder =>
+        {
+            filterBuilder.WithTools(toolConfig =>
+            {
+                toolConfig.Whitelist("get_data", "process_*");
+            });
+        });
+})
+```
+
+### Filtering MCP Elements
+
+You can fine-tune which MCP elements are available in each scene using fluent builder methods:
+
+#### Using All Elements
+
+```csharp
+// Enable tools, resources, and prompts
+.UseMcpServer("myMcpServer")
+```
+
+#### Using Only Specific Element Types
+
+```csharp
+// Use only tools, disable resources and prompts
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyTools();
+})
+
+// Use only resources, disable tools and prompts
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyResources();
+})
+
+// Use only prompts, disable tools and resources
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.OnlyPrompts();
+})
+```
+
+#### Filtering by Name
+
+Each element type supports filtering by name patterns:
+
+```csharp
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder.WithTools(toolConfig =>
+    {
+        // Whitelist specific tools
+        toolConfig.Whitelist("get_user", "get_profile");
+        
+        // Or use patterns
+        toolConfig.Whitelist("get_*", "list_*");
+        
+        // Or match by regex
+        toolConfig.Regex("^(get|list)_.*");
+        
+        // Or use startsWith
+        toolConfig.StartsWith("process_");
+        
+        // Or use a custom predicate
+        toolConfig.Predicate(toolName => !toolName.StartsWith("admin_"));
+        
+        // Or exclude specific tools
+        toolConfig.Exclude("dangerous_operation");
+    });
+})
+```
+
+The same filtering options are available for resources and prompts:
+
+```csharp
+.UseMcpServer("myMcpServer", filterBuilder =>
+{
+    filterBuilder
+        .WithTools(toolConfig => toolConfig.Whitelist("get_*"))
+        .WithResources(resourceConfig => resourceConfig.Whitelist("data_*"))
+        .WithPrompts(promptConfig => promptConfig.Exclude("internal_*"));
+})
+```
+
+### Complete Example: Multi-Service Scene with MCP
+
+```csharp
+services.AddPlayFramework(scenes =>
+{
+    scenes.Configure(settings =>
+    {
+        settings.OpenAi.Name = "playframework";
+    })
+    // Register MCP server
+    .AddMcpServer("dataServer", mcp =>
+    {
+        mcp.WithHttpServer("http://localhost:3000");
+    })
+    // Add HTTP client for API calls
+    .AddHttpClient("apiDomain", x =>
+    {
+        x.BaseAddress = new Uri("https://api.example.com/");
+    })
+    // Create a scene that uses both MCP tools and HTTP APIs
+    .AddScene(scene =>
+    {
+        scene
+            .WithName("DataProcessing")
+            .WithDescription("Process and retrieve data using MCP and HTTP APIs")
+            .WithOpenAi("playframework")
+            .WithHttpClient("apiDomain")
+            // Use MCP tools with filtering
+            .UseMcpServer("dataServer", filterBuilder =>
+            {
+                filterBuilder.WithTools(toolConfig =>
+                {
+                    toolConfig.Whitelist("get_*", "process_*");
+                });
+            })
+            // Register additional service methods
+            .WithService<DataManager>(builder =>
+            {
+                builder.WithMethod(x => x.GetDataAsync);
+            });
+    });
+});
+```
+
+### MCP Server Types
+
+PlayFramework supports different MCP server communication methods:
+
+#### HTTP Server
+
+Connect to an MCP server via HTTP:
+
+```csharp
+.AddMcpServer("httpMcp", mcp =>
+{
+    mcp.WithHttpServer("http://localhost:3000");
+})
+```
+
+#### Stdio Command
+
+Connect to an MCP server via stdio (useful for local executables):
+
+```csharp
+.AddMcpServer("localMcp", mcp =>
+{
+    mcp.WithCommand("node", "path/to/mcp/server.js");
+    mcp.WithTimeout(TimeSpan.FromSeconds(30));
+})
+```
+
+### How MCP Elements Are Injected
+
+- **Tools**: Available as callable functions that the AI can invoke to perform actions
+- **Resources**: Injected as system messages with their content
+- **Prompts**: Injected as system messages providing context and guidance
+
+The AI automatically learns what tools, resources, and prompts are available and uses them appropriately to solve the given task.
+
 ## Example of a weather scene
 
 ```json

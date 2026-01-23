@@ -17,5 +17,6 @@ namespace Rystem.PlayFramework
         IScenesBuilder AddScene(Action<ISceneBuilder> builder);
         IScenesBuilder AddCache(Action<ICacheBuilder> cacheBuilder);
         IScenesBuilder AddCommonService<T>(Action<ISceneServiceBuilder<T>>? builder = null) where T : class;
+        IScenesBuilder AddMcpServer(string serverName, Action<IMcpServerBuilder> builder);
     }
 }

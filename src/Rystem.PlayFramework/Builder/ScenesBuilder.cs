@@ -10,6 +10,7 @@ namespace Rystem.PlayFramework
         private readonly SceneManagerSettings _settings;
         private readonly PlayHandler _playHander;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly Dictionary<string, McpServerConfiguration> _mcpServers = [];
 
         public ScenesBuilder(IServiceCollection services)
         {
@@ -105,6 +106,56 @@ namespace Rystem.PlayFramework
             var builder = new CacheBuilder(_services);
             cacheBuilder(builder);
             return this;
+        }
+
+        public IScenesBuilder AddMcpServer(string serverName, Action<IMcpServerBuilder> builder)
+        {
+            if (string.IsNullOrWhiteSpace(serverName))
+                throw new ArgumentException("Server name cannot be empty", nameof(serverName));
+
+            if (_mcpServers.ContainsKey(serverName))
+                throw new InvalidOperationException($"MCP server '{serverName}' is already registered");
+
+            var mcpBuilder = new McpServerBuilder();
+            builder(mcpBuilder);
+            var config = mcpBuilder.Build();
+
+            _mcpServers[serverName] = config;
+            return this;
+        }
+
+        internal async Task InitializeMcpServersAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
+        {
+            if (_mcpServers.Count == 0)
+                return;
+
+            var registry = serviceProvider.GetRequiredService<McpRegistry>();
+            var factory = serviceProvider.GetRequiredService<McpClientFactory>();
+
+            foreach (var (serverName, config) in _mcpServers)
+            {
+                try
+                {
+                    // Create appropriate client
+                    IMcpClient client = !string.IsNullOrEmpty(config.HttpUrl)
+                        ? factory.CreateHttpClient(config.HttpUrl)
+                        : factory.CreateStdioClient(config.Command!, config.CommandArgs ?? []);
+
+                    // Register in registry (ONE TIME!)
+                    registry.RegisterServer(serverName, client);
+
+                    // Connect
+                    await client.ConnectAsync(cancellationToken);
+
+                    // Note: Tools/Resources/Prompts are NOT discovered here!
+                    // They are discovered on-demand in SceneManager.GetResponseFromSceneAsync()
+                    // based on each scene's filter configuration
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to initialize MCP server '{serverName}': {ex.Message}", ex);
+                }
+            }
         }
     }
 }
