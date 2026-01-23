@@ -202,3 +202,270 @@ Mcp/Server/
 └── Endpoints/
     └── PlayFrameworkMcpEndpointExtensions.cs  # MapPlayFrameworkMcpEndpoints
 ```
+
+## All MCP Methods - Request/Response Examples
+
+### tools/list
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/list"
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "MyAssistant",
+        "description": "AI Assistant for customer support and order management",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "The message or request to send to the AI assistant"
+            }
+          },
+          "required": ["message"]
+        }
+      }
+    ]
+  }
+}
+```
+
+### resources/list
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "resources/list"
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "resources": [
+      {
+        "uri": "playframework://MyAssistant/overview",
+        "name": "MyAssistant Overview",
+        "description": "Complete documentation for MyAssistant PlayFramework",
+        "mimeType": "text/markdown"
+      },
+      {
+        "uri": "playframework://MyAssistant/scenes/CustomerSupport",
+        "name": "CustomerSupport",
+        "description": "Handles customer inquiries",
+        "mimeType": "text/markdown"
+      }
+    ]
+  }
+}
+```
+
+### resources/read
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "resources/read",
+  "params": {
+    "uri": "playframework://MyAssistant/overview"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "contents": [
+      {
+        "uri": "playframework://MyAssistant/overview",
+        "mimeType": "text/markdown",
+        "text": "# MyAssistant - PlayFramework Overview\n\n## Description\nAI Assistant for customer support...\n"
+      }
+    ]
+  }
+}
+```
+
+### prompts/list
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "prompts/list"
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "result": {
+    "prompts": [
+      {
+        "name": "MyAssistant-system-prompt",
+        "description": "AI Assistant for customer support and order management",
+        "arguments": [
+          {
+            "name": "context",
+            "description": "Optional additional context to include",
+            "required": false
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### prompts/get
+
+**Request:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "prompts/get",
+  "params": {
+    "name": "MyAssistant-system-prompt",
+    "arguments": {
+      "context": "The user is asking about returns"
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "result": {
+    "description": "AI Assistant for customer support and order management",
+    "messages": [
+      {
+        "role": "user",
+        "content": {
+          "type": "text",
+          "text": "You are a helpful assistant...\n\nAdditional Context:\nThe user is asking about returns"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Error Handling
+
+The MCP server returns standard JSON-RPC 2.0 error responses:
+
+| Error Code | Name | Description |
+|------------|------|-------------|
+| -32700 | Parse Error | Invalid JSON |
+| -32600 | Invalid Request | Missing or empty method |
+| -32601 | Method Not Found | Unknown MCP method |
+| -32602 | Invalid Params | Invalid parameters |
+| -32603 | Internal Error | Server error during execution |
+
+**Error Response Example:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32601,
+    "message": "Method 'unknown/method' not found"
+  }
+}
+```
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `Description` | `string?` | `null` | Description shown in tools/list |
+| `Prompt` | `string?` | `null` | System prompt exposed via prompts/list |
+| `EnableResources` | `bool` | `true` | Generate scene documentation as resources |
+| `AuthorizationPolicy` | `string?` | `null` | .NET authorization policy name (null = public) |
+
+## Multiple PlayFrameworks
+
+You can expose multiple PlayFrameworks, each with its own endpoint:
+
+```csharp
+services.AddPlayFramework(builder =>
+{
+    builder.ExposeAsMcpServer(c => c.Description = "Customer Assistant");
+    builder.AddScene(scene => scene.WithName("Support"));
+}, name: "CustomerAssistant");
+
+services.AddPlayFramework(builder =>
+{
+    builder.ExposeAsMcpServer(c => c.Description = "Sales Assistant");
+    builder.AddScene(scene => scene.WithName("Sales"));
+}, name: "SalesAssistant");
+
+// In Program.cs
+app.MapPlayFrameworkMcpEndpoints("/mcp");
+// Creates:
+// - POST /mcp/CustomerAssistant
+// - POST /mcp/SalesAssistant
+```
+
+## Testing the MCP Server
+
+You can test your MCP server using curl:
+
+```bash
+# Test tools/list
+curl -X POST http://localhost:5000/mcp/MyAssistant \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+
+# Test tools/call
+curl -X POST http://localhost:5000/mcp/MyAssistant \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"MyAssistant","arguments":{"message":"Hello!"}}}'
+```
+
+## Troubleshooting
+
+### Endpoint returns 404
+- Ensure `MapPlayFrameworkMcpEndpoints()` is called after `UseRouting()`
+- Verify the PlayFramework name matches the URL path
+
+### Authorization fails
+- Check the authorization policy is registered in DI
+- Verify the policy name matches exactly
+
+### Empty tools/list response
+- Ensure `ExposeAsMcpServer()` was called in the builder
+- Check the PlayFramework name is registered correctly
+
+### Resources not appearing
+- Verify `EnableResources = true` (default)
+- Check that scenes have descriptions set
