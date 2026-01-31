@@ -18,6 +18,12 @@ namespace Rystem.PlayFramework
         public List<Dictionary<string, string>> Jsons { get; } = [];
 
         /// <summary>
+        /// The current chat client being used for OpenAI requests.
+        /// This is centralized here to avoid passing it as a parameter everywhere.
+        /// </summary>
+        public IOpenAiChat ChatClient { get; set; } = null!;
+
+        /// <summary>
         /// The current execution plan if planning is enabled.
         /// </summary>
         public ExecutionPlan? ExecutionPlan { get; set; }

@@ -91,6 +91,11 @@ namespace Rystem.OpenAi.Chat
         }
         public List<ChatMessage> GetCurrentMessages()
             => Request.Messages ?? [];
+        public IOpenAiChat ClearMessages()
+        {
+            Request.Messages?.Clear();
+            return this;
+        }
         public IOpenAiChat AddMessage(string content, ChatRole role = ChatRole.User)
             => AddMessage(new ChatMessage { Content = content, Role = role });
         public IOpenAiChat AddMessage(ChatMessageContent content, ChatRole role = ChatRole.User)

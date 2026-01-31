@@ -40,6 +40,12 @@ namespace Rystem.OpenAi.Chat
         List<ChatMessage> GetCurrentMessages();
 
         /// <summary>
+        /// Clear all messages from the chat history while preserving tools and settings
+        /// </summary>
+        /// <returns>Builder</returns>
+        IOpenAiChat ClearMessages();
+
+        /// <summary>
         /// Add a message to the request
         /// </summary>
         /// <param name="content"></param>

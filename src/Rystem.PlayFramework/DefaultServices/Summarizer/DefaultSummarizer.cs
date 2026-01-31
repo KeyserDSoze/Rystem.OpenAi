@@ -26,7 +26,7 @@ namespace Rystem.PlayFramework
             }
 
             var responseThreshold = _settings?.Summarization.ResponseThreshold ?? 50;
-            var characterThreshold = _settings?.Summarization.CharacterThreshold ?? 10000;
+            var characterThreshold = _settings?.Summarization.CharacterThreshold ?? 25_000;
 
             // Check response count threshold
             if (responses.Count >= responseThreshold)
