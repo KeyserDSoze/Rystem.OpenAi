@@ -165,9 +165,9 @@ namespace Rystem.PlayFramework
 
         /// <summary>
         /// Checks if context needs summarization and creates/stores summary if needed.
-        /// This is called before each OpenAI ExecuteAsync to optimize token usage for the NEXT request.
-        /// NOTE: The summary is stored in cache for the next request - current execution continues with full context
-        /// because we cannot remove messages from the existing chatClient.
+        /// This is called before each OpenAI ExecuteAsync to optimize token usage during runtime.
+        /// When threshold is reached, messages are cleared and replaced with a summary,
+        /// while preserving all registered tools and settings.
         /// </summary>
         private async ValueTask<AiSceneResponse?> EnsureSummarizedForNextRequestAsync(
             SceneContext context,
@@ -372,16 +372,36 @@ namespace Rystem.PlayFramework
                         }
                         else
                         {
-                            yield return new AiSceneResponse
+                            // Director says don't execute again - generate final response to user
+                            context.ChatClient.ClearTools();
+
+                            // Make a final call to get textual response for the user
+                            var finalSummarizationResponse = await EnsureSummarizedForNextRequestAsync(context, requestSettings, cancellationToken);
+                            if (finalSummarizationResponse != null)
+                                yield return YieldAndTrack(context, finalSummarizationResponse);
+
+                            var finalResponse = await context.ChatClient.ExecuteAsync(cancellationToken);
+                            var finalCost = context.ChatClient.CalculateCost();
+                            if (finalCost > 0)
+                            {
+                                context.AddCost(finalCost);
+                            }
+
+                            var finishedResponse = new AiSceneResponse
                             {
                                 RequestKey = requestSettings.Key!,
-                                Status = AiResponseStatus.FinishedOk,
+                                Message = finalResponse?.Choices?[0].Message?.Content,
                                 ResponseTime = DateTime.UtcNow,
-                                Message = context.TotalCost > 0 ? $"Completed. Total cost: {context.TotalCost:F6}" : null,
-                                Cost = null,
+                                Status = AiResponseStatus.FinishedOk,
+                                Cost = finalCost > 0 ? finalCost : null,
                                 TotalCost = context.TotalCost,
                                 Model = context.ChatClient.ModelName
                             };
+                            if (finalResponse?.Usage != null)
+                            {
+                                PopulateTokenCounts(finishedResponse, finalResponse.Usage);
+                            }
+                            yield return finishedResponse;
                         }
                     }
                 }
@@ -502,6 +522,8 @@ namespace Rystem.PlayFramework
         }
         private async IAsyncEnumerable<AiSceneResponse> GetResponseAsync(string sceneName, string? clientName, SceneContext context, SceneRequestSettings sceneRequestSettings, ChatResult chatResponse, decimal lastRequestCost, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            var anyToolExecuted = false; // Track if we actually executed any tool
+
             if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
             {
                 foreach (var toolCall in chatResponse.Choices![0].Message!.ToolCalls!)
@@ -531,6 +553,8 @@ namespace Rystem.PlayFramework
                         yield return skippedResponse;
                         continue;
                     }
+
+                    anyToolExecuted = true; // Mark that we executed at least one tool
 
                     var responseAsJson = string.Empty;
                     var function = _functionsHandler[functionName];
@@ -572,45 +596,70 @@ namespace Rystem.PlayFramework
                 }
             }
 
-            // Check if summarization is needed before OpenAI call
-            var summarizationResponse = await EnsureSummarizedForNextRequestAsync(context, sceneRequestSettings, cancellationToken);
-            if (summarizationResponse != null)
-                yield return YieldAndTrack(context, summarizationResponse);
-
-            chatResponse = await context.ChatClient.ExecuteAsync(cancellationToken);
-
-            // Calculate cost for the next request
-            var nextRequestCost = context.ChatClient.CalculateCost();
-            if (nextRequestCost > 0)
+            // If all tools were skipped (loop detected), generate final response instead of continuing
+            if (!anyToolExecuted && chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
             {
-                context.AddCost(nextRequestCost);
-            }
+                // All tools were already executed - don't call OpenAI again, just return a final response
+                var finalMessage = chatResponse.Choices?[0].Message?.Content ?? "All requested operations have been completed.";
 
-            if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
-            {
-                await foreach (var result in GetResponseAsync(sceneName, clientName, context, sceneRequestSettings, chatResponse, nextRequestCost, cancellationToken))
-                {
-                    yield return result;
-                }
-            }
-            else
-            {
-                var runningResponse = new AiSceneResponse
+                var loopBreakResponse = new AiSceneResponse
                 {
                     RequestKey = sceneRequestSettings.Key!,
                     Name = sceneName,
-                    Message = chatResponse.Choices?[0].Message?.Content,
+                    Message = finalMessage,
                     ResponseTime = DateTime.UtcNow,
                     Status = AiResponseStatus.Running,
-                    Cost = nextRequestCost > 0 ? nextRequestCost : null,
+                    Cost = null,
                     TotalCost = context.TotalCost,
                     Model = context.ChatClient.ModelName
                 };
-                if (chatResponse.Usage != null)
+                yield return loopBreakResponse;
+                yield break; // Exit to prevent infinite loop
+            }
+
+            // Only continue with next OpenAI call if we actually executed some tools
+            if (anyToolExecuted || chatResponse.Choices?[0].Message?.ToolCalls?.Count == 0)
+            {
+                // Check if summarization is needed before OpenAI call
+                var summarizationResponse = await EnsureSummarizedForNextRequestAsync(context, sceneRequestSettings, cancellationToken);
+                if (summarizationResponse != null)
+                    yield return YieldAndTrack(context, summarizationResponse);
+
+                chatResponse = await context.ChatClient.ExecuteAsync(cancellationToken);
+
+                // Calculate cost for the next request
+                var nextRequestCost = context.ChatClient.CalculateCost();
+                if (nextRequestCost > 0)
                 {
-                    PopulateTokenCounts(runningResponse, chatResponse.Usage);
+                    context.AddCost(nextRequestCost);
                 }
-                yield return runningResponse;
+
+                if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
+                {
+                    await foreach (var result in GetResponseAsync(sceneName, clientName, context, sceneRequestSettings, chatResponse, nextRequestCost, cancellationToken))
+                    {
+                        yield return result;
+                    }
+                }
+                else
+                {
+                    var runningResponse = new AiSceneResponse
+                    {
+                        RequestKey = sceneRequestSettings.Key!,
+                        Name = sceneName,
+                        Message = chatResponse.Choices?[0].Message?.Content,
+                        ResponseTime = DateTime.UtcNow,
+                        Status = AiResponseStatus.Running,
+                        Cost = nextRequestCost > 0 ? nextRequestCost : null,
+                        TotalCost = context.TotalCost,
+                        Model = context.ChatClient.ModelName
+                    };
+                    if (chatResponse.Usage != null)
+                    {
+                        PopulateTokenCounts(runningResponse, chatResponse.Usage);
+                    }
+                    yield return runningResponse;
+                }
             }
         }
         private async Task<string?> ExecuteServiceAsync(ServiceHandler serviceHandler, SceneContext sceneContext, string argumentAsJson, CancellationToken cancellationToken)
