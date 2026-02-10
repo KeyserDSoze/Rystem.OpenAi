@@ -180,9 +180,6 @@ namespace Rystem.OpenAi.UnitTests
                 scenes.Configure(settings =>
                 {
                     settings.OpenAi.Name = "Azure2";
-                    // Enable planning for multi-scene orchestration
-                    settings.Planning.Enabled = true;
-                    settings.Planning.MaxScenesInPlan = 5;
                     // Enable summarization with lower thresholds for testing
                     settings.Summarization.Enabled = true;
                     settings.Summarization.ResponseThreshold = 20; // Lower for testing

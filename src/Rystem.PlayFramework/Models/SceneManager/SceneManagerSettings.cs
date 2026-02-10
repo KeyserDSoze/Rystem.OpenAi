@@ -5,27 +5,9 @@
         public SceneManagerOpenAiSettings OpenAi { get; } = new SceneManagerOpenAiSettings();
 
         /// <summary>
-        /// Planning settings for multi-scene orchestration.
-        /// </summary>
-        public PlanningSettings Planning { get; } = new PlanningSettings();
-
-        /// <summary>
         /// Summarization settings for conversation history.
         /// </summary>
         public SummarizationSettings Summarization { get; } = new SummarizationSettings();
-    }
-
-    public sealed class PlanningSettings
-    {
-        /// <summary>
-        /// Enable or disable automatic planning. Default is true.
-        /// </summary>
-        public bool Enabled { get; set; } = true;
-
-        /// <summary>
-        /// Maximum number of scenes to include in a plan. Default is 10.
-        /// </summary>
-        public int MaxScenesInPlan { get; set; } = 10;
     }
 
     public sealed class SummarizationSettings

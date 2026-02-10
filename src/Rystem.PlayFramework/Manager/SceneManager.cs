@@ -21,7 +21,6 @@ namespace Rystem.PlayFramework
         private readonly IResponseParser _responseParser;
         private readonly ICacheService? _cacheService;
         private readonly SceneManagerSettings? _settings;
-        private readonly IPlanner? _planner;
         private readonly ISummarizer? _summarizer;
 
         public SceneManager(IServiceProvider serviceProvider,
@@ -34,7 +33,6 @@ namespace Rystem.PlayFramework
             IResponseParser responseParser,
             ICacheService? cacheService = null,
             SceneManagerSettings? settings = null,
-            IPlanner? planner = null,
             ISummarizer? summarizer = null)
         {
             _httpContext = httpContextAccessor.HttpContext;
@@ -47,7 +45,6 @@ namespace Rystem.PlayFramework
             _responseParser = responseParser;
             _cacheService = cacheService;
             _settings = settings;
-            _planner = planner;
             _summarizer = summarizer;
         }
         /// <summary>
@@ -242,64 +239,16 @@ namespace Rystem.PlayFramework
             requestSettings.Context!.CreateNewDefaultChatClient = () => _openAiFactory.Create(_settings?.OpenAi.Name)!.Chat;
             var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
             var mainActors = _serviceProvider.GetKeyedServices<IActor>(ScenesBuilder.MainActor);
+            // Play main actors
             await PlayActorsInScene(requestSettings.Context, mainActorsThatPlayEveryScene, cancellationToken);
-            await PlayActorsInScene(requestSettings.Context, mainActors, cancellationToken);
+            await PlayActorsInScene(requestSettings.Context, mainActors.Cast<IPlayableActor>(), cancellationToken);
 
-            // Create execution plan if planning is enabled
-            if (_settings?.Planning.Enabled == true && _planner != null)
+            // Execute without planning - let LLM choose scenes dynamically
+            requestSettings.Context.ChatClient.AddUserMessage(message);
+            await foreach (var response in RequestAsync(requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
             {
-                yield return YieldAndTrack(requestSettings.Context, new AiSceneResponse
-                {
-                    RequestKey = requestSettings.Key!,
-                    Message = "Creating execution plan...",
-                    ResponseTime = DateTime.UtcNow,
-                    Status = AiResponseStatus.Planning,
-                    Cost = null,
-                    TotalCost = requestSettings.Context.TotalCost
-                });
-
-                var plan = await _planner.CreatePlanAsync(requestSettings.Context, requestSettings, cancellationToken);
-                requestSettings.Context.ExecutionPlan = plan;
-
-                if (plan.IsValid && plan.Steps.Any())
-                {
-                    yield return YieldAndTrack(requestSettings.Context, new AiSceneResponse
-                    {
-                        RequestKey = requestSettings.Key!,
-                        Message = plan.ToJson(),
-                        ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.Planning,
-                        Cost = null,
-                        TotalCost = requestSettings.Context.TotalCost
-                    });
-
-                    // Execute plan-based orchestration
-                    await foreach (var response in ExecutePlanAsync(requestSettings.Context, requestSettings, message, mainActorsThatPlayEveryScene, cancellationToken))
-                    {
-                        requestSettings.Context.Responses.Add(response);
-                        yield return response;
-                    }
-                }
-                else
-                {
-                    // Fallback to original behavior
-                    requestSettings.Context.ChatClient.AddUserMessage(message);
-                    await foreach (var response in RequestAsync(requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
-                    {
-                        requestSettings.Context.Responses.Add(response);
-                        yield return response;
-                    }
-                }
-            }
-            else
-            {
-                // Original behavior without planning
-                requestSettings.Context.ChatClient.AddUserMessage(message);
-                await foreach (var response in RequestAsync(requestSettings.Context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
-                {
-                    requestSettings.Context.Responses.Add(response);
-                    yield return response;
-                }
+                requestSettings.Context.Responses.Add(response);
+                yield return response;
             }
 
             if (!requestSettings.CacheIsAvoidable && _cacheService != null)
@@ -534,12 +483,21 @@ namespace Rystem.PlayFramework
                     // Check if this tool was already executed in this scene
                     if (context.HasExecutedTool(sceneName, functionName, arguments))
                     {
+                        // Get cached response
+                        var cachedResponse = context.GetToolResponse(sceneName, functionName, arguments);
+
+                        // Add system message with cached response so LLM knows what was returned
+                        context.ChatClient.AddSystemMessage(
+                            $"[CACHED] Function '{functionName}' was already called with these arguments. " +
+                            $"Previous result: {cachedResponse}");
+
                         var skippedResponse = new AiSceneResponse
                         {
                             RequestKey = sceneRequestSettings.Key!,
                             Name = sceneName,
                             FunctionName = functionName,
-                            Message = $"Tool '{functionName}' already executed in scene '{sceneName}', skipping duplicate execution",
+                            Message = $"Tool '{functionName}' already executed in scene '{sceneName}', using cached result",
+                            Response = cachedResponse, // Include the cached response
                             ResponseTime = DateTime.UtcNow,
                             Status = AiResponseStatus.ToolSkipped,
                             Cost = null, // No new cost for skipped tools
@@ -571,8 +529,8 @@ namespace Rystem.PlayFramework
                         responseAsJson = await ExecuteServiceAsync(function.Service!, context, arguments, cancellationToken);
                     }
 
-                    // Mark tool as executed
-                    context.MarkToolExecuted(sceneName, functionName, arguments);
+                    // Mark tool as executed and cache the response
+                    context.MarkToolExecuted(sceneName, functionName, arguments, responseAsJson);
 
                     var toolResponse = new AiSceneResponse
                     {
@@ -620,6 +578,14 @@ namespace Rystem.PlayFramework
             // Only continue with next OpenAI call if we actually executed some tools
             if (anyToolExecuted || chatResponse.Choices?[0].Message?.ToolCalls?.Count == 0)
             {
+                // Add all scenes as tools to allow dynamic scene switching
+                // This lets the LLM decide to either continue with current scene tools or switch to another scene
+                var scenes = _playHandler.ScenesChooser(sceneRequestSettings.ScenesToAvoid).ToList();
+                foreach (var sceneFunction in scenes)
+                {
+                    sceneFunction.Invoke(context.ChatClient);
+                }
+
                 // Check if summarization is needed before OpenAI call
                 var summarizationResponse = await EnsureSummarizedForNextRequestAsync(context, sceneRequestSettings, cancellationToken);
                 if (summarizationResponse != null)
@@ -636,6 +602,37 @@ namespace Rystem.PlayFramework
 
                 if (chatResponse.Choices?[0].Message?.ToolCalls?.Count > 0)
                 {
+                    // Check if LLM wants to switch to a different scene
+                    var firstCall = chatResponse.Choices[0].Message!.ToolCalls![0];
+                    var requestedFunction = firstCall.Function!.Name!;
+
+                    // Try to find if this is a scene (not a tool of current scene)
+                    var requestedScene = _sceneFactory.Create(requestedFunction);
+                    if (requestedScene != null && requestedScene.Name != sceneName)
+                    {
+                        // LLM wants to switch to a different scene - exit current scene recursion
+                        // and let the caller handle the scene switch
+                        yield return new AiSceneResponse
+                        {
+                            RequestKey = sceneRequestSettings.Key!,
+                            Name = sceneName,
+                            Message = $"Switching from scene '{sceneName}' to scene '{requestedScene.Name}'",
+                            ResponseTime = DateTime.UtcNow,
+                            Status = AiResponseStatus.SceneRequest,
+                            Cost = nextRequestCost > 0 ? nextRequestCost : null,
+                            TotalCost = context.TotalCost,
+                            Model = context.ChatClient.ModelName
+                        };
+
+                        // Execute the new scene
+                        await foreach (var sceneResponse in GetResponseFromSceneAsync(requestedScene, context.InputMessage, context, sceneRequestSettings, _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor), cancellationToken))
+                        {
+                            yield return sceneResponse;
+                        }
+                        yield break; // Exit current scene
+                    }
+
+                    // Otherwise continue with current scene tools (recursive call)
                     await foreach (var result in GetResponseAsync(sceneName, clientName, context, sceneRequestSettings, chatResponse, nextRequestCost, cancellationToken))
                     {
                         yield return result;
@@ -781,307 +778,6 @@ namespace Rystem.PlayFramework
             response.CachedInputTokens = usage.PromptTokensDetails?.CachedTokens ?? 0;
             response.OutputTokens = usage.CompletionTokens;
             response.TotalTokens = usage.TotalTokens;
-        }
-
-        /// <summary>
-        /// Helper to calculate aggregated token statistics from all responses
-        /// </summary>
-        private static (int InputTokens, int CachedInputTokens, int OutputTokens, int TotalTokens)
-            CalculateAggregatedTokens(List<AiSceneResponse> responses)
-        {
-            var totalInput = 0;
-            var totalCached = 0;
-            var totalOutput = 0;
-            var totalTokens = 0;
-
-            foreach (var response in responses)
-            {
-                if (response.InputTokens.HasValue)
-                    totalInput += response.InputTokens.Value;
-                if (response.CachedInputTokens.HasValue)
-                    totalCached += response.CachedInputTokens.Value;
-                if (response.OutputTokens.HasValue)
-                    totalOutput += response.OutputTokens.Value;
-                if (response.TotalTokens.HasValue)
-                    totalTokens += response.TotalTokens.Value;
-            }
-
-            return (totalInput, totalCached, totalOutput, totalTokens);
-        }
-        private async IAsyncEnumerable<AiSceneResponse> ExecutePlanAsync(SceneContext context, SceneRequestSettings requestSettings, string message, IEnumerable<IPlayableActor>? mainActorsThatPlayEveryScene, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            if (context.ExecutionPlan == null || !context.ExecutionPlan.Steps.Any())
-            {
-                yield break;
-            }
-
-            // Execute each step in the plan
-            foreach (var step in context.ExecutionPlan.Steps.OrderBy(s => s.Order))
-            {
-                if (step.IsCompleted)
-                    continue;
-
-                yield return YieldAndTrack(context, new AiSceneResponse
-                {
-                    RequestKey = requestSettings.Key!,
-                    Name = step.SceneName,
-                    Message = $"Executing step {step.Order}: {step.Purpose}",
-                    ResponseTime = DateTime.UtcNow,
-                    Status = AiResponseStatus.SceneRequest,
-                    Cost = null,
-                    TotalCost = context.TotalCost
-                });
-
-                var scene = _sceneFactory.Create(step.SceneName);
-                if (scene != null)
-                {
-                    await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, message, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
-                    {
-                        // Don't add here - already added by GetResponseFromSceneAsync
-                        yield return sceneResponse;
-                    }
-                    step.IsCompleted = true;
-                }
-            }
-
-            // After executing all planned steps, check if we should continue
-            if (_planner is DeterministicPlanner deterministicPlanner)
-            {
-                yield return YieldAndTrack(context, new AiSceneResponse
-                {
-                    RequestKey = requestSettings.Key!,
-                    Message = "Checking if more execution is needed...",
-                    ResponseTime = DateTime.UtcNow,
-                    Status = AiResponseStatus.Planning,
-                    Cost = null,
-                    TotalCost = context.TotalCost
-                });
-
-                var continuationCheck = await deterministicPlanner.ShouldContinueExecutionAsync(context, requestSettings, cancellationToken);
-
-                if (continuationCheck is { ShouldContinue: true, CanAnswerNow: false })
-                {
-                    yield return YieldAndTrack(context, new AiSceneResponse
-                    {
-                        RequestKey = requestSettings.Key!,
-                        Message = $"Continuing execution: {continuationCheck.Reasoning}",
-                        ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.Planning,
-                        Cost = null,
-                        TotalCost = context.TotalCost
-                    });
-
-                    // Create a new plan for missing information
-                    var newPlan = await _planner.CreatePlanAsync(context, requestSettings, cancellationToken);
-                    if (newPlan.IsValid && newPlan.Steps.Any())
-                    {
-                        context.ExecutionPlan = newPlan;
-                        await foreach (var response in ExecutePlanAsync(context, requestSettings, message, mainActorsThatPlayEveryScene, cancellationToken))
-                        {
-                            // Don't add here - already added by recursive ExecutePlanAsync
-                            yield return response;
-                        }
-                    }
-                    else
-                    {
-                        // No new plan but should continue - generate final response
-                        await foreach (var response in GenerateFinalResponseAsync(context, requestSettings, message, cancellationToken))
-                        {
-                            // Don't add here - already added by GenerateFinalResponseAsync
-                            yield return response;
-                        }
-                    }
-                }
-                else
-                {
-                    // Can answer now - generate final response based on gathered information
-                    yield return YieldAndTrack(context, new AiSceneResponse
-                    {
-                        RequestKey = requestSettings.Key!,
-                        Message = continuationCheck.Reasoning,
-                        ResponseTime = DateTime.UtcNow,
-                        Status = AiResponseStatus.Planning,
-                        Cost = null,
-                        TotalCost = context.TotalCost
-                    });
-
-                    await foreach (var response in GenerateFinalResponseAsync(context, requestSettings, message, cancellationToken))
-                    {
-                        // Don't add here - already added by GenerateFinalResponseAsync
-                        yield return response;
-                    }
-                }
-            }
-            else
-            {
-                // Fallback to director if not using deterministic planner
-                var director = _serviceProvider.GetService<IDirector>();
-                if (director != null)
-                {
-                    var directorResponse = await director.DirectAsync(context, requestSettings, cancellationToken);
-                    if (directorResponse.ExecuteAgain)
-                    {
-                        context.ChatClient.ClearTools();
-                        requestSettings.AvoidScenes(directorResponse.CutScenes ?? []);
-
-                        var scenes = _playHandler.ScenesChooser(requestSettings.ScenesToAvoid).ToList();
-                        foreach (var function in scenes)
-                        {
-                            function.Invoke(context.ChatClient);
-                        }
-
-                        // Check if summarization is needed before OpenAI call
-                        var summarizationResponse = await EnsureSummarizedForNextRequestAsync(context, requestSettings, cancellationToken);
-                        if (summarizationResponse != null)
-                            yield return YieldAndTrack(context, summarizationResponse);
-
-                        var response = await context.ChatClient.ExecuteAsync(cancellationToken);
-
-                        // Calculate cost for director request
-                        var directorCost = context.ChatClient.CalculateCost();
-                        if (directorCost > 0)
-                        {
-                            context.AddCost(directorCost);
-                        }
-
-                        if (response.Choices?[0].Message?.ToolCalls?.Count > 0)
-                        {
-                            foreach (var toolCall in response.Choices[0].Message!.ToolCalls!)
-                            {
-                                yield return YieldAndTrack(context, new AiSceneResponse
-                                {
-                                    RequestKey = requestSettings.Key!,
-                                    Name = toolCall.Function!.Name,
-                                    ResponseTime = DateTime.UtcNow,
-                                    Status = AiResponseStatus.SceneRequest,
-                                    Cost = directorCost > 0 ? directorCost : null,
-                                    TotalCost = context.TotalCost,
-                                    Model = context.ChatClient.ModelName
-                                });
-
-                                var scene = _sceneFactory.Create(toolCall.Function!.Name);
-                                if (scene != null)
-                                {
-                                    await foreach (var sceneResponse in GetResponseFromSceneAsync(scene, context.InputMessage, context, requestSettings, mainActorsThatPlayEveryScene, cancellationToken))
-                                    {
-                                        // Don't add here - already added by GetResponseFromSceneAsync
-                                        yield return sceneResponse;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                var (inputTokens, cachedTokens, outputTokens, totalTokens) = CalculateAggregatedTokens(context.Responses);
-                var tokenSummary = $"Tokens: {inputTokens} input + {cachedTokens} cached (10% cost) + {outputTokens} output = {totalTokens} total";
-
-                yield return YieldAndTrack(context, new AiSceneResponse
-                {
-                    RequestKey = requestSettings.Key!,
-                    Status = AiResponseStatus.FinishedOk,
-                    ResponseTime = DateTime.UtcNow,
-                    Message = context.TotalCost > 0 ?
-                        $"Completed. Total cost: ${context.TotalCost:F6}. {tokenSummary}" :
-                        $"Completed. {tokenSummary}",
-                    Cost = null,
-                    TotalCost = context.TotalCost,
-                    Model = context.ChatClient.ModelName
-                });
-            }
-        }
-
-        /// <summary>
-        /// Generate final response to user based on all gathered information
-        /// </summary>
-        private async IAsyncEnumerable<AiSceneResponse> GenerateFinalResponseAsync(
-            SceneContext context,
-            SceneRequestSettings requestSettings,
-            string originalMessage,
-            [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            // Create a fresh chat client for final response
-            var finalChatClient = context.CreateNewDefaultChatClient!();
-
-            // Temporarily store the original chatClient and use the new one
-            var originalChatClient = context.ChatClient;
-            context.ChatClient = finalChatClient;
-
-            // Add main actors
-            var mainActorsThatPlayEveryScene = _serviceProvider.GetKeyedServices<IPlayableActor>(ScenesBuilder.MainActor);
-            await PlayActorsInScene(context, mainActorsThatPlayEveryScene, cancellationToken);
-
-            // Build context from all executed scenes and tools
-            var executionSummary = new StringBuilder();
-            executionSummary.AppendLine("You have completed gathering information for the user's request.");
-            executionSummary.AppendLine();
-
-            foreach (var executedScene in context.ExecutedScenes)
-            {
-                executionSummary.AppendLine($"Scene: {executedScene.Key}");
-                if (executedScene.Value.Any())
-                {
-                    executionSummary.AppendLine($"  Tools used: {string.Join(", ", executedScene.Value.Select(x => $"{x.ToolName} with arguments: {x.Arguments}"))}");
-                }
-
-                // Get responses from this scene
-                var sceneResponses = context.Responses
-                    .Where(r => r.Name == executedScene.Key)
-                    .ToList();
-
-                foreach (var response in sceneResponses)
-                {
-                    if (response is { FunctionName: not null, Response: not null })
-                    {
-                        executionSummary.AppendLine($"  - {response.FunctionName}: {response.Response}");
-                    }
-                    if (response is { Message: not null, Status: AiResponseStatus.Running })
-                    {
-                        executionSummary.AppendLine($"  - Result: {response.Message}");
-                    }
-                }
-                executionSummary.AppendLine();
-            }
-
-            context.ChatClient.AddSystemMessage($@"You have completed gathering information for the user's request.
-
-{executionSummary}
-
-Now, provide a complete and coherent answer to the user's original question using ALL the information gathered above.
-Be concise but complete. Do not mention the tools or scenes you used - just answer the question naturally.");
-
-            context.ChatClient.AddUserMessage(originalMessage);
-
-            var finalResponse = await context.ChatClient.ExecuteAsync(cancellationToken);
-
-            // Calculate cost for final response
-            var finalCost = context.ChatClient.CalculateCost();
-            if (finalCost > 0)
-            {
-                context.AddCost(finalCost);
-            }
-
-            var finalMessage = finalResponse.Choices?[0].Message?.Content;
-
-            var finalSceneResponse = new AiSceneResponse
-            {
-                RequestKey = requestSettings.Key!,
-                Message = finalMessage,
-                ResponseTime = DateTime.UtcNow,
-                Status = AiResponseStatus.FinishedOk,
-                Cost = finalCost > 0 ? finalCost : null,
-                TotalCost = context.TotalCost,
-                Model = context.ChatClient.ModelName
-            };
-            if (finalResponse.Usage != null)
-            {
-                PopulateTokenCounts(finalSceneResponse, finalResponse.Usage);
-            }
-
-            // Restore original chatClient
-            context.ChatClient = originalChatClient;
-
-            yield return YieldAndTrack(context, finalSceneResponse);
         }
     }
 }

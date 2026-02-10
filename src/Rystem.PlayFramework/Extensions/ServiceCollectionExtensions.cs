@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ActorsOpenAiEndpointParser>();
             services.AddSingleton(new FunctionsHandler());
             services.AddSingleton(new PlayHandler());
+            services.AddSingleton(new ActorsHandler());
 
             // Register MCP Client services
             services.AddSingleton<McpRegistry>();

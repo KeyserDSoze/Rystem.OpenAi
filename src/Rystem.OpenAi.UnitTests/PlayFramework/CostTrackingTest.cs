@@ -61,15 +61,6 @@ namespace Rystem.PlayFramework.Test
 
             var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
 
-            // Should have planning costs if planning is enabled
-            var planningResponses = responses.Where(r => r.Status == AiResponseStatus.Planning).ToList();
-            if (planningResponses.Any())
-            {
-                // Planning responses should contribute to total cost
-                var firstPlanningResponse = planningResponses.First();
-                Assert.NotNull(firstPlanningResponse.TotalCost);
-            }
-
             // Should have scene execution costs
             var sceneResponses = responses.Where(r => 
                 r.Status == AiResponseStatus.SceneRequest || 
@@ -158,41 +149,6 @@ namespace Rystem.PlayFramework.Test
             // Allow up to 20% difference due to potential variations in token usage
             Assert.True(differencePercentage < 20,
                 $"Cost difference too large: Conv1={cost1:F6}, Conv2={cost2:F6}, Diff={differencePercentage:F2}%");
-        }
-
-        /// <summary>
-        /// Test cost tracking with planning enabled
-        /// </summary>
-        [Fact]
-        public async Task PlanningCostTrackingTest()
-        {
-            var conversationKey = Guid.NewGuid().ToString();
-            var userQuestion = "Voglio sapere il meteo a Milano e Roma";
-
-            var responses = await ExecuteTurnAsync(userQuestion, conversationKey);
-
-            // Should have planning responses
-            var planningResponses = responses.Where(r => r.Status == AiResponseStatus.Planning).ToList();
-            Assert.NotEmpty(planningResponses);
-
-            // Planning responses should have total cost tracked
-            foreach (var planningResponse in planningResponses)
-            {
-                Assert.NotNull(planningResponse.TotalCost);
-            }
-
-            // Final response should include all costs
-            var lastResponse = responses.Last();
-            Assert.NotNull(lastResponse.TotalCost);
-            Assert.True(lastResponse.TotalCost > 0);
-
-            // Should have message with total cost in final response
-            if (lastResponse.Status == AiResponseStatus.FinishedOk && lastResponse.Message != null)
-            {
-                // Check if message contains cost information
-                var hasCostInfo = lastResponse.Message.Contains("cost", StringComparison.OrdinalIgnoreCase);
-                // This is optional - not all final messages include cost text
-            }
         }
 
         /// <summary>

@@ -14,11 +14,13 @@ namespace Rystem.PlayFramework
         internal IScene Scene { get; } = new Scene();
         private readonly PlayHandler _playHandler;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly ActorsHandler _actorsHandler;
         public SceneBuilder(IServiceCollection services)
         {
             _services = services;
             _playHandler = _services.GetSingletonService<PlayHandler>()!;
             _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
+            _actorsHandler = _services.GetSingletonService<ActorsHandler>()!;
         }
         private static readonly Regex s_checkName = new("[^a-zA-Z0-9_\\-]{1,64}");
         public ISceneBuilder WithName(string name)
@@ -52,7 +54,7 @@ namespace Rystem.PlayFramework
         }
         public ISceneBuilder WithActors(Action<IActorBuilder> builder)
         {
-            var builderInstance = new ActorBuilder(_services, Scene.Name, _playHandler, _functionsHandler);
+            var builderInstance = new ActorBuilder(_services, Scene.Name, _playHandler, _functionsHandler, _actorsHandler);
             builder(builderInstance);
             return this;
         }
@@ -117,6 +119,7 @@ namespace Rystem.PlayFramework
                     Parameters = jsonFunctionObject
                 };
                 var function = functionsHandler[functionName];
+                function.Description = description; // Store description for planner
                 if (sceneName is not null)
                     function.Scenes.Add(sceneName);
                 else

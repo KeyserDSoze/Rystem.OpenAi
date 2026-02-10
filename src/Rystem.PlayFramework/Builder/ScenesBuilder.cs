@@ -11,6 +11,7 @@ namespace Rystem.PlayFramework
         private readonly SceneManagerSettings _settings;
         private readonly PlayHandler _playHander;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly ActorsHandler _actorsHandler;
         private readonly Dictionary<string, McpServerConfiguration> _mcpServers = [];
         private ExposeAsMcpServerConfig? _exposeConfig;
 
@@ -20,6 +21,7 @@ namespace Rystem.PlayFramework
             _settings = new();
             _playHander = _services.GetSingletonService<PlayHandler>()!;
             _functionsHandler = _services.GetSingletonService<FunctionsHandler>()!;
+            _actorsHandler = _services.GetSingletonService<ActorsHandler>()!;
         }
         public const string MainActor = nameof(MainActor);
         public const string Request = nameof(Request);
@@ -35,6 +37,7 @@ namespace Rystem.PlayFramework
                 _services.AddKeyedSingleton<IPlayableActor>(MainActor, new SimpleActor { Role = role });
             else
                 _services.AddKeyedSingleton<IActor>(MainActor, new SimpleActor { Role = role });
+            _actorsHandler.AddActorInfo(MainActor, role);
             return this;
         }
         public IScenesBuilder AddMainActor<T>(bool playInEveryScene)
@@ -44,6 +47,7 @@ namespace Rystem.PlayFramework
                 _services.AddKeyedTransient<IPlayableActor, T>(MainActor);
             else
                 _services.AddKeyedTransient<IActor, T>(MainActor);
+            _actorsHandler.AddActorInfo(MainActor, null, typeof(T).Name);
             return this;
         }
         public IScenesBuilder AddMainActor(Func<SceneContext, string> action, bool playInEveryScene)
@@ -52,6 +56,7 @@ namespace Rystem.PlayFramework
                 _services.AddKeyedSingleton<IPlayableActor>(MainActor, new ActionActor { Action = action });
             else
                 _services.AddKeyedSingleton<IActor>(MainActor, new ActionActor { Action = action });
+            _actorsHandler.AddActorInfo(MainActor, "Dynamic main action actor");
             return this;
         }
         public IScenesBuilder AddMainActor(Func<SceneContext, CancellationToken, Task<string>> action, bool playInEveryScene)
@@ -60,6 +65,7 @@ namespace Rystem.PlayFramework
                 _services.AddKeyedSingleton<IPlayableActor>(MainActor, new AsyncActionActor { Action = action });
             else
                 _services.AddKeyedSingleton<IActor>(MainActor, new AsyncActionActor { Action = action });
+            _actorsHandler.AddActorInfo(MainActor, "Async dynamic main action actor");
             return this;
         }
         public IScenesBuilder AddCustomDirector<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -67,13 +73,6 @@ namespace Rystem.PlayFramework
         {
             _services.RemoveAll<IDirector>();
             _services.AddService<IDirector, T>(lifetime);
-            return this;
-        }
-        public IScenesBuilder AddCustomPlanner<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-            where T : class, IPlanner
-        {
-            _services.RemoveAll<IPlanner>();
-            _services.AddService<IPlanner, T>(lifetime);
             return this;
         }
         public IScenesBuilder AddCustomSummarizer<T>(ServiceLifetime lifetime = ServiceLifetime.Singleton)

@@ -45,17 +45,18 @@ namespace Rystem.PlayFramework
 
         public async Task<string> SummarizeAsync(List<AiSceneResponse> responses, CancellationToken cancellationToken)
         {
-            // Try to use OpenAI for intelligent summarization
-            if (_openAiFactory != null && _settings?.OpenAi.Name != null)
+            if (_openAiFactory != null)
             {
-                try
+                var chatClient = _openAiFactory!.Create(_settings?.OpenAi.Name)?.Chat;
+                if (chatClient != null)
                 {
-                    return await SummarizeWithOpenAiAsync(responses, cancellationToken);
-                }
-                catch
-                {
-                    // Fallback to simple summarization if OpenAI fails
-                    return BuildSimpleSummary(responses);
+                    try
+                    {
+                        return await SummarizeWithOpenAiAsync(chatClient, responses, cancellationToken);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -63,14 +64,8 @@ namespace Rystem.PlayFramework
             return BuildSimpleSummary(responses);
         }
 
-        private async Task<string> SummarizeWithOpenAiAsync(List<AiSceneResponse> responses, CancellationToken cancellationToken)
+        private async Task<string> SummarizeWithOpenAiAsync(IOpenAiChat chatClient, List<AiSceneResponse> responses, CancellationToken cancellationToken)
         {
-            var chatClient = _openAiFactory!.Create(_settings?.OpenAi.Name)?.Chat;
-            if (chatClient == null)
-            {
-                return BuildSimpleSummary(responses);
-            }
-
             // Build the conversation history to summarize
             var conversationHistory = BuildConversationHistory(responses);
 
@@ -96,7 +91,7 @@ Provide a clear, concise summary that captures all essential information.");
 
             if (!string.IsNullOrWhiteSpace(summary))
             {
-                return $"Conversation Summary:\n\n{summary}";
+                return summary;
             }
 
             // Fallback if no content returned
@@ -124,18 +119,12 @@ Provide a clear, concise summary that captures all essential information.");
 
                 if (response.Arguments != null)
                 {
-                    var argsPreview = response.Arguments.ToString();
-                    if (argsPreview?.Length > 200)
-                        argsPreview = argsPreview.Substring(0, 200) + "...";
-                    history.AppendLine($"   Arguments: {argsPreview}");
+                    history.AppendLine($"   Arguments: {response.Arguments}");
                 }
 
                 if (!string.IsNullOrWhiteSpace(response.Response))
                 {
-                    var responsePreview = response.Response;
-                    if (responsePreview.Length > 300)
-                        responsePreview = responsePreview.Substring(0, 300) + "...";
-                    history.AppendLine($"   Response: {responsePreview}");
+                    history.AppendLine($"   Response: {response.Response}");
                 }
 
                 if (!string.IsNullOrWhiteSpace(response.Message))
@@ -153,9 +142,6 @@ Provide a clear, concise summary that captures all essential information.");
         private static string BuildSimpleSummary(List<AiSceneResponse> responses)
         {
             var summary = new StringBuilder();
-            summary.AppendLine("Summary of previous actions:");
-            summary.AppendLine();
-
             var groupedByScene = responses
                 .Where(r => r.Name != null && r.Name != ScenesBuilder.Request)
                 .GroupBy(r => r.Name);
@@ -163,44 +149,18 @@ Provide a clear, concise summary that captures all essential information.");
             foreach (var sceneGroup in groupedByScene)
             {
                 summary.AppendLine($"Scene: {sceneGroup.Key}");
-
-                var functions = sceneGroup
-                    .Where(r => r.FunctionName != null)
-                    .Select(r => r.FunctionName)
-                    .Distinct();
-
-                if (functions.Any())
+                foreach (var functionResponse in sceneGroup)
                 {
-                    summary.AppendLine($"  Tools used: {string.Join(", ", functions)}");
-                }
-
-                var lastMessage = sceneGroup
-                    .Where(r => r.Message != null && r.Status == AiResponseStatus.Running)
-                    .LastOrDefault();
-
-                if (lastMessage != null)
-                {
-                    summary.AppendLine($"  Result: {lastMessage.Message}");
-                }
-                summary.AppendLine();
-            }
-
-            var finalResponses = responses
-                .Where(r => (r.Status & (AiResponseStatus.FinishedOk | AiResponseStatus.FinishedNoTool)) != 0)
-                .ToList();
-
-            if (finalResponses.Any())
-            {
-                summary.AppendLine("Final outcomes:");
-                foreach (var finalResponse in finalResponses)
-                {
-                    if (!string.IsNullOrWhiteSpace(finalResponse.Message))
-                    {
-                        summary.AppendLine($"  - {finalResponse.Message}");
-                    }
+                    if (functionResponse.FunctionName != null)
+                        summary.AppendLine($"  Tool: {functionResponse.FunctionName}");
+                    if (functionResponse.Arguments != null)
+                        summary.AppendLine($" Args: {functionResponse.Arguments}");
+                    if (functionResponse.Response != null)
+                        summary.AppendLine($" Response: {functionResponse.Response}");
+                    if (functionResponse.Message != null)
+                        summary.AppendLine($" Message: {functionResponse.Message}");
                 }
             }
-
             return summary.ToString();
         }
     }
