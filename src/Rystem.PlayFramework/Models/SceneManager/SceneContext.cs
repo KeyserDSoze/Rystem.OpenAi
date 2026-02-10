@@ -24,11 +24,6 @@ namespace Rystem.PlayFramework
         public IOpenAiChat ChatClient { get; set; } = null!;
 
         /// <summary>
-        /// The current execution plan if planning is enabled.
-        /// </summary>
-        public ExecutionPlan? ExecutionPlan { get; set; }
-
-        /// <summary>
         /// Summary of previous conversation history.
         /// </summary>
         public string? ConversationSummary { get; set; }
@@ -43,6 +38,12 @@ namespace Rystem.PlayFramework
         /// Track which tools have been executed across all scenes to avoid duplicates.
         /// </summary>
         public HashSet<string> ExecutedTools { get; } = [];
+
+        /// <summary>
+        /// Cache of tool responses to avoid re-execution and provide context to LLM.
+        /// Key: "sceneName.toolName.arguments", Value: response
+        /// </summary>
+        public Dictionary<string, string> ToolResponses { get; } = [];
 
         /// <summary>
         /// Total accumulated cost for all OpenAI requests in this conversation
@@ -61,16 +62,28 @@ namespace Rystem.PlayFramework
             => ExecutedTools.TryGetValue($"{sceneName}.{toolName}.{arguments}", out var _);
 
         /// <summary>
-        /// Mark a tool as executed for a scene.
+        /// Mark a tool as executed for a scene and cache its response.
         /// </summary>
-        public void MarkToolExecuted(string sceneName, string toolName, string? arguments)
+        public void MarkToolExecuted(string sceneName, string toolName, string? arguments, string response)
         {
             if (!ExecutedScenes.ContainsKey(sceneName))
             {
                 ExecutedScenes[sceneName] = [];
             }
             ExecutedScenes[sceneName].Add(new SceneRequestContext { ToolName = toolName, Arguments = arguments });
-            ExecutedTools.Add($"{sceneName}.{toolName}.{arguments}");
+
+            var key = $"{sceneName}.{toolName}.{arguments}";
+            ExecutedTools.Add(key);
+            ToolResponses[key] = response; // Cache the response
+        }
+
+        /// <summary>
+        /// Get cached response for a previously executed tool.
+        /// </summary>
+        public string? GetToolResponse(string sceneName, string toolName, string? arguments)
+        {
+            var key = $"{sceneName}.{toolName}.{arguments}";
+            return ToolResponses.TryGetValue(key, out var response) ? response : null;
         }
         /// <summary>
         /// Add cost to the total and return the new total

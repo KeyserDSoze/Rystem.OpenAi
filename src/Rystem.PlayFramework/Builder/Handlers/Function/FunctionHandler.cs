@@ -13,5 +13,10 @@ namespace Rystem.PlayFramework
         public bool HasService => Service != null;
         public bool HasMcpToolCall => McpToolCall != null;
         public Action<IOpenAiChat>? Chooser { get; set; }
+
+        /// <summary>
+        /// Description of what the function/tool does, used by planner for better decision making
+        /// </summary>
+        public string? Description { get; set; }
     }
 }

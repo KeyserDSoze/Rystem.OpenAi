@@ -13,10 +13,6 @@
         FinishedWarning = 128,
         FinishedError = 256,
         /// <summary>
-        /// Indicates that a planning operation is in progress
-        /// </summary>
-        Planning = 512,
-        /// <summary>
         /// Indicates that conversation history summarization is in progress
         /// Used when the response/character threshold is exceeded and the system is condensing previous turns
         /// </summary>

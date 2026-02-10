@@ -6,7 +6,6 @@ namespace Rystem.PlayFramework
     internal enum ServiceBuilderType
     {
         None = 0,
-        Planner = 1,
         ResponseParser = 2,
         Summarizer = 4
     }
@@ -17,13 +16,6 @@ namespace Rystem.PlayFramework
         public ServiceBuilder(IServiceCollection services)
         {
             _services = services;
-        }
-        public IServiceBuilder AddCustomPlanner<TPlanner>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
-             where TPlanner : class, IPlanner
-        {
-            _services.AddService<IPlanner, TPlanner>(lifetime);
-            _serviceBuilderType |= ServiceBuilderType.Planner;
-            return this;
         }
 
         public IServiceBuilder AddCustomResponseParser<TResponseParser>(ServiceLifetime lifetime = ServiceLifetime.Singleton)
@@ -43,8 +35,6 @@ namespace Rystem.PlayFramework
         }
         internal void AddDefaultsIfNeeded()
         {
-            if (!_serviceBuilderType.HasFlag(ServiceBuilderType.Planner))
-                _services.AddService<IPlanner, DeterministicPlanner>(ServiceLifetime.Singleton);
             if (!_serviceBuilderType.HasFlag(ServiceBuilderType.ResponseParser))
                 _services.AddService<IResponseParser, DefaultResponseParser>(ServiceLifetime.Singleton);
             if (!_serviceBuilderType.HasFlag(ServiceBuilderType.Summarizer))

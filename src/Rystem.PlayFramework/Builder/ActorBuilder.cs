@@ -9,23 +9,27 @@ namespace Rystem.PlayFramework
         private readonly string _sceneName;
         private readonly PlayHandler _playHandler;
         private readonly FunctionsHandler _functionsHandler;
+        private readonly ActorsHandler _actorsHandler;
 
-        public ActorBuilder(IServiceCollection services, string sceneName, PlayHandler playHandler, FunctionsHandler functionsHandler)
+        public ActorBuilder(IServiceCollection services, string sceneName, PlayHandler playHandler, FunctionsHandler functionsHandler, ActorsHandler actorsHandler)
         {
             _services = services;
             _sceneName = sceneName;
             _playHandler = playHandler;
             _functionsHandler = functionsHandler;
+            _actorsHandler = actorsHandler;
         }
         public IActorBuilder AddActor<T>()
             where T : class, IActor
         {
             _services.AddKeyedTransient<IActor, T>(_sceneName);
+            _actorsHandler.AddActorInfo(_sceneName, null, typeof(T).Name);
             return this;
         }
         public IActorBuilder AddActor(string role)
         {
             _services.AddKeyedSingleton<IActor>(_sceneName, new SimpleActor { Role = role });
+            _actorsHandler.AddActorInfo(_sceneName, role);
             return this;
         }
         public IActorBuilder AddActor<T>(string name, string role, Action<Dictionary<string, string>> parameters)
@@ -67,11 +71,13 @@ namespace Rystem.PlayFramework
         public IActorBuilder AddActor(Func<SceneContext, string> action)
         {
             _services.AddKeyedSingleton<IActor>(_sceneName, new ActionActor { Action = action });
+            _actorsHandler.AddActorInfo(_sceneName, "Dynamic action actor");
             return this;
         }
         public IActorBuilder AddActor(Func<SceneContext, CancellationToken, Task<string>> action)
         {
             _services.AddKeyedSingleton<IActor>(_sceneName, new AsyncActionActor { Action = action });
+            _actorsHandler.AddActorInfo(_sceneName, "Async dynamic action actor");
             return this;
         }
     }
